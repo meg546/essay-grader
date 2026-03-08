@@ -30,11 +30,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. User can navigate between all four page routes (landing, grading, results, history) via header navigation, each showing a placeholder
   3. Layout responds correctly at 768px tablet breakpoint without horizontal scrolling or broken elements
   4. Calling any mock API function (e.g., `gradeEssay()`) returns typed data after a visible simulated delay
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md — Scaffold project, design system, layout shell, routing, and skeleton placeholder pages
+- [ ] 01-02-PLAN.md — Typed mock API service layer with simulated delays and Zustand store
 
 ### Phase 2: Essay Input & Rubric Editor
 **Goal**: Users can compose or upload an essay and customize a grading rubric, completing the entire input side of the grading workflow
@@ -120,7 +120,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & API Layer | 0/? | Not started | - |
+| 1. Foundation & API Layer | 0/2 | Planning complete | - |
 | 2. Essay Input & Rubric Editor | 0/? | Not started | - |
 | 3. Submission Flow | 0/? | Not started | - |
 | 4. Results Display | 0/? | Not started | - |
