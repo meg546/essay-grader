@@ -74,10 +74,10 @@ Plans:
   2. User sees per-category score bars that are color-coded (green for high, yellow for medium, red for low scores)
   3. User sees an aggregate/total score combining all category scores
   4. User can expand and collapse per-category feedback sections showing strengths, areas for improvement, and score justification
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 04-01: TBD
+- [ ] 04-01-PLAN.md — Score utilities, color-coded score bars, summary card, and collapsible per-category feedback
 
 ### Phase 5: History, Landing & Polish
 **Goal**: Users have a complete application with a welcoming landing page, browsable submission history, and dark mode support
@@ -123,6 +123,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Foundation & API Layer | 2/2 | Complete | 2026-03-08 |
 | 2. Essay Input & Rubric Editor | 0/2 | Planning complete | - |
 | 3. Submission Flow | 1/1 | Complete   | 2026-03-08 |
-| 4. Results Display | 0/? | Not started | - |
+| 4. Results Display | 0/1 | Planning complete | - |
 | 5. History, Landing & Polish | 0/? | Not started | - |
 | 6. E2E Testing | 0/? | Not started | - |
