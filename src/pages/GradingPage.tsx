@@ -1,35 +1,72 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAppStore } from "@/stores/app-store";
+import { useProfileStore } from "@/stores/profile-store";
 import { gradeEssay } from "@/api/grading";
 import { Button } from "@/components/ui/button";
 import { EssayInput } from "@/components/grading/EssayInput";
-import { RubricEditor } from "@/components/grading/RubricEditor";
+import { RubricUpload } from "@/components/grading/RubricUpload";
+import { ResultsSummary } from "@/components/results/ResultsSummary";
+import { ScoreOverview } from "@/components/results/ScoreOverview";
+import { CategoryFeedback } from "@/components/results/CategoryFeedback";
 
 export function GradingPage() {
   const essayText = useAppStore((s) => s.essayText);
-  const rubricCategories = useAppStore((s) => s.rubricCategories);
+  const rubricFile = useAppStore((s) => s.rubricFile);
+  const currentResult = useAppStore((s) => s.currentResult);
   const setCurrentResult = useAppStore((s) => s.setCurrentResult);
+  const clearCurrentResult = useAppStore((s) => s.clearCurrentResult);
   const addToHistory = useAppStore((s) => s.addToHistory);
+  const setEssayText = useAppStore((s) => s.setEssayText);
+  const setRubricFile = useAppStore((s) => s.setRubricFile);
+  const gradeLevel = useProfileStore((s) => s.gradeLevel);
   const [isGrading, setIsGrading] = useState(false);
-  const navigate = useNavigate();
 
   const isSubmitDisabled = essayText.trim() === "" || isGrading;
 
   async function handleSubmit() {
     setIsGrading(true);
     try {
-      const result = await gradeEssay({ essayText, rubric: rubricCategories });
+      const result = await gradeEssay({
+        essayText,
+        rubricFile: rubricFile ?? undefined,
+        gradeLevel,
+      });
       setCurrentResult(result);
       addToHistory(result);
-      navigate(`/results/${result.id}`);
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
       setIsGrading(false);
     }
+  }
+
+  function handleReset() {
+    clearCurrentResult();
+    setEssayText("");
+    setRubricFile(null);
+  }
+
+  if (currentResult) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Grading Results</h1>
+          <Button variant="outline" onClick={handleReset}>
+            Grade Another
+          </Button>
+        </div>
+        <ResultsSummary result={currentResult} />
+        <ScoreOverview categories={currentResult.categories} />
+        <div className="space-y-3">
+          <h2 className="text-lg font-semibold">Detailed Feedback</h2>
+          {currentResult.categories.map((cat) => (
+            <CategoryFeedback key={cat.name} category={cat} />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -38,7 +75,7 @@ export function GradingPage() {
 
       <div className="grid gap-6 md:grid-cols-2">
         <EssayInput disabled={isGrading} />
-        <RubricEditor disabled={isGrading} />
+        <RubricUpload disabled={isGrading} />
       </div>
 
       <Button disabled={isSubmitDisabled} size="lg" onClick={handleSubmit}>
