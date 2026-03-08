@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { useProfileStore, GRADE_LEVEL_LABELS } from "@/stores/profile-store";
 import type { GradeLevel } from "@/stores/profile-store";
 import { useAppStore } from "@/stores/app-store";
@@ -22,7 +23,9 @@ export function ProfilePage() {
   const { email, gradeLevel, isSignedIn, signIn, signOut, setGradeLevel } =
     useProfileStore();
   const history = useAppStore((s) => s.history);
+  const setCurrentResult = useAppStore((s) => s.setCurrentResult);
   const [emailInput, setEmailInput] = useState("");
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-6">
@@ -99,9 +102,13 @@ export function ProfilePage() {
           ) : (
             <div className="space-y-3">
               {history.map((result) => (
-                <div
+                <button
                   key={result.id}
-                  className="flex items-center justify-between rounded-lg border p-3"
+                  onClick={() => {
+                    setCurrentResult(result);
+                    navigate("/grade");
+                  }}
+                  className="flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors hover:bg-muted"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">
@@ -114,7 +121,7 @@ export function ProfilePage() {
                   <div className="ml-4 text-sm font-semibold">
                     {result.overallScore}/{result.maxScore}
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}

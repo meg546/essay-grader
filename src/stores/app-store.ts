@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type { GradingResult } from "@/api/types";
 
 interface AppState {
@@ -13,15 +14,23 @@ interface AppState {
   setRubricFile: (file: File | null) => void;
 }
 
-export const useAppStore = create<AppState>()((set) => ({
-  currentResult: null,
-  history: [],
-  essayText: "",
-  rubricFile: null,
-  setCurrentResult: (result) => set({ currentResult: result }),
-  addToHistory: (result) =>
-    set((state) => ({ history: [result, ...state.history] })),
-  clearCurrentResult: () => set({ currentResult: null }),
-  setEssayText: (text) => set({ essayText: text }),
-  setRubricFile: (file) => set({ rubricFile: file }),
-}));
+export const useAppStore = create<AppState>()(
+  persist(
+    (set) => ({
+      currentResult: null,
+      history: [],
+      essayText: "",
+      rubricFile: null,
+      setCurrentResult: (result) => set({ currentResult: result }),
+      addToHistory: (result) =>
+        set((state) => ({ history: [result, ...state.history] })),
+      clearCurrentResult: () => set({ currentResult: null }),
+      setEssayText: (text) => set({ essayText: text }),
+      setRubricFile: (file) => set({ rubricFile: file }),
+    }),
+    {
+      name: "essay-grader-app",
+      partialize: (state) => ({ history: state.history }),
+    }
+  )
+);
