@@ -48,9 +48,9 @@
 
 ### API Layer
 
-- [ ] **API-01**: All backend interactions use typed async functions returning mock data
-- [ ] **API-02**: Mock data includes simulated delays for realistic feel
-- [ ] **API-03**: API layer is structured so swapping to real Axios calls requires only changing function bodies
+- [x] **API-01**: All backend interactions use typed async functions returning mock data
+- [x] **API-02**: Mock data includes simulated delays for realistic feel
+- [x] **API-03**: API layer is structured so swapping to real Axios calls requires only changing function bodies
 
 ### E2E Testing
 
@@ -113,9 +113,9 @@
 | NAVL-03 | Phase 5 | Pending |
 | NAVL-04 | Phase 1 | Complete |
 | NAVL-05 | Phase 1 | Complete |
-| API-01 | Phase 1 | Pending |
-| API-02 | Phase 1 | Pending |
-| API-03 | Phase 1 | Pending |
+| API-01 | Phase 1 | Complete |
+| API-02 | Phase 1 | Complete |
+| API-03 | Phase 1 | Complete |
 | TEST-01 | Phase 6 | Pending |
 | TEST-02 | Phase 6 | Pending |
 | TEST-03 | Phase 6 | Pending |
