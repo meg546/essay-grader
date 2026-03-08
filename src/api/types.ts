@@ -1,11 +1,7 @@
-export interface RubricCategory {
-  name: string;
-  maxScore: number;
-}
-
 export interface GradeEssayRequest {
   essayText: string;
-  rubric: RubricCategory[];
+  rubricFile?: File;
+  gradeLevel: string;
 }
 
 export interface CategoryScore {

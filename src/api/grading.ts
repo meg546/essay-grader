@@ -14,7 +14,3 @@ export async function gradeEssay(
   };
 }
 
-export async function getGradingResult(id: string): Promise<GradingResult> {
-  await delay(600);
-  return { ...mockGradingResult, id };
-}
