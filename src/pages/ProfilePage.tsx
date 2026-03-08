@@ -71,7 +71,7 @@ export function ProfilePage() {
             onValueChange={(v) => setGradeLevel(v as GradeLevel)}
           >
             <SelectTrigger className="w-48">
-              <SelectValue />
+              <SelectValue>{GRADE_LEVEL_LABELS[gradeLevel]}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {Object.entries(GRADE_LEVEL_LABELS).map(([value, label]) => (
