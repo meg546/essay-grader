@@ -52,6 +52,14 @@
 - [ ] **API-02**: Mock data includes simulated delays for realistic feel
 - [ ] **API-03**: API layer is structured so swapping to real Axios calls requires only changing function bodies
 
+### E2E Testing
+
+- [ ] **TEST-01**: Playwright is configured with `npm run test:e2e` running the full suite in headless mode
+- [ ] **TEST-02**: E2E tests verify navigation between all routes and responsive layout
+- [ ] **TEST-03**: E2E tests verify essay input (paste, upload) and rubric editing (add/remove/rename/reset)
+- [ ] **TEST-04**: E2E tests verify submission flow (loading state, redirect) and results display (scores, feedback, summary)
+- [ ] **TEST-05**: E2E tests verify history table interaction and dark mode toggle
+
 ## v2 Requirements
 
 ### Differentiators
@@ -82,38 +90,43 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INPT-01 | — | Pending |
-| INPT-02 | — | Pending |
-| INPT-03 | — | Pending |
-| INPT-04 | — | Pending |
-| RUBR-01 | — | Pending |
-| RUBR-02 | — | Pending |
-| RUBR-03 | — | Pending |
-| RUBR-04 | — | Pending |
-| RUBR-05 | — | Pending |
-| SUBM-01 | — | Pending |
-| SUBM-02 | — | Pending |
-| SUBM-03 | — | Pending |
-| RSLT-01 | — | Pending |
-| RSLT-02 | — | Pending |
-| RSLT-03 | — | Pending |
-| RSLT-04 | — | Pending |
-| HIST-01 | — | Pending |
-| HIST-02 | — | Pending |
-| NAVL-01 | — | Pending |
-| NAVL-02 | — | Pending |
-| NAVL-03 | — | Pending |
-| NAVL-04 | — | Pending |
-| NAVL-05 | — | Pending |
-| API-01 | — | Pending |
-| API-02 | — | Pending |
-| API-03 | — | Pending |
+| INPT-01 | Phase 2 | Pending |
+| INPT-02 | Phase 2 | Pending |
+| INPT-03 | Phase 2 | Pending |
+| INPT-04 | Phase 2 | Pending |
+| RUBR-01 | Phase 2 | Pending |
+| RUBR-02 | Phase 2 | Pending |
+| RUBR-03 | Phase 2 | Pending |
+| RUBR-04 | Phase 2 | Pending |
+| RUBR-05 | Phase 2 | Pending |
+| SUBM-01 | Phase 3 | Pending |
+| SUBM-02 | Phase 3 | Pending |
+| SUBM-03 | Phase 3 | Pending |
+| RSLT-01 | Phase 4 | Pending |
+| RSLT-02 | Phase 4 | Pending |
+| RSLT-03 | Phase 4 | Pending |
+| RSLT-04 | Phase 4 | Pending |
+| HIST-01 | Phase 5 | Pending |
+| HIST-02 | Phase 5 | Pending |
+| NAVL-01 | Phase 5 | Pending |
+| NAVL-02 | Phase 1 | Pending |
+| NAVL-03 | Phase 5 | Pending |
+| NAVL-04 | Phase 1 | Pending |
+| NAVL-05 | Phase 1 | Pending |
+| API-01 | Phase 1 | Pending |
+| API-02 | Phase 1 | Pending |
+| API-03 | Phase 1 | Pending |
+| TEST-01 | Phase 6 | Pending |
+| TEST-02 | Phase 6 | Pending |
+| TEST-03 | Phase 6 | Pending |
+| TEST-04 | Phase 6 | Pending |
+| TEST-05 | Phase 6 | Pending |
 
 **Coverage:**
-- v1 requirements: 26 total
-- Mapped to phases: 0
-- Unmapped: 26 (pending roadmap creation)
+- v1 requirements: 31 total
+- Mapped to phases: 31
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-08*
-*Last updated: 2026-03-08 after initial definition*
+*Last updated: 2026-03-08 after roadmap creation*
