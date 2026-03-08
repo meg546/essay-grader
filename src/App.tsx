@@ -4,18 +4,22 @@ import { LandingPage } from "@/pages/LandingPage"
 import { GradingPage } from "@/pages/GradingPage"
 import { ResultsPage } from "@/pages/ResultsPage"
 import { HistoryPage } from "@/pages/HistoryPage"
+import { Toaster } from "@/components/ui/sonner"
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/grade" element={<GradingPage />} />
-          <Route path="/results" element={<ResultsPage />} />
-          <Route path="/history" element={<HistoryPage />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/grade" element={<GradingPage />} />
+            <Route path="/results" element={<ResultsPage />} />
+            <Route path="/history" element={<HistoryPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+      <Toaster />
+    </>
   )
 }
