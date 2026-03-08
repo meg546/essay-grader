@@ -7,15 +7,15 @@
 
 ### Essay Input
 
-- [ ] **INPT-01**: User can paste essay text into a large textarea
-- [ ] **INPT-02**: User can see word and character count update as they type/paste
+- [x] **INPT-01**: User can paste essay text into a large textarea
+- [x] **INPT-02**: User can see word and character count update as they type/paste
 - [x] **INPT-03**: User can upload essay via .txt or .pdf file (drag-and-drop or click)
 - [x] **INPT-04**: User can see extracted text preview after uploading a PDF
 
 ### Rubric
 
 - [x] **RUBR-01**: User sees default ASAP rubric (Content & Ideas, Organization, Style/Voice, Language Conventions) on 0-6 scales
-- [ ] **RUBR-02**: User can rename rubric categories
+- [x] **RUBR-02**: User can rename rubric categories
 - [x] **RUBR-03**: User can add and remove rubric categories
 - [x] **RUBR-04**: User can adjust max score per category
 - [x] **RUBR-05**: User can reset rubric to default ASAP categories
@@ -90,12 +90,12 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INPT-01 | Phase 2 | Pending |
-| INPT-02 | Phase 2 | Pending |
+| INPT-01 | Phase 2 | Complete |
+| INPT-02 | Phase 2 | Complete |
 | INPT-03 | Phase 2 | Complete |
 | INPT-04 | Phase 2 | Complete |
 | RUBR-01 | Phase 2 | Complete |
-| RUBR-02 | Phase 2 | Pending |
+| RUBR-02 | Phase 2 | Complete |
 | RUBR-03 | Phase 2 | Complete |
 | RUBR-04 | Phase 2 | Complete |
 | RUBR-05 | Phase 2 | Complete |
