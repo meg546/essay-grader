@@ -13,8 +13,7 @@ import { MenuIcon, GraduationCapIcon } from "lucide-react"
 const navItems = [
   { to: "/", label: "Home" },
   { to: "/grade", label: "Grade" },
-  { to: "/results", label: "Results" },
-  { to: "/history", label: "History" },
+  { to: "/profile", label: "Profile" },
 ] as const
 
 function NavLinkItem({
