@@ -28,10 +28,10 @@
 
 ### Results
 
-- [ ] **RSLT-01**: User sees overall summary paragraph at top of results
-- [ ] **RSLT-02**: User sees per-category color-coded score bars (green/yellow/red)
-- [ ] **RSLT-03**: User sees aggregate/total score
-- [ ] **RSLT-04**: User can expand/collapse per-category feedback sections (strengths, improvements, justification)
+- [x] **RSLT-01**: User sees overall summary paragraph at top of results
+- [x] **RSLT-02**: User sees per-category color-coded score bars (green/yellow/red)
+- [x] **RSLT-03**: User sees aggregate/total score
+- [x] **RSLT-04**: User can expand/collapse per-category feedback sections (strengths, improvements, justification)
 
 ### History
 
@@ -102,10 +102,10 @@
 | SUBM-01 | Phase 3 | Complete |
 | SUBM-02 | Phase 3 | Complete |
 | SUBM-03 | Phase 3 | Complete |
-| RSLT-01 | Phase 4 | Pending |
-| RSLT-02 | Phase 4 | Pending |
-| RSLT-03 | Phase 4 | Pending |
-| RSLT-04 | Phase 4 | Pending |
+| RSLT-01 | Phase 4 | Complete |
+| RSLT-02 | Phase 4 | Complete |
+| RSLT-03 | Phase 4 | Complete |
+| RSLT-04 | Phase 4 | Complete |
 | HIST-01 | Phase 5 | Pending |
 | HIST-02 | Phase 5 | Pending |
 | NAVL-01 | Phase 5 | Pending |
