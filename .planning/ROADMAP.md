@@ -46,11 +46,11 @@ Plans:
   3. User sees the default ASAP rubric (4 categories, 0-6 scales) pre-populated on the grading page
   4. User can rename categories, add new categories, remove categories, adjust max scores, and reset everything back to ASAP defaults
   5. Rubric and essay state persist in Zustand stores across navigation (navigating away and back preserves input)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md — Install dependencies, extend Zustand store with essay/rubric state, create PDF extraction utility
+- [ ] 02-02-PLAN.md — Build EssayInput, RubricEditor, RubricCategoryRow components and compose GradingPage
 
 ### Phase 3: Submission Flow
 **Goal**: Users can submit their essay and rubric for grading and experience a polished loading-to-results transition
@@ -120,8 +120,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & API Layer | 0/2 | Planning complete | - |
-| 2. Essay Input & Rubric Editor | 0/? | Not started | - |
+| 1. Foundation & API Layer | 2/2 | Complete | 2026-03-08 |
+| 2. Essay Input & Rubric Editor | 0/2 | Planning complete | - |
 | 3. Submission Flow | 0/? | Not started | - |
 | 4. Results Display | 0/? | Not started | - |
 | 5. History, Landing & Polish | 0/? | Not started | - |
