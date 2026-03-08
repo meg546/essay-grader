@@ -41,10 +41,10 @@
 ### Navigation & Layout
 
 - [ ] **NAVL-01**: User sees landing page with project description and "Start Grading" CTA
-- [ ] **NAVL-02**: User can navigate between landing, grading, results, and history pages
+- [x] **NAVL-02**: User can navigate between landing, grading, results, and history pages
 - [ ] **NAVL-03**: User can toggle dark mode
-- [ ] **NAVL-04**: UI is responsive down to tablet (768px)
-- [ ] **NAVL-05**: UI has clean, professional, education-focused design with calm color palette
+- [x] **NAVL-04**: UI is responsive down to tablet (768px)
+- [x] **NAVL-05**: UI has clean, professional, education-focused design with calm color palette
 
 ### API Layer
 
@@ -109,10 +109,10 @@
 | HIST-01 | Phase 5 | Pending |
 | HIST-02 | Phase 5 | Pending |
 | NAVL-01 | Phase 5 | Pending |
-| NAVL-02 | Phase 1 | Pending |
+| NAVL-02 | Phase 1 | Complete |
 | NAVL-03 | Phase 5 | Pending |
-| NAVL-04 | Phase 1 | Pending |
-| NAVL-05 | Phase 1 | Pending |
+| NAVL-04 | Phase 1 | Complete |
+| NAVL-05 | Phase 1 | Complete |
 | API-01 | Phase 1 | Pending |
 | API-02 | Phase 1 | Pending |
 | API-03 | Phase 1 | Pending |

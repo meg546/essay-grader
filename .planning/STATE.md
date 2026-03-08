@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-03-08)
 ## Current Position
 
 Phase: 1 of 5 (Foundation & API Layer)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-03-08 -- Roadmap created
+Plan: 1 of 2 in current phase
+Status: Executing
+Last activity: 2026-03-08 -- Completed 01-01-PLAN.md
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 10%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: 5min
+- Total execution time: 0.08 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 1. Foundation & API Layer | 1 | 5min | 5min |
 
 **Recent Trend:**
-- Last 5 plans: -
-- Trend: -
+- Last 5 plans: 01-01 (5min)
+- Trend: Starting
 
 *Updated after each plan completion*
 
@@ -44,6 +44,9 @@ Recent decisions affecting current work:
 
 - [Roadmap]: 5 phases derived from 26 requirements following bottom-up dependency chain
 - [Roadmap]: Dark mode (NAVL-03) placed in Phase 5 since Tailwind dark classes should be applied from Phase 1 onward but the toggle UI ships last
+- [01-01]: Used React Router v7 over TanStack Router (simpler, smaller for 4-route SPA)
+- [01-01]: System font stack instead of Geist font (no external font dependencies)
+- [01-01]: Controlled Sheet open state with onClick close for reliable mobile nav dismiss
 
 ### Pending Todos
 
@@ -57,5 +60,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-08
-Stopped at: Roadmap created, ready to plan Phase 1
+Stopped at: Completed 01-01-PLAN.md (project scaffold + layout shell)
 Resume file: None
