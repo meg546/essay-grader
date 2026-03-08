@@ -60,10 +60,10 @@ Plans:
   1. User can click "Submit for Grading" with essay text and rubric present, triggering the mock API call
   2. User sees a loading animation during the simulated grading delay (no frozen or blank screen)
   3. User is automatically redirected to the results page when grading completes, with results visible
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 03-01: TBD
+- [ ] 03-01-PLAN.md — Wire submit button to mock API with loading spinner, input locking, and results redirect
 
 ### Phase 4: Results Display
 **Goal**: Users can read and understand their grading results through clear scores, color-coded visualizations, and structured per-category feedback
@@ -122,7 +122,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 |-------|----------------|--------|-----------|
 | 1. Foundation & API Layer | 2/2 | Complete | 2026-03-08 |
 | 2. Essay Input & Rubric Editor | 0/2 | Planning complete | - |
-| 3. Submission Flow | 0/? | Not started | - |
+| 3. Submission Flow | 0/1 | Planning complete | - |
 | 4. Results Display | 0/? | Not started | - |
 | 5. History, Landing & Polish | 0/? | Not started | - |
 | 6. E2E Testing | 0/? | Not started | - |
