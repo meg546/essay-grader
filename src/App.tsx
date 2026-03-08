@@ -1,7 +1,21 @@
+import { BrowserRouter, Routes, Route } from "react-router"
+import { Layout } from "@/components/layout/Layout"
+import { LandingPage } from "@/pages/LandingPage"
+import { GradingPage } from "@/pages/GradingPage"
+import { ResultsPage } from "@/pages/ResultsPage"
+import { HistoryPage } from "@/pages/HistoryPage"
+
 export default function App() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <h1 className="text-primary p-8">EssayGrader</h1>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/grade" element={<GradingPage />} />
+          <Route path="/results" element={<ResultsPage />} />
+          <Route path="/history" element={<HistoryPage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
 }
