@@ -22,9 +22,9 @@
 
 ### Submission
 
-- [ ] **SUBM-01**: User can submit essay + rubric for grading
-- [ ] **SUBM-02**: User sees loading animation during grading (simulated delay)
-- [ ] **SUBM-03**: User is redirected to results page after grading completes
+- [x] **SUBM-01**: User can submit essay + rubric for grading
+- [x] **SUBM-02**: User sees loading animation during grading (simulated delay)
+- [x] **SUBM-03**: User is redirected to results page after grading completes
 
 ### Results
 
@@ -99,9 +99,9 @@
 | RUBR-03 | Phase 2 | Complete |
 | RUBR-04 | Phase 2 | Complete |
 | RUBR-05 | Phase 2 | Complete |
-| SUBM-01 | Phase 3 | Pending |
-| SUBM-02 | Phase 3 | Pending |
-| SUBM-03 | Phase 3 | Pending |
+| SUBM-01 | Phase 3 | Complete |
+| SUBM-02 | Phase 3 | Complete |
+| SUBM-03 | Phase 3 | Complete |
 | RSLT-01 | Phase 4 | Pending |
 | RSLT-02 | Phase 4 | Pending |
 | RSLT-03 | Phase 4 | Pending |

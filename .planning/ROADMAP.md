@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Foundation & API Layer** - Project scaffolding, design system, mock API with typed contracts, routing, and responsive layout shell
 - [ ] **Phase 2: Essay Input & Rubric Editor** - Complete input experience: essay textarea, file upload with PDF extraction, and fully editable rubric
-- [ ] **Phase 3: Submission Flow** - Submit essay + rubric for grading with loading state and redirect to results
+- [x] **Phase 3: Submission Flow** - Submit essay + rubric for grading with loading state and redirect to results (completed 2026-03-08)
 - [ ] **Phase 4: Results Display** - Per-category scores, color-coded bars, structured feedback, and aggregate scoring
 - [ ] **Phase 5: History, Landing & Polish** - Submission history table, landing page, and dark mode toggle
 - [ ] **Phase 6: E2E Testing** - Comprehensive Playwright end-to-end tests covering all success criteria from phases 1-5
@@ -122,7 +122,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 |-------|----------------|--------|-----------|
 | 1. Foundation & API Layer | 2/2 | Complete | 2026-03-08 |
 | 2. Essay Input & Rubric Editor | 0/2 | Planning complete | - |
-| 3. Submission Flow | 0/1 | Planning complete | - |
+| 3. Submission Flow | 1/1 | Complete   | 2026-03-08 |
 | 4. Results Display | 0/? | Not started | - |
 | 5. History, Landing & Polish | 0/? | Not started | - |
 | 6. E2E Testing | 0/? | Not started | - |
