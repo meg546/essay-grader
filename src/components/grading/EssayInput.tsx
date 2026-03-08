@@ -3,6 +3,7 @@ import { Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useAppStore } from "@/stores/app-store";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -11,6 +12,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
+interface EssayInputProps {
+  disabled?: boolean;
+}
 
 const SUPPORTED_EXTENSIONS = new Set([".txt", ".pdf"]);
 
@@ -41,7 +46,7 @@ async function readFileAsText(file: File): Promise<string> {
   return "";
 }
 
-export function EssayInput() {
+export function EssayInput({ disabled }: EssayInputProps) {
   const essayText = useAppStore((s) => s.essayText);
   const setEssayText = useAppStore((s) => s.setEssayText);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -123,7 +128,7 @@ export function EssayInput() {
       <CardHeader>
         <CardTitle>Your Essay</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className={cn("space-y-3", disabled && "opacity-60 pointer-events-none")}>
         <div
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}

@@ -1,5 +1,6 @@
 import { Plus, RotateCcw } from "lucide-react";
 import { useAppStore } from "@/stores/app-store";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,7 +10,11 @@ import {
 } from "@/components/ui/card";
 import { RubricCategoryRow } from "./RubricCategoryRow";
 
-export function RubricEditor() {
+interface RubricEditorProps {
+  disabled?: boolean;
+}
+
+export function RubricEditor({ disabled }: RubricEditorProps) {
   const rubricCategories = useAppStore((s) => s.rubricCategories);
   const updateCategory = useAppStore((s) => s.updateCategory);
   const addCategory = useAppStore((s) => s.addCategory);
@@ -23,7 +28,7 @@ export function RubricEditor() {
       <CardHeader>
         <CardTitle>Grading Rubric</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className={cn("space-y-3", disabled && "opacity-60 pointer-events-none")}>
         {rubricCategories.map((category, index) => (
           <RubricCategoryRow
             key={index}

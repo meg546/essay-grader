@@ -14,7 +14,7 @@ export default function App() {
           <Route element={<Layout />}>
             <Route path="/" element={<LandingPage />} />
             <Route path="/grade" element={<GradingPage />} />
-            <Route path="/results" element={<ResultsPage />} />
+            <Route path="/results/:id" element={<ResultsPage />} />
             <Route path="/history" element={<HistoryPage />} />
           </Route>
         </Routes>
