@@ -16,7 +16,6 @@ import { FeedbackPanel } from "@/components/results/FeedbackPanel";
 
 export function GradingPage() {
   const essayText = useAppStore((s) => s.essayText);
-  const rubricFile = useAppStore((s) => s.rubricFile);
   const rubricText = useAppStore((s) => s.rubricText);
   const currentResult = useAppStore((s) => s.currentResult);
   const setCurrentResult = useAppStore((s) => s.setCurrentResult);
