@@ -7,18 +7,49 @@ import {
 } from "@/components/ui/collapsible";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useHighlightContext } from "@/lib/highlight-context";
+import { getCategoryColor, CATEGORY_HEX } from "@/lib/highlight-utils";
 import type { CategoryScore } from "@/api/types";
 
 interface CategoryFeedbackProps {
   category: CategoryScore;
+  colorIndex: number;
 }
 
-export function CategoryFeedback({ category }: CategoryFeedbackProps) {
+export function CategoryFeedback({
+  category,
+  colorIndex,
+}: CategoryFeedbackProps) {
   const [open, setOpen] = useState(false);
+  const { activeCategoryId, setActiveCategoryId, setScrollTarget } =
+    useHighlightContext();
+
+  const color = getCategoryColor(colorIndex);
+  const hexColor = CATEGORY_HEX[colorIndex % CATEGORY_HEX.length];
+  const isActive = activeCategoryId === category.id;
+
+  function handleClick() {
+    const firstHighlight = category.highlights[0];
+    if (firstHighlight) {
+      setScrollTarget(`${category.id}-${firstHighlight.start}`);
+    }
+  }
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <Card>
+      <Card
+        className={cn(
+          "transition-all duration-200 cursor-pointer",
+          isActive && "ring-2 ring-offset-1 scale-[1.01]",
+        )}
+        style={{
+          borderLeft: isActive ? "4px solid" : "4px solid transparent",
+          borderLeftColor: isActive ? hexColor : "transparent",
+        }}
+        onMouseEnter={() => setActiveCategoryId(category.id)}
+        onMouseLeave={() => setActiveCategoryId(null)}
+        onClick={handleClick}
+      >
         <CollapsibleTrigger className="flex w-full cursor-pointer select-none items-center justify-between p-6">
           <span className="text-base font-semibold">{category.name}</span>
           <div className="flex items-center gap-2">
@@ -28,7 +59,7 @@ export function CategoryFeedback({ category }: CategoryFeedbackProps) {
             <ChevronDown
               className={cn(
                 "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                open && "rotate-180"
+                open && "rotate-180",
               )}
             />
           </div>

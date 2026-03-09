@@ -38,6 +38,18 @@ export const CATEGORY_COLORS: CategoryColor[] = [
   { bg: "bg-yellow-100", bgActive: "bg-yellow-200", text: "text-yellow-700" },
 ];
 
+/**
+ * Hex color values for category borders/accents (matches CATEGORY_COLORS order).
+ */
+export const CATEGORY_HEX: string[] = [
+  "#3b82f6", // blue
+  "#a855f7", // purple
+  "#f97316", // orange
+  "#14b8a6", // teal
+  "#ec4899", // pink
+  "#eab308", // yellow
+];
+
 // --- Functions ---
 
 /** Get color palette for a category by index (wraps around). */
