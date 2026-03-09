@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: UX Redesign
 status: completed
-stopped_at: Completed 07-02-PLAN.md
-last_updated: "2026-03-09T03:28:22.626Z"
+stopped_at: Completed 07-01-PLAN.md
+last_updated: "2026-03-09T03:29:26.187Z"
 last_activity: 2026-03-09 -- Completed 07-02 route consolidation and nav simplification
 progress:
   total_phases: 10
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Project State
@@ -53,6 +53,7 @@ Progress (v1.1): [█████████░] 88%
 - [Roadmap]: Highlight data contract (HLGT-01) designed before UI highlighting (Phase 9)
 - [Research]: Scoped React context (not Zustand) for ephemeral hover-linking state
 - [Phase 07]: Removed hamburger/Sheet menu entirely since 2 tabs fit on any screen
+- [Phase 07]: Highlights co-located on CategoryScore with hl() helper for programmatic offset computation
 
 ### Pending Todos
 
@@ -64,6 +65,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T03:28:22.623Z
-Stopped at: Completed 07-02-PLAN.md
+Last session: 2026-03-09T03:29:26.185Z
+Stopped at: Completed 07-01-PLAN.md
 Resume file: None
