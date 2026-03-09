@@ -37,8 +37,8 @@ Requirements for backend implementation. Each maps to roadmap phases.
 
 ### PDF Processing
 
-- [ ] **PDF-01**: Backend extracts rubric text from uploaded PDF server-side using pypdf
-- [ ] **PDF-02**: Grading endpoint accepts both PDF file upload (multipart) and pre-extracted text (JSON)
+- [x] **PDF-01**: Backend extracts rubric text from uploaded PDF server-side using pypdf
+- [x] **PDF-02**: Grading endpoint accepts both PDF file upload (multipart) and pre-extracted text (JSON)
 
 ### Frontend Integration
 
@@ -101,8 +101,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERSIST-01 | Phase 14 | Pending |
 | PERSIST-02 | Phase 14 | Pending |
 | PERSIST-03 | Phase 14 | Pending |
-| PDF-01 | Phase 13 | Pending |
-| PDF-02 | Phase 13 | Pending |
+| PDF-01 | Phase 13 | Complete |
+| PDF-02 | Phase 13 | Complete |
 | FRONT-01 | Phase 15 | Pending |
 | FRONT-02 | Phase 15 | Pending |
 | FRONT-03 | Phase 15 | Pending |

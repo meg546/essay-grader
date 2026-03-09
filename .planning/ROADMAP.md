@@ -42,7 +42,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 11: Backend Foundation** — FastAPI scaffold, Docker Compose with PostgreSQL, Pydantic response models matching frontend types, Alembic migrations (completed 2026-03-09)
 - [x] **Phase 12: Authentication** — User registration, login, JWT tokens, and route protection via FastAPI dependency (completed 2026-03-09)
-- [ ] **Phase 13: LLM Inference & Grading** — Model inference pipeline, prompt engineering, structured output validation, highlight generation, and rubric PDF parsing
+- [x] **Phase 13: LLM Inference & Grading** — Model inference pipeline, prompt engineering, structured output validation, highlight generation, and rubric PDF parsing (completed 2026-03-09)
 - [ ] **Phase 14: Persistence & History** — Store grading results in PostgreSQL, expose history list and detail endpoints
 - [ ] **Phase 15: Frontend Integration** — Replace mock API calls with real Axios requests, auth interceptors, error handling, localStorage migration
 
@@ -88,7 +88,7 @@ Plans:
   3. Grading produces noticeably different scoring when the same essay is submitted at different grade levels
   4. Grading endpoint accepts both a PDF file upload and pre-extracted rubric text, producing equivalent results
   5. Changing the MODEL_ENDPOINT environment variable switches inference to a different host without code changes
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 13-01-PLAN.md -- LLM client Protocol, three provider adapters (Ollama, Anthropic, OpenAI), config settings
@@ -145,6 +145,6 @@ v2.0: 11 → 12 → 13 → 14 → 15
 | 10. Mock Auth & Editable Essay | v1.1 | 2/2 | Complete | 2026-03-09 |
 | 11. Backend Foundation | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 12. Authentication | v2.0 | 2/2 | Complete | 2026-03-09 |
-| 13. LLM Inference & Grading | 2/3 | In Progress|  | - |
+| 13. LLM Inference & Grading | 3/3 | Complete   | 2026-03-09 | - |
 | 14. Persistence & History | v2.0 | 0/? | Not started | - |
 | 15. Frontend Integration | v2.0 | 0/? | Not started | - |
