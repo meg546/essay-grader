@@ -5,7 +5,7 @@ milestone_name: null
 status: between_milestones
 stopped_at: Milestone v1.1 completed and archived
 last_updated: "2026-03-09"
-last_activity: 2026-03-09 -- Completed quick task 1 (scroll-dismissable hero)
+last_activity: 2026-03-09 -- Completed quick task 2 (PDF reading for rubric)
 progress:
   total_phases: 10
   completed_phases: 10
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 
 Milestone: v1.1 UX Redesign -- COMPLETE (shipped 2026-03-09)
 Status: Between milestones
-Last activity: 2026-03-09 -- Completed quick task 1: Scroll-dismissable hero with richer content
+Last activity: 2026-03-09 -- Completed quick task 2: PDF reading for rubric
 
 Milestones shipped: v1.0 MVP, v1.1 UX Redesign
 
@@ -58,9 +58,10 @@ None.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 1 | Scroll-dismissable hero with richer content | 2026-03-09 | 52780d5 | [1-scroll-dismissable-hero-with-richer-cont](./quick/1-scroll-dismissable-hero-with-richer-cont/) |
+| 2 | PDF reading for rubric upload | 2026-03-09 | 4550a7b | [2-implement-pdf-reading-for-essay-and-rubr](./quick/2-implement-pdf-reading-for-essay-and-rubr/) |
 
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed quick task 1 (scroll-dismissable hero with richer content)
+Stopped at: Completed quick task 2 (PDF reading for rubric)
 Resume file: None
