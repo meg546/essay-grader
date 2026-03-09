@@ -9,6 +9,7 @@ export async function gradeEssay(
   return {
     ...mockGradingResult,
     id: crypto.randomUUID(),
+    essayText: request.essayText,
     essayExcerpt: request.essayText.slice(0, 120) + "...",
     gradedAt: new Date().toISOString(),
   };

@@ -1,6 +1,27 @@
-import type { CategoryScore, GradingResult, HistoryItem } from "./types";
+import type { CategoryScore, GradingResult, HighlightRange, HistoryItem } from "./types";
+
+export const mockEssayText = `The integration of technology into modern classrooms has fundamentally transformed how students engage with learning materials. While traditionalists argue that screens distract from genuine understanding, the evidence suggests a more nuanced picture. Digital tools, when implemented thoughtfully, can enhance critical thinking and collaboration among students.
+
+Research from leading educational institutions demonstrates that blended learning environments produce measurable improvements in student outcomes. Interactive simulations allow learners to explore complex scientific concepts, while collaborative platforms enable peer feedback that strengthens writing skills. These tools do not replace teachers but rather amplify their impact.
+
+However, the digital divide remains a pressing concern. Students without reliable internet access or personal devices fall further behind their connected peers. Schools must address infrastructure gaps before adopting technology mandates. Without equitable access, educational technology risks widening the very disparities it promises to close.
+
+Ultimately, the question is not whether technology belongs in education but how we ensure it serves all students. Thoughtful implementation, ongoing teacher training, and a commitment to equity must guide every adoption decision.`;
+
+// Helper to safely compute highlight ranges from the essay text
+function hl(
+  phrase: string,
+  categoryId: string,
+  type: "strength" | "improvement",
+  startFrom = 0,
+): HighlightRange {
+  const start = mockEssayText.indexOf(phrase, startFrom);
+  if (start === -1) throw new Error(`Highlight phrase not found: "${phrase}"`);
+  return { start, end: start + phrase.length, categoryId, type };
+}
 
 const contentAndIdeas: CategoryScore = {
+  id: "content-ideas",
   name: "Content & Ideas",
   score: 5,
   maxScore: 6,
@@ -15,9 +36,17 @@ const contentAndIdeas: CategoryScore = {
   ],
   justification:
     "The essay presents a well-developed argument with relevant evidence, though a few claims lack sufficient supporting data.",
+  highlights: [
+    hl("The integration of technology into modern classrooms has fundamentally transformed how students engage with learning materials", "content-ideas", "strength"),
+    hl("Research from leading educational institutions demonstrates that blended learning environments produce measurable improvements in student outcomes", "content-ideas", "strength"),
+    hl("the digital divide remains a pressing concern", "content-ideas", "strength"),
+    hl("the question is not whether technology belongs in education but how we ensure it serves all students", "content-ideas", "improvement"),
+    hl("Schools must address infrastructure gaps before adopting technology mandates", "content-ideas", "improvement"),
+  ],
 };
 
 const organization: CategoryScore = {
+  id: "organization",
   name: "Organization",
   score: 4,
   maxScore: 6,
@@ -31,9 +60,17 @@ const organization: CategoryScore = {
   ],
   justification:
     "The overall structure is sound, but a few transitions disrupt the flow and the conclusion misses an opportunity to reinforce the central argument.",
+  highlights: [
+    // "Digital tools" overlaps with content-ideas "fundamentally transformed" in same paragraph -- cross-category overlap
+    hl("Digital tools, when implemented thoughtfully, can enhance critical thinking and collaboration among students", "organization", "strength"),
+    hl("Interactive simulations allow learners to explore complex scientific concepts", "organization", "strength"),
+    hl("However, the digital divide remains a pressing concern", "organization", "improvement"),
+    hl("Ultimately, the question is not whether technology belongs in education", "organization", "improvement"),
+  ],
 };
 
 const styleAndVoice: CategoryScore = {
+  id: "style-voice",
   name: "Style & Voice",
   score: 5,
   maxScore: 6,
@@ -47,9 +84,17 @@ const styleAndVoice: CategoryScore = {
   ],
   justification:
     "The writing voice is engaging and well-suited to the audience, with only minor stylistic inconsistencies.",
+  highlights: [
+    hl("the evidence suggests a more nuanced picture", "style-voice", "strength"),
+    hl("These tools do not replace teachers but rather amplify their impact", "style-voice", "strength"),
+    hl("educational technology risks widening the very disparities it promises to close", "style-voice", "strength"),
+    // Passive voice example -- overlaps with content-ideas range
+    hl("when implemented thoughtfully", "style-voice", "improvement"),
+  ],
 };
 
 const languageConventions: CategoryScore = {
+  id: "language-conventions",
   name: "Language Conventions",
   score: 4,
   maxScore: 6,
@@ -63,10 +108,17 @@ const languageConventions: CategoryScore = {
   ],
   justification:
     "Mechanics are mostly solid, but recurring comma splices and capitalization inconsistencies detract from the overall polish.",
+  highlights: [
+    hl("collaborative platforms enable peer feedback that strengthens writing skills", "language-conventions", "strength"),
+    hl("Thoughtful implementation, ongoing teacher training, and a commitment to equity must guide every adoption decision", "language-conventions", "strength"),
+    hl("Students without reliable internet access or personal devices fall further behind their connected peers", "language-conventions", "improvement"),
+    hl("Without equitable access", "language-conventions", "improvement"),
+  ],
 };
 
 export const mockGradingResult: GradingResult = {
   id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  essayText: mockEssayText,
   essayExcerpt:
     "The integration of technology into modern classrooms has fundamentally transformed how students engage with learning materials. While traditionalists argue that screens distract...",
   overallScore: 18,
