@@ -191,4 +191,4 @@ v1.1: 7 -> 8 -> 9 -> 10
 | 7. Data Contracts & Route Restructure | v1.1 | 0/2 | Not started | - |
 | 8. Collapsible Hero & Grading Workspace | v1.1 | 1/1 | Complete | 2026-03-09 |
 | 9. Side-by-Side Results & Highlighting | 2/2 | Complete   | 2026-03-09 | - |
-| 10. Mock Auth & Editable Essay | 2/2 | Complete   | 2026-03-09 | - |
+| 10. Mock Auth & Editable Essay | 2/2 | Complete    | 2026-03-09 | - |
