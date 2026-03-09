@@ -13,6 +13,7 @@ export interface HighlightSegment {
   id: string;
   categoryId: string;
   type: "strength" | "improvement";
+  feedback: string;
 }
 
 export type Segment = TextSegment | HighlightSegment;
@@ -124,6 +125,7 @@ export function buildSegments(
       id: `${hl.categoryId}-${hl.start}`,
       categoryId: hl.categoryId,
       type: hl.type,
+      feedback: hl.feedback,
     });
 
     cursor = effectiveEnd;

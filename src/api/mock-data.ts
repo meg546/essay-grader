@@ -13,11 +13,12 @@ function hl(
   phrase: string,
   categoryId: string,
   type: "strength" | "improvement",
+  feedback: string,
   startFrom = 0,
 ): HighlightRange {
   const start = mockEssayText.indexOf(phrase, startFrom);
   if (start === -1) throw new Error(`Highlight phrase not found: "${phrase}"`);
-  return { start, end: start + phrase.length, categoryId, type };
+  return { start, end: start + phrase.length, categoryId, type, feedback };
 }
 
 const contentAndIdeas: CategoryScore = {
@@ -37,11 +38,11 @@ const contentAndIdeas: CategoryScore = {
   justification:
     "The essay presents a well-developed argument with relevant evidence, though a few claims lack sufficient supporting data.",
   highlights: [
-    hl("The integration of technology into modern classrooms has fundamentally transformed how students engage with learning materials", "content-ideas", "strength"),
-    hl("Research from leading educational institutions demonstrates that blended learning environments produce measurable improvements in student outcomes", "content-ideas", "strength"),
-    hl("the digital divide remains a pressing concern", "content-ideas", "strength"),
-    hl("the question is not whether technology belongs in education but how we ensure it serves all students", "content-ideas", "improvement"),
-    hl("Schools must address infrastructure gaps before adopting technology mandates", "content-ideas", "improvement"),
+    hl("The integration of technology into modern classrooms has fundamentally transformed how students engage with learning materials", "content-ideas", "strength", "Strong opening that immediately establishes the scope and significance of your argument."),
+    hl("Research from leading educational institutions demonstrates that blended learning environments produce measurable improvements in student outcomes", "content-ideas", "strength", "Good use of research evidence to support your claim — consider citing specific studies for even more credibility."),
+    hl("the digital divide remains a pressing concern", "content-ideas", "strength", "Effective acknowledgment of a key counterargument, showing awareness of complexity."),
+    hl("the question is not whether technology belongs in education but how we ensure it serves all students", "content-ideas", "improvement", "This reframing is compelling but could go deeper — what specific policies or frameworks would ensure equitable access?"),
+    hl("Schools must address infrastructure gaps before adopting technology mandates", "content-ideas", "improvement", "Strong claim that needs supporting data. What percentage of schools lack adequate infrastructure? Specifics would strengthen this."),
   ],
 };
 
@@ -62,10 +63,10 @@ const organization: CategoryScore = {
     "The overall structure is sound, but a few transitions disrupt the flow and the conclusion misses an opportunity to reinforce the central argument.",
   highlights: [
     // "Digital tools" overlaps with content-ideas "fundamentally transformed" in same paragraph -- cross-category overlap
-    hl("Digital tools, when implemented thoughtfully, can enhance critical thinking and collaboration among students", "organization", "strength"),
-    hl("Interactive simulations allow learners to explore complex scientific concepts", "organization", "strength"),
-    hl("However, the digital divide remains a pressing concern", "organization", "improvement"),
-    hl("Ultimately, the question is not whether technology belongs in education", "organization", "improvement"),
+    hl("Digital tools, when implemented thoughtfully, can enhance critical thinking and collaboration among students", "organization", "strength", "Effective topic sentence that clearly signals the paragraph's focus on specific benefits."),
+    hl("Interactive simulations allow learners to explore complex scientific concepts", "organization", "strength", "Good supporting detail that flows naturally from the topic sentence above."),
+    hl("However, the digital divide remains a pressing concern", "organization", "improvement", "The transition here feels abrupt — consider adding a bridging sentence that connects the benefits discussion to this counterpoint."),
+    hl("Ultimately, the question is not whether technology belongs in education", "organization", "improvement", "The conclusion opener is functional but doesn't effectively circle back to your opening thesis. Try echoing the 'fundamentally transformed' language."),
   ],
 };
 
@@ -85,11 +86,11 @@ const styleAndVoice: CategoryScore = {
   justification:
     "The writing voice is engaging and well-suited to the audience, with only minor stylistic inconsistencies.",
   highlights: [
-    hl("the evidence suggests a more nuanced picture", "style-voice", "strength"),
-    hl("These tools do not replace teachers but rather amplify their impact", "style-voice", "strength"),
-    hl("educational technology risks widening the very disparities it promises to close", "style-voice", "strength"),
+    hl("the evidence suggests a more nuanced picture", "style-voice", "strength", "Nice rhetorical move — 'nuanced picture' signals intellectual sophistication without being pretentious."),
+    hl("These tools do not replace teachers but rather amplify their impact", "style-voice", "strength", "Strong parallel construction. The 'not X but Y' structure creates a memorable, quotable line."),
+    hl("educational technology risks widening the very disparities it promises to close", "style-voice", "strength", "Excellent use of irony — the sentence structure mirrors the contradiction you're describing."),
     // Passive voice example -- overlaps with content-ideas range
-    hl("when implemented thoughtfully", "style-voice", "improvement"),
+    hl("when implemented thoughtfully", "style-voice", "improvement", "Passive voice weakens this clause. Consider: 'when teachers implement them thoughtfully' to give agency to a specific actor."),
   ],
 };
 
@@ -109,10 +110,10 @@ const languageConventions: CategoryScore = {
   justification:
     "Mechanics are mostly solid, but recurring comma splices and capitalization inconsistencies detract from the overall polish.",
   highlights: [
-    hl("collaborative platforms enable peer feedback that strengthens writing skills", "language-conventions", "strength"),
-    hl("Thoughtful implementation, ongoing teacher training, and a commitment to equity must guide every adoption decision", "language-conventions", "strength"),
-    hl("Students without reliable internet access or personal devices fall further behind their connected peers", "language-conventions", "improvement"),
-    hl("Without equitable access", "language-conventions", "improvement"),
+    hl("collaborative platforms enable peer feedback that strengthens writing skills", "language-conventions", "strength", "Clean, grammatically correct compound structure with proper subject-verb agreement."),
+    hl("Thoughtful implementation, ongoing teacher training, and a commitment to equity must guide every adoption decision", "language-conventions", "strength", "Well-constructed serial list with correct Oxford comma usage and parallel structure."),
+    hl("Students without reliable internet access or personal devices fall further behind their connected peers", "language-conventions", "improvement", "This is a comma splice when read in context with the preceding sentence. Consider using a semicolon or starting a new sentence."),
+    hl("Without equitable access", "language-conventions", "improvement", "This fragment creates a comma splice with the following clause. Restructure as: 'Without equitable access, educational technology risks...'"),
   ],
 };
 

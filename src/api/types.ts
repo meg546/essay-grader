@@ -9,6 +9,7 @@ export interface HighlightRange {
   end: number;
   categoryId: string;
   type: "strength" | "improvement";
+  feedback: string;
 }
 
 export interface CategoryScore {

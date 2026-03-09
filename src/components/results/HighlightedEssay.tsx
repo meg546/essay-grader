@@ -19,7 +19,7 @@ interface TooltipInfo {
   segmentId: string;
   categoryName: string;
   type: "strength" | "improvement";
-  feedbackItems: string[];
+  feedback: string;
   hexColor: string;
   top: number;
   left: number;
@@ -35,10 +35,6 @@ function getTooltipInfo(
 ): TooltipInfo {
   const category = categories.find((c) => c.id === seg.categoryId);
   const colorIdx = colorMap.get(seg.categoryId) ?? 0;
-  const items =
-    seg.type === "strength"
-      ? category?.strengths ?? []
-      : category?.improvements ?? [];
 
   const rawTop = rect.top - containerRect.top - 4;
   // If tooltip would overflow above the container, place it below the highlight instead
@@ -56,7 +52,7 @@ function getTooltipInfo(
     segmentId: seg.id,
     categoryName: category?.name ?? "Unknown",
     type: seg.type,
-    feedbackItems: items,
+    feedback: seg.feedback,
     hexColor: CATEGORY_HEX[colorIdx % CATEGORY_HEX.length],
     top,
     left,
@@ -177,24 +173,9 @@ export function HighlightedEssay({ result }: HighlightedEssayProps) {
             {tooltip.categoryName} —{" "}
             {tooltip.type === "strength" ? "Strength" : "Improvement"}
           </div>
-          {tooltip.feedbackItems.length > 0 ? (
-            <ul className="space-y-0.5">
-              {tooltip.feedbackItems.slice(0, 3).map((item, i) => (
-                <li key={i} className="text-xs leading-snug">
-                  {item}
-                </li>
-              ))}
-              {tooltip.feedbackItems.length > 3 && (
-                <li className="text-xs text-muted-foreground">
-                  +{tooltip.feedbackItems.length - 3} more...
-                </li>
-              )}
-            </ul>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              No specific feedback for this passage.
-            </p>
-          )}
+          <p className="text-xs leading-snug">
+            {tooltip.feedback}
+          </p>
         </div>
       )}
     </div>
