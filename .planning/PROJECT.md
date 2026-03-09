@@ -34,7 +34,18 @@ Users can submit an essay with a rubric and immediately see clear, rubric-aligne
 
 ### Active
 
-(None — next milestone not yet planned)
+#### Current Milestone: v2.0 Backend Implementation
+
+**Goal:** Build the full Python/FastAPI backend with model serving, database, auth, and Docker — replacing all mock data with real API integration.
+
+**Target features:**
+- FastAPI backend with endpoints matching current mock JSON format
+- Llama 3.2 3B model inference with configurable endpoint (local/LAN/cloud GPU)
+- PostgreSQL database for submissions, history, user accounts
+- Real JWT authentication (registration, login, token-based sessions)
+- Server-side rubric PDF parsing with text fallback
+- Docker Compose for backend + DB
+- Frontend integration to swap mock API for real backend
 
 ### Out of Scope
 
@@ -88,4 +99,4 @@ Users can submit an essay with a rubric and immediately see clear, rubric-aligne
 | Bidirectional hover via shared context | activeCategoryId/activeHighlightId in HighlightProvider enables card↔highlight interaction without prop drilling | ✓ Good |
 
 ---
-*Last updated: 2026-03-09 after v1.1 milestone*
+*Last updated: 2026-03-09 after v2.0 milestone started*

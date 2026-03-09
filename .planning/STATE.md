@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: null
-milestone_name: null
+milestone: v2.0
+milestone_name: Backend Implementation
 status: between_milestones
-stopped_at: Milestone v1.1 completed and archived
+stopped_at: Defining requirements
 last_updated: "2026-03-09"
-last_activity: 2026-03-09 -- Completed quick task 2 (PDF reading for rubric)
+last_activity: 2026-03-09 -- Milestone v2.0 started
 progress:
-  total_phases: 10
-  completed_phases: 10
-  total_plans: 13
-  completed_plans: 13
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
@@ -20,15 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** Users can submit an essay with a rubric and immediately see clear, rubric-aligned scores with structured feedback and highlighted essay passages
-**Current focus:** Planning next milestone
+**Current focus:** v2.0 Backend Implementation
 
 ## Current Position
 
-Milestone: v1.1 UX Redesign -- COMPLETE (shipped 2026-03-09)
-Status: Between milestones
-Last activity: 2026-03-09 -- Completed quick task 2: PDF reading for rubric
-
-Milestones shipped: v1.0 MVP, v1.1 UX Redesign
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-09 — Milestone v2.0 started
 
 ## Performance Metrics
 
@@ -55,13 +54,10 @@ None.
 
 ### Quick Tasks Completed
 
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 1 | Scroll-dismissable hero with richer content | 2026-03-09 | 52780d5 | [1-scroll-dismissable-hero-with-richer-cont](./quick/1-scroll-dismissable-hero-with-richer-cont/) |
-| 2 | PDF reading for rubric upload | 2026-03-09 | 4550a7b | [2-implement-pdf-reading-for-essay-and-rubr](./quick/2-implement-pdf-reading-for-essay-and-rubr/) |
+(None yet this milestone)
 
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed quick task 2 (PDF reading for rubric)
+Stopped at: Milestone v2.0 started — defining requirements
 Resume file: None
