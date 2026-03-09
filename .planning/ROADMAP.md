@@ -168,11 +168,11 @@ Plans:
   3. User can sign out from the profile page, returning to the sign-in form
   4. User can edit the essay text in the results view left panel and resubmit for re-grading without navigating away
   5. During re-grading, the results panel shows a loading state while the essay remains visible and editable
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 10-01: TBD
-- [ ] 10-02: TBD
+- [ ] 10-01-PLAN.md — Mock auth with email+password sign-in, validation, and conditional profile content
+- [ ] 10-02-PLAN.md — Editable essay panel with in-place re-grading flow
 
 ## Progress
 
