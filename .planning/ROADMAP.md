@@ -123,11 +123,11 @@ Plans:
   2. Navigation shows exactly two tabs: Home and Profile
   3. Home tab loads the combined grading page; Profile tab loads the profile/auth page
   4. Layout container no longer constrains width at 960px (side-by-side layout unblocked)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 07-01: TBD
-- [ ] 07-02: TBD
+- [ ] 07-01-PLAN.md — Highlight data contract and mock data
+- [ ] 07-02-PLAN.md — Route consolidation, navigation simplification, layout width fix
 
 ### Phase 8: Collapsible Hero & Grading Workspace
 **Goal**: Users experience a seamless single-page flow from landing to grading
