@@ -9,6 +9,8 @@ import {
 export interface HighlightContextValue {
   activeCategoryId: string | null;
   setActiveCategoryId: (id: string | null) => void;
+  activeHighlightId: string | null;
+  setActiveHighlightId: (id: string | null) => void;
   disabledCategories: Set<string>;
   toggleCategory: (categoryId: string) => void;
   scrollTarget: string | null;
@@ -19,6 +21,9 @@ const HighlightContext = createContext<HighlightContextValue | null>(null);
 
 export function HighlightProvider({ children }: { children: ReactNode }) {
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
+  const [activeHighlightId, setActiveHighlightId] = useState<string | null>(
+    null,
+  );
   const [disabledCategories, setDisabledCategories] = useState<Set<string>>(
     () => new Set(),
   );
@@ -41,6 +46,8 @@ export function HighlightProvider({ children }: { children: ReactNode }) {
       value={{
         activeCategoryId,
         setActiveCategoryId,
+        activeHighlightId,
+        setActiveHighlightId,
         disabledCategories,
         toggleCategory,
         scrollTarget,
