@@ -17,6 +17,7 @@ import { FeedbackPanel } from "@/components/results/FeedbackPanel";
 export function GradingPage() {
   const essayText = useAppStore((s) => s.essayText);
   const rubricFile = useAppStore((s) => s.rubricFile);
+  const rubricText = useAppStore((s) => s.rubricText);
   const currentResult = useAppStore((s) => s.currentResult);
   const setCurrentResult = useAppStore((s) => s.setCurrentResult);
   const clearCurrentResult = useAppStore((s) => s.clearCurrentResult);
@@ -48,7 +49,7 @@ export function GradingPage() {
     try {
       const result = await gradeEssay({
         essayText,
-        rubricFile: rubricFile ?? undefined,
+        rubricText: rubricText || undefined,
         gradeLevel,
       });
       setCurrentResult(result);
@@ -65,7 +66,7 @@ export function GradingPage() {
     try {
       const result = await gradeEssay({
         essayText,
-        rubricFile: rubricFile ?? undefined,
+        rubricText: rubricText || undefined,
         gradeLevel,
       });
       setCurrentResult(result);
@@ -113,7 +114,11 @@ export function GradingPage() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            transition={{
+              duration: 0.5,
+              ease: [0.4, 0, 0.2, 1],
+              opacity: { duration: 0.3, ease: "easeOut" },
+            }}
             style={{ overflow: "hidden" }}
           >
             <HeroSection />

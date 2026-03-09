@@ -1,6 +1,6 @@
 export interface GradeEssayRequest {
   essayText: string;
-  rubricFile?: File;
+  rubricText?: string;
   gradeLevel: string;
 }
 
