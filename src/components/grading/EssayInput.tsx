@@ -15,6 +15,7 @@ import {
 
 interface EssayInputProps {
   disabled?: boolean;
+  onFocus?: () => void;
 }
 
 const SUPPORTED_EXTENSIONS = new Set([".txt", ".pdf"]);
@@ -46,7 +47,7 @@ async function readFileAsText(file: File): Promise<string> {
   return "";
 }
 
-export function EssayInput({ disabled }: EssayInputProps) {
+export function EssayInput({ disabled, onFocus }: EssayInputProps) {
   const essayText = useAppStore((s) => s.essayText);
   const setEssayText = useAppStore((s) => s.setEssayText);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -141,6 +142,7 @@ export function EssayInput({ disabled }: EssayInputProps) {
           <Textarea
             value={essayText}
             onChange={(e) => setEssayText(e.target.value)}
+            onFocus={onFocus}
             placeholder="Paste your essay here or drag and drop a file..."
             className="h-64 resize-none overflow-y-auto"
           />

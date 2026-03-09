@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { HeroSection } from "@/components/grading/HeroSection";
 import { toast } from "sonner";
 import { useAppStore } from "@/stores/app-store";
 import { useProfileStore } from "@/stores/profile-store";
@@ -22,6 +24,11 @@ export function GradingPage() {
   const setRubricFile = useAppStore((s) => s.setRubricFile);
   const gradeLevel = useProfileStore((s) => s.gradeLevel);
   const [isGrading, setIsGrading] = useState(false);
+  const [heroCollapsed, setHeroCollapsed] = useState(essayText !== "");
+
+  const handleEssayFocus = useCallback(() => {
+    setHeroCollapsed(true);
+  }, []);
 
   const isSubmitDisabled = essayText.trim() === "" || isGrading;
 
@@ -46,6 +53,7 @@ export function GradingPage() {
     clearCurrentResult();
     setEssayText("");
     setRubricFile(null);
+    setHeroCollapsed(false);
   }
 
   if (currentResult) {
@@ -70,11 +78,24 @@ export function GradingPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Grade Essay</h1>
+    <div className="mx-auto max-w-[1200px] space-y-6">
+      <AnimatePresence initial={false}>
+        {!heroCollapsed && (
+          <motion.div
+            key="hero"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            style={{ overflow: "hidden" }}
+          >
+            <HeroSection />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <EssayInput disabled={isGrading} />
+        <EssayInput onFocus={handleEssayFocus} disabled={isGrading} />
         <RubricUpload disabled={isGrading} />
       </div>
 
