@@ -17,8 +17,8 @@ Requirements for backend implementation. Each maps to roadmap phases.
 
 ### Authentication
 
-- [ ] **AUTH-01**: User can register with email and password (POST /api/auth/register)
-- [ ] **AUTH-02**: User can login and receive JWT access token (POST /api/auth/login)
+- [x] **AUTH-01**: User can register with email and password (POST /api/auth/register)
+- [x] **AUTH-02**: User can login and receive JWT access token (POST /api/auth/login)
 - [ ] **AUTH-03**: All user-scoped endpoints require valid JWT via FastAPI dependency
 - [ ] **AUTH-04**: User can validate token and retrieve profile (GET /api/auth/me)
 
@@ -90,8 +90,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-03 | Phase 11 | Complete |
 | INFRA-04 | Phase 11 | Complete |
 | INFRA-05 | Phase 11 | Complete |
-| AUTH-01 | Phase 12 | Pending |
-| AUTH-02 | Phase 12 | Pending |
+| AUTH-01 | Phase 12 | Complete |
+| AUTH-02 | Phase 12 | Complete |
 | AUTH-03 | Phase 12 | Pending |
 | AUTH-04 | Phase 12 | Pending |
 | GRADE-01 | Phase 13 | Pending |
