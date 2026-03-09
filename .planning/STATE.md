@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Backend Implementation
-status: executing
-stopped_at: Completed 12-01-PLAN.md
-last_updated: "2026-03-09T21:46:09.906Z"
-last_activity: 2026-03-09 -- Completed 12-01 User model and auth utilities
+status: completed
+stopped_at: Completed 12-02-PLAN.md
+last_updated: "2026-03-09T21:50:23.242Z"
+last_activity: 2026-03-09 -- Completed 12-02 Auth routes and integration tests
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
-  percent: 90
+  completed_plans: 4
+  percent: 100
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 12 of 15 (Authentication)
-Plan: 01 of 02 complete (Authentication)
-Status: In Progress
-Last activity: 2026-03-09 -- Completed 12-01 User model and auth utilities
+Plan: 02 of 02 complete (Authentication)
+Status: Phase Complete
+Last activity: 2026-03-09 -- Completed 12-02 Auth routes and integration tests
 
-Progress: [█████████░] 90%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -49,6 +49,8 @@ Progress: [█████████░] 90%
 - [11-01] .env excluded from git via .gitignore -- created locally with sensible defaults
 - [Phase 11-02]: Used manual alembic revision instead of --autogenerate since Docker PostgreSQL not running; verified via offline SQL generation
 - [Phase 12-01]: Used Alembic autogenerate since PostgreSQL was available (unlike phase 11)
+- [Phase 12-02]: Used HTTPBearer(auto_error=False) with manual None check for consistent 401 on missing tokens
+- [Phase 12-02]: Switched User.id to dialect-agnostic sqlalchemy.Uuid for SQLite test compatibility
 
 ### Pending Todos
 
@@ -65,6 +67,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T21:46:09.903Z
-Stopped at: Completed 12-01-PLAN.md
+Last session: 2026-03-09T21:50:23.240Z
+Stopped at: Completed 12-02-PLAN.md
 Resume file: None

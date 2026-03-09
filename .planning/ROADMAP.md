@@ -41,7 +41,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Milestone Goal:** Build the full Python/FastAPI backend with model serving, database, auth, and Docker -- replacing all mock data with real API integration.
 
 - [x] **Phase 11: Backend Foundation** — FastAPI scaffold, Docker Compose with PostgreSQL, Pydantic response models matching frontend types, Alembic migrations (completed 2026-03-09)
-- [ ] **Phase 12: Authentication** — User registration, login, JWT tokens, and route protection via FastAPI dependency
+- [x] **Phase 12: Authentication** — User registration, login, JWT tokens, and route protection via FastAPI dependency (completed 2026-03-09)
 - [ ] **Phase 13: LLM Inference & Grading** — Model inference pipeline, prompt engineering, structured output validation, highlight generation, and rubric PDF parsing
 - [ ] **Phase 14: Persistence & History** — Store grading results in PostgreSQL, expose history list and detail endpoints
 - [ ] **Phase 15: Frontend Integration** — Replace mock API calls with real Axios requests, auth interceptors, error handling, localStorage migration
@@ -72,7 +72,7 @@ Plans:
   2. User can log in with valid credentials via POST /api/auth/login and receive a JWT
   3. Requesting GET /api/auth/me with a valid token returns the user's profile
   4. Requesting any protected endpoint without a valid token returns 401 Unauthorized
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 12-01-PLAN.md -- User model, Alembic migration, auth utilities (password hashing, JWT tokens)
@@ -144,7 +144,7 @@ v2.0: 11 → 12 → 13 → 14 → 15
 | 9. Side-by-Side Results & Highlighting | v1.1 | 2/2 | Complete | 2026-03-09 |
 | 10. Mock Auth & Editable Essay | v1.1 | 2/2 | Complete | 2026-03-09 |
 | 11. Backend Foundation | v2.0 | 2/2 | Complete | 2026-03-09 |
-| 12. Authentication | 1/2 | In Progress|  | - |
+| 12. Authentication | 2/2 | Complete   | 2026-03-09 | - |
 | 13. LLM Inference & Grading | v2.0 | 0/? | Not started | - |
 | 14. Persistence & History | v2.0 | 0/? | Not started | - |
 | 15. Frontend Integration | v2.0 | 0/? | Not started | - |
