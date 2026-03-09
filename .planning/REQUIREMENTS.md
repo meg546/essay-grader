@@ -51,8 +51,8 @@
 
 - [x] **LAYOUT-01**: Home page displays hero section with app title, description, and grading input area on a single page
 - [x] **LAYOUT-02**: Hero section collapses to a minimal bar when user focuses on the essay input textarea
-- [ ] **LAYOUT-03**: After grading, results display in side-by-side layout with essay on left and feedback/scores on right
-- [ ] **LAYOUT-04**: Side-by-side layout stacks vertically on tablet breakpoints (<1024px)
+- [x] **LAYOUT-03**: After grading, results display in side-by-side layout with essay on left and feedback/scores on right
+- [x] **LAYOUT-04**: Side-by-side layout stacks vertically on tablet breakpoints (<1024px)
 - [x] **NAV-01**: Navigation has two tabs: Home and Profile
 - [x] **NAV-02**: Home tab navigates to the combined grading page, Profile tab to profile/auth page
 
@@ -60,9 +60,9 @@
 
 - [x] **HLGT-01**: Mock API responses include highlight ranges (start, end, categoryId) mapping feedback to essay passages
 - [x] **HLGT-02**: Essay passages are always color-coded by feedback category in the results view
-- [ ] **HLGT-03**: Clicking a feedback card scrolls the essay panel to the relevant highlighted passage
+- [x] **HLGT-03**: Clicking a feedback card scrolls the essay panel to the relevant highlighted passage
 - [x] **HLGT-04**: Category color legend is visible with toggles to show/hide highlighting per category
-- [ ] **HLGT-05**: Hovering a feedback card pulses/intensifies the corresponding essay highlight, and vice versa
+- [x] **HLGT-05**: Hovering a feedback card pulses/intensifies the corresponding essay highlight, and vice versa
 
 ### Editing
 
@@ -103,15 +103,15 @@
 |-------------|-------|--------|
 | LAYOUT-01 | Phase 8 | Complete |
 | LAYOUT-02 | Phase 8 | Complete |
-| LAYOUT-03 | Phase 9 | Pending |
-| LAYOUT-04 | Phase 9 | Pending |
+| LAYOUT-03 | Phase 9 | Complete |
+| LAYOUT-04 | Phase 9 | Complete |
 | NAV-01 | Phase 7 | Complete |
 | NAV-02 | Phase 7 | Complete |
 | HLGT-01 | Phase 7 | Complete |
 | HLGT-02 | Phase 9 | Complete |
-| HLGT-03 | Phase 9 | Pending |
+| HLGT-03 | Phase 9 | Complete |
 | HLGT-04 | Phase 9 | Complete |
-| HLGT-05 | Phase 9 | Pending |
+| HLGT-05 | Phase 9 | Complete |
 | EDIT-01 | Phase 10 | Pending |
 | EDIT-02 | Phase 10 | Pending |
 | EDIT-03 | Phase 10 | Pending |
