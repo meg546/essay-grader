@@ -137,10 +137,10 @@ Plans:
   1. User sees hero section with app title, description, and grading inputs on the home page
   2. Hero collapses to a minimal bar when user focuses on the essay input textarea
   3. Hero remains collapsed while user is actively working in the grading area
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 08-01: TBD
+- [ ] 08-01-PLAN.md — Install Motion, create HeroSection, integrate collapsible hero into GradingPage
 
 ### Phase 9: Side-by-Side Results & Highlighting
 **Goal**: Users see grading feedback in direct context with their essay text, with visual links between feedback and passages
