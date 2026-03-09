@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: UX Redesign
-status: completed
-stopped_at: Completed 09-02-PLAN.md
-last_updated: "2026-03-09T17:20:10.345Z"
-last_activity: 2026-03-09 -- Completed 09-02 side-by-side layout with highlight interactions
+status: executing
+stopped_at: Completed 10-01-PLAN.md
+last_updated: "2026-03-09T17:38:28.415Z"
+last_activity: 2026-03-09 -- Completed 10-01 mock auth with email+password sign-in
 progress:
   total_phases: 10
-  completed_phases: 7
-  total_plans: 11
-  completed_plans: 11
+  completed_phases: 8
+  total_plans: 13
+  completed_plans: 13
 ---
 
 # Project State
@@ -20,23 +20,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Users can submit an essay with a rubric and immediately see clear, rubric-aligned scores with structured feedback and highlighted essay passages
-**Current focus:** Phase 9 - Side-by-Side Results & Highlighting
+**Current focus:** Phase 10 - Mock Auth & Editable Essay
 
 ## Current Position
 
-Phase: 9 of 10 (Side-by-Side Results & Highlighting) -- COMPLETE
-Plan: 2 of 2 in current phase (all plans complete)
-Status: Phase 09 complete
-Last activity: 2026-03-09 -- Completed 09-02 side-by-side layout with highlight interactions
+Phase: 10 of 10 (Mock Auth & Editable Essay)
+Plan: 1 of 2 in current phase (10-01 complete)
+Status: Phase 10 in progress
+Last activity: 2026-03-09 -- Completed 10-01 mock auth with email+password sign-in
 
-Progress (v1.1): [██████████] 100%
+Progress (v1.1): [█████████░] 92%
 
 ## Performance Metrics
 
 **Velocity (from v1.0):**
-- Total plans completed: 6
-- Average duration: 2.2min
-- Total execution time: 0.21 hours
+- Total plans completed: 7
+- Average duration: 2.0min
+- Total execution time: 0.23 hours
 
 *Updated after each plan completion*
 
@@ -61,6 +61,11 @@ Progress (v1.1): [██████████] 100%
 - [Phase 09]: Individual highlight hover (not category-wide) for essay mark emphasis
 - [Phase 09]: Tooltip on highlight hover showing category feedback rather than auto-scroll to card
 - [Phase 09]: activeHighlightId added to context for per-highlight tracking separate from activeCategoryId
+- [Phase 10]: Validation runs after delay (server-side style) for realistic async UX
+- [Phase 10]: partialize in Zustand persist to exclude transient isSigningIn from localStorage
+- [Phase 10]: HighlightProvider keyed by result.id for clean re-mount on re-grade
+- [Phase 10]: Essay text synced from result via useEffect, edited in app store
+- [Phase 10]: Validation runs after delay (server-side style) for realistic async UX
 
 ### Pending Todos
 
@@ -72,6 +77,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T05:02:21.646Z
-Stopped at: Completed 09-02-PLAN.md
+Last session: 2026-03-09T17:38:26.275Z
+Stopped at: Completed 10-01-PLAN.md
 Resume file: None

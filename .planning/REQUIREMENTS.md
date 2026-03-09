@@ -66,16 +66,16 @@
 
 ### Editing
 
-- [ ] **EDIT-01**: User can edit essay text in the results view left panel
-- [ ] **EDIT-02**: User can resubmit edited essay for re-grading without navigating away
-- [ ] **EDIT-03**: During re-grading, results panel shows loading state while essay remains visible
+- [x] **EDIT-01**: User can edit essay text in the results view left panel
+- [x] **EDIT-02**: User can resubmit edited essay for re-grading without navigating away
+- [x] **EDIT-03**: During re-grading, results panel shows loading state while essay remains visible
 
 ### Authentication
 
-- [ ] **AUTH-01**: Profile page shows email+password sign-in form when user is not authenticated
-- [ ] **AUTH-02**: Mock sign-in validates email format and password length, simulates async delay
-- [ ] **AUTH-03**: After sign-in, profile page displays settings and history (existing functionality)
-- [ ] **AUTH-04**: User can sign out, returning to the sign-in form
+- [x] **AUTH-01**: Profile page shows email+password sign-in form when user is not authenticated
+- [x] **AUTH-02**: Mock sign-in validates email format and password length, simulates async delay
+- [x] **AUTH-03**: After sign-in, profile page displays settings and history (existing functionality)
+- [x] **AUTH-04**: User can sign out, returning to the sign-in form
 
 ## Future Requirements
 
@@ -112,13 +112,13 @@
 | HLGT-03 | Phase 9 | Complete |
 | HLGT-04 | Phase 9 | Complete |
 | HLGT-05 | Phase 9 | Complete |
-| EDIT-01 | Phase 10 | Pending |
-| EDIT-02 | Phase 10 | Pending |
-| EDIT-03 | Phase 10 | Pending |
-| AUTH-01 | Phase 10 | Pending |
-| AUTH-02 | Phase 10 | Pending |
-| AUTH-03 | Phase 10 | Pending |
-| AUTH-04 | Phase 10 | Pending |
+| EDIT-01 | Phase 10 | Complete |
+| EDIT-02 | Phase 10 | Complete |
+| EDIT-03 | Phase 10 | Complete |
+| AUTH-01 | Phase 10 | Complete |
+| AUTH-02 | Phase 10 | Complete |
+| AUTH-03 | Phase 10 | Complete |
+| AUTH-04 | Phase 10 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 18 total

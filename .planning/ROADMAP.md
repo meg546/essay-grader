@@ -110,7 +110,7 @@ Plans:
 - [ ] **Phase 7: Data Contracts & Route Restructure** - Mock API highlight schema, two-tab navigation, layout width fix
 - [ ] **Phase 8: Collapsible Hero & Grading Workspace** - Combined home/grade page with hero that collapses on input focus
 - [x] **Phase 9: Side-by-Side Results & Highlighting** - Two-column results layout with always-on color-coded essay highlighting (completed 2026-03-09)
-- [ ] **Phase 10: Mock Auth & Editable Essay** - Email/password sign-in on profile, editable essay with resubmit from results view
+- [x] **Phase 10: Mock Auth & Editable Essay** - Email/password sign-in on profile, editable essay with resubmit from results view (completed 2026-03-09)
 
 ## Phase Details
 
@@ -191,4 +191,4 @@ v1.1: 7 -> 8 -> 9 -> 10
 | 7. Data Contracts & Route Restructure | v1.1 | 0/2 | Not started | - |
 | 8. Collapsible Hero & Grading Workspace | v1.1 | 1/1 | Complete | 2026-03-09 |
 | 9. Side-by-Side Results & Highlighting | 2/2 | Complete   | 2026-03-09 | - |
-| 10. Mock Auth & Editable Essay | v1.1 | 0/2 | Not started | - |
+| 10. Mock Auth & Editable Essay | 2/2 | Complete   | 2026-03-09 | - |
