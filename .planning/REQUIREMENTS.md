@@ -101,30 +101,30 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LAYOUT-01 | TBD | Pending |
-| LAYOUT-02 | TBD | Pending |
-| LAYOUT-03 | TBD | Pending |
-| LAYOUT-04 | TBD | Pending |
-| NAV-01 | TBD | Pending |
-| NAV-02 | TBD | Pending |
-| HLGT-01 | TBD | Pending |
-| HLGT-02 | TBD | Pending |
-| HLGT-03 | TBD | Pending |
-| HLGT-04 | TBD | Pending |
-| HLGT-05 | TBD | Pending |
-| EDIT-01 | TBD | Pending |
-| EDIT-02 | TBD | Pending |
-| EDIT-03 | TBD | Pending |
-| AUTH-01 | TBD | Pending |
-| AUTH-02 | TBD | Pending |
-| AUTH-03 | TBD | Pending |
-| AUTH-04 | TBD | Pending |
+| LAYOUT-01 | Phase 8 | Pending |
+| LAYOUT-02 | Phase 8 | Pending |
+| LAYOUT-03 | Phase 9 | Pending |
+| LAYOUT-04 | Phase 9 | Pending |
+| NAV-01 | Phase 7 | Pending |
+| NAV-02 | Phase 7 | Pending |
+| HLGT-01 | Phase 7 | Pending |
+| HLGT-02 | Phase 9 | Pending |
+| HLGT-03 | Phase 9 | Pending |
+| HLGT-04 | Phase 9 | Pending |
+| HLGT-05 | Phase 9 | Pending |
+| EDIT-01 | Phase 10 | Pending |
+| EDIT-02 | Phase 10 | Pending |
+| EDIT-03 | Phase 10 | Pending |
+| AUTH-01 | Phase 10 | Pending |
+| AUTH-02 | Phase 10 | Pending |
+| AUTH-03 | Phase 10 | Pending |
+| AUTH-04 | Phase 10 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 18 total
-- Mapped to phases: 0
-- Unmapped: 18 ⚠️
+- Mapped to phases: 18
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-08*
-*Last updated: 2026-03-08 after v1.1 milestone definition*
+*Last updated: 2026-03-08 after v1.1 roadmap creation*

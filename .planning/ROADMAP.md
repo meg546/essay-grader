@@ -1,8 +1,9 @@
 # Roadmap: AI Essay Grader
 
-## Overview
+## Milestones
 
-This roadmap delivers a React/TypeScript frontend for AI-powered essay grading. The journey moves bottom-up through the dependency chain: types and mock API first, then the input experience (essay + rubric), then submission mechanics, then results display, and finally history and landing page. Each phase delivers a coherent, verifiable capability that builds on the previous one.
+- v1.0 MVP - Phases 1-6 (shipped)
+- v1.1 UX Redesign - Phases 7-10 (in progress)
 
 ## Phases
 
@@ -12,14 +13,15 @@ This roadmap delivers a React/TypeScript frontend for AI-powered essay grading. 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & API Layer** - Project scaffolding, design system, mock API with typed contracts, routing, and responsive layout shell
-- [ ] **Phase 2: Essay Input & Rubric Editor** - Complete input experience: essay textarea, file upload with PDF extraction, and fully editable rubric
-- [x] **Phase 3: Submission Flow** - Submit essay + rubric for grading with loading state and redirect to results (completed 2026-03-08)
-- [ ] **Phase 4: Results Display** - Per-category scores, color-coded bars, structured feedback, and aggregate scoring
-- [ ] **Phase 5: History, Landing & Polish** - Submission history table, landing page, and dark mode toggle
-- [ ] **Phase 6: E2E Testing** - Comprehensive Playwright end-to-end tests covering all success criteria from phases 1-5
+<details>
+<summary>v1.0 MVP (Phases 1-6) - SHIPPED</summary>
 
-## Phase Details
+- [x] **Phase 1: Foundation & API Layer** - Project scaffolding, design system, mock API with typed contracts, routing, and responsive layout shell
+- [x] **Phase 2: Essay Input & Rubric Editor** - Complete input experience: essay textarea, file upload with PDF extraction, and fully editable rubric
+- [x] **Phase 3: Submission Flow** - Submit essay + rubric for grading with loading state and redirect to results
+- [x] **Phase 4: Results Display** - Per-category scores, color-coded bars, structured feedback, and aggregate scoring
+- [x] **Phase 5: History, Landing & Polish** - Submission history table, landing page, and dark mode toggle
+- [x] **Phase 6: E2E Testing** - Comprehensive Playwright end-to-end tests covering all success criteria from phases 1-5
 
 ### Phase 1: Foundation & API Layer
 **Goal**: Developers have a fully scaffolded, styled project with typed mock API functions, routing between all pages, and a responsive layout shell that establishes the visual identity
@@ -33,8 +35,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Scaffold project, design system, layout shell, routing, and skeleton placeholder pages
-- [ ] 01-02-PLAN.md — Typed mock API service layer with simulated delays and Zustand store
+- [x] 01-01-PLAN.md
+- [x] 01-02-PLAN.md
 
 ### Phase 2: Essay Input & Rubric Editor
 **Goal**: Users can compose or upload an essay and customize a grading rubric, completing the entire input side of the grading workflow
@@ -49,8 +51,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Install dependencies, extend Zustand store with essay/rubric state, create PDF extraction utility
-- [ ] 02-02-PLAN.md — Build EssayInput, RubricEditor, RubricCategoryRow components and compose GradingPage
+- [x] 02-01-PLAN.md
+- [x] 02-02-PLAN.md
 
 ### Phase 3: Submission Flow
 **Goal**: Users can submit their essay and rubric for grading and experience a polished loading-to-results transition
@@ -63,7 +65,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 03-01-PLAN.md — Wire submit button to mock API with loading spinner, input locking, and results redirect
+- [x] 03-01-PLAN.md
 
 ### Phase 4: Results Display
 **Goal**: Users can read and understand their grading results through clear scores, color-coded visualizations, and structured per-category feedback
@@ -77,52 +79,117 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 04-01-PLAN.md — Score utilities, color-coded score bars, summary card, and collapsible per-category feedback
+- [x] 04-01-PLAN.md
 
 ### Phase 5: History, Landing & Polish
 **Goal**: Users have a complete application with a welcoming landing page, browsable submission history, and dark mode support
 **Depends on**: Phase 4
 **Requirements**: HIST-01, HIST-02, NAVL-01, NAVL-03
-**Success Criteria** (what must be TRUE):
-  1. User sees a landing page with project description and a clear "Start Grading" call-to-action that navigates to the grading page
-  2. User can view a submission history table showing 5-8 past graded essays with key metadata (title, date, score)
-  3. User can click any history row to navigate to and view that submission's full results
-  4. User can toggle dark mode and see the entire UI switch to a dark color scheme
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
+- [x] 05-01-PLAN.md
+- [x] 05-02-PLAN.md
 
 ### Phase 6: E2E Testing
 **Goal**: Comprehensive Playwright end-to-end test suite that automatically verifies all user-facing success criteria from phases 1-5
 **Depends on**: Phase 5
 **Requirements**: TEST-01, TEST-02, TEST-03, TEST-04, TEST-05
+**Plans**: 2 plans
+
+Plans:
+- [x] 06-01-PLAN.md
+- [x] 06-02-PLAN.md
+
+</details>
+
+### v1.1 UX Redesign (In Progress)
+
+**Milestone Goal:** Transform the app into a polished, single-page grading experience with combined home/grade view, side-by-side results with essay highlighting, and mock authentication.
+
+- [ ] **Phase 7: Data Contracts & Route Restructure** - Mock API highlight schema, two-tab navigation, layout width fix
+- [ ] **Phase 8: Collapsible Hero & Grading Workspace** - Combined home/grade page with hero that collapses on input focus
+- [ ] **Phase 9: Side-by-Side Results & Highlighting** - Two-column results layout with always-on color-coded essay highlighting
+- [ ] **Phase 10: Mock Auth & Editable Essay** - Email/password sign-in on profile, editable essay with resubmit from results view
+
+## Phase Details
+
+### Phase 7: Data Contracts & Route Restructure
+**Goal**: The app's data layer and navigation are ready for all v1.1 features
+**Depends on**: Phase 6 (v1.0 complete)
+**Requirements**: HLGT-01, NAV-01, NAV-02
 **Success Criteria** (what must be TRUE):
-  1. Playwright is installed and configured with `npm run test:e2e` running the full suite
-  2. Navigation tests verify all 4 routes are accessible and header nav works
-  3. Input tests verify essay paste with word count, file upload, and rubric editing (add/remove/rename/reset)
-  4. Submission flow tests verify loading state appears and redirect to results occurs
-  5. Results tests verify score bars, aggregate score, summary paragraph, and collapsible feedback sections
-  6. History tests verify table renders mock entries and clicking a row navigates to results
-  7. Dark mode test verifies toggle switches the UI theme
-  8. All tests pass in CI-compatible headless mode
+  1. Mock API grading responses include highlight ranges (start, end, categoryId) for every feedback category
+  2. Navigation shows exactly two tabs: Home and Profile
+  3. Home tab loads the combined grading page; Profile tab loads the profile/auth page
+  4. Layout container no longer constrains width at 960px (side-by-side layout unblocked)
 **Plans**: TBD
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
+- [ ] 07-01: TBD
+- [ ] 07-02: TBD
+
+### Phase 8: Collapsible Hero & Grading Workspace
+**Goal**: Users experience a seamless single-page flow from landing to grading
+**Depends on**: Phase 7
+**Requirements**: LAYOUT-01, LAYOUT-02
+**Success Criteria** (what must be TRUE):
+  1. User sees hero section with app title, description, and grading inputs on the home page
+  2. Hero collapses to a minimal bar when user focuses on the essay input textarea
+  3. Hero remains collapsed while user is actively working in the grading area
+**Plans**: TBD
+
+Plans:
+- [ ] 08-01: TBD
+
+### Phase 9: Side-by-Side Results & Highlighting
+**Goal**: Users see grading feedback in direct context with their essay text, with visual links between feedback and passages
+**Depends on**: Phase 7, Phase 8
+**Requirements**: LAYOUT-03, LAYOUT-04, HLGT-02, HLGT-03, HLGT-04, HLGT-05
+**Success Criteria** (what must be TRUE):
+  1. After grading, essay displays on the left and feedback/scores display on the right in a two-column layout
+  2. Side-by-side layout stacks vertically on screens narrower than 1024px
+  3. Essay passages are always color-coded by feedback category (no click/hover required to see highlights)
+  4. Clicking a feedback card scrolls the essay panel to the corresponding highlighted passage
+  5. Hovering a feedback card pulses the corresponding highlight (and vice versa), with a visible color legend and per-category toggles
+**Plans**: TBD
+
+Plans:
+- [ ] 09-01: TBD
+- [ ] 09-02: TBD
+- [ ] 09-03: TBD
+
+### Phase 10: Mock Auth & Editable Essay
+**Goal**: Users can sign in with mock credentials and edit/resubmit essays without leaving the results view
+**Depends on**: Phase 8, Phase 9
+**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04, EDIT-01, EDIT-02, EDIT-03
+**Success Criteria** (what must be TRUE):
+  1. Profile page shows an email/password sign-in form when user is not authenticated
+  2. Mock sign-in validates format, simulates delay, and on success shows profile settings and history
+  3. User can sign out from the profile page, returning to the sign-in form
+  4. User can edit the essay text in the results view left panel and resubmit for re-grading without navigating away
+  5. During re-grading, the results panel shows a loading state while the essay remains visible and editable
+**Plans**: TBD
+
+Plans:
+- [ ] 10-01: TBD
+- [ ] 10-02: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
+v1.0: 1 -> 2 -> 3 -> 4 -> 5 -> 6 (complete)
+v1.1: 7 -> 8 -> 9 -> 10
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Foundation & API Layer | 2/2 | Complete | 2026-03-08 |
-| 2. Essay Input & Rubric Editor | 0/2 | Planning complete | - |
-| 3. Submission Flow | 1/1 | Complete   | 2026-03-08 |
-| 4. Results Display | 0/1 | Planning complete | - |
-| 5. History, Landing & Polish | 0/? | Not started | - |
-| 6. E2E Testing | 0/? | Not started | - |
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1. Foundation & API Layer | v1.0 | 2/2 | Complete | 2026-03-08 |
+| 2. Essay Input & Rubric Editor | v1.0 | 2/2 | Complete | 2026-03-08 |
+| 3. Submission Flow | v1.0 | 1/1 | Complete | 2026-03-08 |
+| 4. Results Display | v1.0 | 1/1 | Complete | 2026-03-08 |
+| 5. History, Landing & Polish | v1.0 | 2/2 | Complete | 2026-03-08 |
+| 6. E2E Testing | v1.0 | 2/2 | Complete | 2026-03-08 |
+| 7. Data Contracts & Route Restructure | v1.1 | 0/2 | Not started | - |
+| 8. Collapsible Hero & Grading Workspace | v1.1 | 0/1 | Not started | - |
+| 9. Side-by-Side Results & Highlighting | v1.1 | 0/3 | Not started | - |
+| 10. Mock Auth & Editable Essay | v1.1 | 0/2 | Not started | - |
