@@ -4,17 +4,27 @@ export interface GradeEssayRequest {
   gradeLevel: string;
 }
 
+export interface HighlightRange {
+  start: number;
+  end: number;
+  categoryId: string;
+  type: "strength" | "improvement";
+}
+
 export interface CategoryScore {
+  id: string;
   name: string;
   score: number;
   maxScore: number;
   strengths: string[];
   improvements: string[];
   justification: string;
+  highlights: HighlightRange[];
 }
 
 export interface GradingResult {
   id: string;
+  essayText: string;
   essayExcerpt: string;
   overallScore: number;
   maxScore: number;
