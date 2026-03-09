@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { HeroSection } from "@/components/grading/HeroSection";
@@ -28,9 +28,18 @@ export function GradingPage() {
   const [isRegrading, setIsRegrading] = useState(false);
   const [heroCollapsed, setHeroCollapsed] = useState(essayText !== "");
 
-  const handleEssayFocus = useCallback(() => {
-    setHeroCollapsed(true);
-  }, []);
+  useEffect(() => {
+    if (heroCollapsed) return;
+
+    function onScroll() {
+      if (window.scrollY > 50) {
+        setHeroCollapsed(true);
+      }
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [heroCollapsed]);
 
   const isSubmitDisabled = essayText.trim() === "" || isGrading;
 
@@ -113,7 +122,7 @@ export function GradingPage() {
       </AnimatePresence>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <EssayInput onFocus={handleEssayFocus} disabled={isGrading} />
+        <EssayInput disabled={isGrading} />
         <RubricUpload disabled={isGrading} />
       </div>
 
