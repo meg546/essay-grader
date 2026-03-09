@@ -152,12 +152,11 @@ Plans:
   3. Essay passages are always color-coded by feedback category (no click/hover required to see highlights)
   4. Clicking a feedback card scrolls the essay panel to the corresponding highlighted passage
   5. Hovering a feedback card pulses the corresponding highlight (and vice versa), with a visible color legend and per-category toggles
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 09-01: TBD
-- [ ] 09-02: TBD
-- [ ] 09-03: TBD
+- [ ] 09-01-PLAN.md — Highlight utilities, context, HighlightedEssay and ColorLegend components
+- [ ] 09-02-PLAN.md — Split-pane layout, panel components, interaction wiring into GradingPage
 
 ### Phase 10: Mock Auth & Editable Essay
 **Goal**: Users can sign in with mock credentials and edit/resubmit essays without leaving the results view
@@ -191,5 +190,5 @@ v1.1: 7 -> 8 -> 9 -> 10
 | 6. E2E Testing | v1.0 | 2/2 | Complete | 2026-03-08 |
 | 7. Data Contracts & Route Restructure | v1.1 | 0/2 | Not started | - |
 | 8. Collapsible Hero & Grading Workspace | v1.1 | 1/1 | Complete | 2026-03-09 |
-| 9. Side-by-Side Results & Highlighting | v1.1 | 0/3 | Not started | - |
+| 9. Side-by-Side Results & Highlighting | v1.1 | 0/2 | Not started | - |
 | 10. Mock Auth & Editable Essay | v1.1 | 0/2 | Not started | - |
