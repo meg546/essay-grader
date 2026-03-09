@@ -1,9 +1,9 @@
 # Requirements: AI Essay Grader
 
 **Defined:** 2026-03-08
-**Core Value:** Instructors can submit an essay with a rubric and immediately see clear, rubric-aligned scores with structured feedback
+**Core Value:** Users can submit an essay with a rubric and immediately see clear, rubric-aligned scores with structured feedback and highlighted essay passages
 
-## v1 Requirements
+## v1.0 Requirements (Complete)
 
 ### Essay Input
 
@@ -33,100 +33,98 @@
 - [x] **RSLT-03**: User sees aggregate/total score
 - [x] **RSLT-04**: User can expand/collapse per-category feedback sections (strengths, improvements, justification)
 
-### History
-
-- [ ] **HIST-01**: User can view submission history table with past graded essays
-- [ ] **HIST-02**: User can click a history row to view its full results
-
-### Navigation & Layout
-
-- [ ] **NAVL-01**: User sees landing page with project description and "Start Grading" CTA
-- [x] **NAVL-02**: User can navigate between landing, grading, results, and history pages
-- [ ] **NAVL-03**: User can toggle dark mode
-- [x] **NAVL-04**: UI is responsive down to tablet (768px)
-- [x] **NAVL-05**: UI has clean, professional, education-focused design with calm color palette
-
 ### API Layer
 
 - [x] **API-01**: All backend interactions use typed async functions returning mock data
 - [x] **API-02**: Mock data includes simulated delays for realistic feel
 - [x] **API-03**: API layer is structured so swapping to real Axios calls requires only changing function bodies
 
-### E2E Testing
+### Navigation & Layout
 
-- [ ] **TEST-01**: Playwright is configured with `npm run test:e2e` running the full suite in headless mode
-- [ ] **TEST-02**: E2E tests verify navigation between all routes and responsive layout
-- [ ] **TEST-03**: E2E tests verify essay input (paste, upload) and rubric editing (add/remove/rename/reset)
-- [ ] **TEST-04**: E2E tests verify submission flow (loading state, redirect) and results display (scores, feedback, summary)
-- [ ] **TEST-05**: E2E tests verify history table interaction and dark mode toggle
+- [x] **NAVL-02**: User can navigate between pages
+- [x] **NAVL-04**: UI is responsive down to tablet (768px)
+- [x] **NAVL-05**: UI has clean, professional, education-focused design with calm color palette
 
-## v2 Requirements
+## v1.1 Requirements
 
-### Differentiators
+### Layout & Navigation
 
-- **DIFF-01**: Rubric templates/presets for common essay types (argumentative, narrative, expository, research)
-- **DIFF-02**: Side-by-side essay + feedback view on results page
-- **DIFF-03**: Feedback tone selector (encouraging/balanced/critical)
-- **DIFF-04**: PDF export of results (functional, not placeholder)
-- **DIFF-05**: Inline text highlighting with feedback annotations (requires real AI span data)
-- **DIFF-06**: Score comparison/analytics visualization
-- **DIFF-07**: Batch/multi-essay upload
+- [ ] **LAYOUT-01**: Home page displays hero section with app title, description, and grading input area on a single page
+- [ ] **LAYOUT-02**: Hero section collapses to a minimal bar when user focuses on the essay input textarea
+- [ ] **LAYOUT-03**: After grading, results display in side-by-side layout with essay on left and feedback/scores on right
+- [ ] **LAYOUT-04**: Side-by-side layout stacks vertically on tablet breakpoints (<1024px)
+- [ ] **NAV-01**: Navigation has two tabs: Home and Profile
+- [ ] **NAV-02**: Home tab navigates to the combined grading page, Profile tab to profile/auth page
+
+### Text Highlighting
+
+- [ ] **HLGT-01**: Mock API responses include highlight ranges (start, end, categoryId) mapping feedback to essay passages
+- [ ] **HLGT-02**: Essay passages are always color-coded by feedback category in the results view
+- [ ] **HLGT-03**: Clicking a feedback card scrolls the essay panel to the relevant highlighted passage
+- [ ] **HLGT-04**: Category color legend is visible with toggles to show/hide highlighting per category
+- [ ] **HLGT-05**: Hovering a feedback card pulses/intensifies the corresponding essay highlight, and vice versa
+
+### Editing
+
+- [ ] **EDIT-01**: User can edit essay text in the results view left panel
+- [ ] **EDIT-02**: User can resubmit edited essay for re-grading without navigating away
+- [ ] **EDIT-03**: During re-grading, results panel shows loading state while essay remains visible
+
+### Authentication
+
+- [ ] **AUTH-01**: Profile page shows email+password sign-in form when user is not authenticated
+- [ ] **AUTH-02**: Mock sign-in validates email format and password length, simulates async delay
+- [ ] **AUTH-03**: After sign-in, profile page displays settings and history (existing functionality)
+- [ ] **AUTH-04**: User can sign out, returning to the sign-in form
+
+## Future Requirements
+
+- **POLISH-01**: Highlight intensity varies by feedback severity
+- **POLISH-02**: Smooth hero collapse animation with transform/opacity transitions
+- **POLISH-03**: Dark mode toggle support
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Authentication / user accounts | Not needed for course project demo |
-| Actual AI model integration | Backend developed separately (FastAPI + Llama 3.2 3B) |
-| Plagiarism detection | Different domain entirely, not part of grading scope |
-| Student-facing portal | This is an instructor tool; students receive feedback via other means |
-| Real-time collaborative editing | Enormous complexity, not relevant to grading workflow |
-| Analytics dashboard | Meaningless with mock data; defer to real backend |
-| Mobile-optimized layout | Essay grading workflow requires tablet minimum (768px) |
-| Docker / deployment setup | Comes later, not part of frontend deliverable |
-| Multi-language support | English only for course project |
+| Real OAuth / social login | Massive complexity for demo app; mock auth sufficient |
+| Resizable / draggable split panes | Unnecessary complexity; fixed split sufficient for grading |
+| Rich text editing (bold, italic, toolbar) | Grading evaluates plain text; no formatting needed |
+| Character-level inline comments | Too complex; passage-level highlighting achieves 80% of UX value |
+| Plagiarism / AI detection scoring | Different product domain |
+| PDF export of results | Disproportionate effort for demo value |
+| Mobile layout (<768px) | Side-by-side fundamentally requires wider viewports |
+| Actual AI model integration | Backend developed separately |
+| Database / persistent storage | Mock data only |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INPT-01 | Phase 2 | Complete |
-| INPT-02 | Phase 2 | Complete |
-| INPT-03 | Phase 2 | Complete |
-| INPT-04 | Phase 2 | Complete |
-| RUBR-01 | Phase 2 | Complete |
-| RUBR-02 | Phase 2 | Complete |
-| RUBR-03 | Phase 2 | Complete |
-| RUBR-04 | Phase 2 | Complete |
-| RUBR-05 | Phase 2 | Complete |
-| SUBM-01 | Phase 3 | Complete |
-| SUBM-02 | Phase 3 | Complete |
-| SUBM-03 | Phase 3 | Complete |
-| RSLT-01 | Phase 4 | Complete |
-| RSLT-02 | Phase 4 | Complete |
-| RSLT-03 | Phase 4 | Complete |
-| RSLT-04 | Phase 4 | Complete |
-| HIST-01 | Phase 5 | Pending |
-| HIST-02 | Phase 5 | Pending |
-| NAVL-01 | Phase 5 | Pending |
-| NAVL-02 | Phase 1 | Complete |
-| NAVL-03 | Phase 5 | Pending |
-| NAVL-04 | Phase 1 | Complete |
-| NAVL-05 | Phase 1 | Complete |
-| API-01 | Phase 1 | Complete |
-| API-02 | Phase 1 | Complete |
-| API-03 | Phase 1 | Complete |
-| TEST-01 | Phase 6 | Pending |
-| TEST-02 | Phase 6 | Pending |
-| TEST-03 | Phase 6 | Pending |
-| TEST-04 | Phase 6 | Pending |
-| TEST-05 | Phase 6 | Pending |
+| LAYOUT-01 | TBD | Pending |
+| LAYOUT-02 | TBD | Pending |
+| LAYOUT-03 | TBD | Pending |
+| LAYOUT-04 | TBD | Pending |
+| NAV-01 | TBD | Pending |
+| NAV-02 | TBD | Pending |
+| HLGT-01 | TBD | Pending |
+| HLGT-02 | TBD | Pending |
+| HLGT-03 | TBD | Pending |
+| HLGT-04 | TBD | Pending |
+| HLGT-05 | TBD | Pending |
+| EDIT-01 | TBD | Pending |
+| EDIT-02 | TBD | Pending |
+| EDIT-03 | TBD | Pending |
+| AUTH-01 | TBD | Pending |
+| AUTH-02 | TBD | Pending |
+| AUTH-03 | TBD | Pending |
+| AUTH-04 | TBD | Pending |
 
 **Coverage:**
-- v1 requirements: 31 total
-- Mapped to phases: 31
-- Unmapped: 0
+- v1.1 requirements: 18 total
+- Mapped to phases: 0
+- Unmapped: 18 ⚠️
 
 ---
 *Requirements defined: 2026-03-08*
-*Last updated: 2026-03-08 after roadmap creation*
+*Last updated: 2026-03-08 after v1.1 milestone definition*
