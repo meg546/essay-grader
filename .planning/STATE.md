@@ -5,7 +5,7 @@ milestone_name: null
 status: between_milestones
 stopped_at: Milestone v1.1 completed and archived
 last_updated: "2026-03-09"
-last_activity: 2026-03-09 -- Completed v1.1 UX Redesign milestone
+last_activity: 2026-03-09 -- Completed quick task 1 (scroll-dismissable hero)
 progress:
   total_phases: 10
   completed_phases: 10
@@ -56,5 +56,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Milestone v1.1 completed and archived
+Stopped at: Completed quick task 1 (scroll-dismissable hero with richer content)
 Resume file: None
