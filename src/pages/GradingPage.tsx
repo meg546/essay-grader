@@ -25,6 +25,7 @@ export function GradingPage() {
   const setRubricFile = useAppStore((s) => s.setRubricFile);
   const gradeLevel = useProfileStore((s) => s.gradeLevel);
   const [isGrading, setIsGrading] = useState(false);
+  const [isRegrading, setIsRegrading] = useState(false);
   const [heroCollapsed, setHeroCollapsed] = useState(essayText !== "");
 
   const handleEssayFocus = useCallback(() => {
@@ -50,6 +51,23 @@ export function GradingPage() {
     }
   }
 
+  async function handleRegrade() {
+    setIsRegrading(true);
+    try {
+      const result = await gradeEssay({
+        essayText,
+        rubricFile: rubricFile ?? undefined,
+        gradeLevel,
+      });
+      setCurrentResult(result);
+      addToHistory(result);
+    } catch {
+      toast.error("Re-grading failed. Please try again.");
+    } finally {
+      setIsRegrading(false);
+    }
+  }
+
   function handleReset() {
     clearCurrentResult();
     setEssayText("");
@@ -59,7 +77,7 @@ export function GradingPage() {
 
   if (currentResult) {
     return (
-      <HighlightProvider>
+      <HighlightProvider key={currentResult.id}>
         <div className="mx-auto max-w-[1400px] space-y-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">Grading Results</h1>
@@ -69,8 +87,8 @@ export function GradingPage() {
           </div>
           <ColorLegend categories={currentResult.categories} />
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <EssayPanel result={currentResult} />
-            <FeedbackPanel result={currentResult} />
+            <EssayPanel result={currentResult} onRegrade={handleRegrade} isRegrading={isRegrading} />
+            <FeedbackPanel result={currentResult} isLoading={isRegrading} />
           </div>
         </div>
       </HighlightProvider>
