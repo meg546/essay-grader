@@ -12,8 +12,8 @@ Requirements for backend implementation. Each maps to roadmap phases.
 - [x] **INFRA-01**: FastAPI project scaffold with async config, environment variables, and Uvicorn server
 - [x] **INFRA-02**: Docker Compose orchestrating FastAPI + PostgreSQL with health checks
 - [x] **INFRA-03**: CORS middleware configured for Vite dev server origin
-- [ ] **INFRA-04**: Pydantic response models matching frontend TypeScript types with camelCase alias generation
-- [ ] **INFRA-05**: Alembic migration setup with initial schema migration
+- [x] **INFRA-04**: Pydantic response models matching frontend TypeScript types with camelCase alias generation
+- [x] **INFRA-05**: Alembic migration setup with initial schema migration
 
 ### Authentication
 
@@ -88,8 +88,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-01 | Phase 11 | Complete |
 | INFRA-02 | Phase 11 | Complete |
 | INFRA-03 | Phase 11 | Complete |
-| INFRA-04 | Phase 11 | Pending |
-| INFRA-05 | Phase 11 | Pending |
+| INFRA-04 | Phase 11 | Complete |
+| INFRA-05 | Phase 11 | Complete |
 | AUTH-01 | Phase 12 | Pending |
 | AUTH-02 | Phase 12 | Pending |
 | AUTH-03 | Phase 12 | Pending |
