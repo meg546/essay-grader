@@ -106,7 +106,7 @@ export function ProfilePage() {
                   key={result.id}
                   onClick={() => {
                     setCurrentResult(result);
-                    navigate("/grade");
+                    navigate("/");
                   }}
                   className="flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors hover:bg-muted"
                 >
