@@ -11,7 +11,7 @@ from app.config import get_settings
 from app.models.base import Base
 
 # Import all model modules here so autogenerate can detect tables.
-# (No application models yet -- Phase 12+ will add them.)
+from app.models.user import User  # noqa: F401 -- registers table on Base.metadata
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

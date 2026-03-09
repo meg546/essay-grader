@@ -9,6 +9,9 @@ dependencies = [
     "asyncpg>=0.31.0",
     "fastapi[standard]>=0.135.1",
     "pydantic-settings>=2.13.1",
+    "pyjwt>=2.9.0",
+    "pwdlib[argon2,bcrypt]>=0.2.0",
+    "python-multipart>=0.0.18",
     "sqlalchemy[asyncio]>=2.0.48",
 ]
 
