@@ -23,6 +23,7 @@ interface TooltipInfo {
   hexColor: string;
   top: number;
   left: number;
+  placeBelow: boolean;
 }
 
 function getTooltipInfo(
@@ -39,14 +40,27 @@ function getTooltipInfo(
       ? category?.strengths ?? []
       : category?.improvements ?? [];
 
+  const rawTop = rect.top - containerRect.top - 4;
+  // If tooltip would overflow above the container, place it below the highlight instead
+  const top = rawTop < 60 ? rect.bottom - containerRect.top + 8 : rawTop;
+  const placeBelow = rawTop < 60;
+  const left = Math.max(
+    120,
+    Math.min(
+      rect.left - containerRect.left + rect.width / 2,
+      containerRect.width - 120,
+    ),
+  );
+
   return {
     segmentId: seg.id,
     categoryName: category?.name ?? "Unknown",
     type: seg.type,
     feedbackItems: items,
     hexColor: CATEGORY_HEX[colorIdx % CATEGORY_HEX.length],
-    top: rect.top - containerRect.top - 4,
-    left: rect.left - containerRect.left + rect.width / 2,
+    top,
+    left,
+    placeBelow,
   };
 }
 
@@ -110,7 +124,12 @@ export function HighlightedEssay({ result }: HighlightedEssayProps) {
     <div ref={containerRef} className="relative whitespace-pre-wrap text-sm leading-relaxed">
       {segments.map((seg, i) => {
         if (seg.kind === "text") {
-          return <span key={i}>{seg.text}</span>;
+          const textDimmed = activeHighlightId !== null || activeCategoryId !== null;
+          return (
+            <span key={i} className={cn("transition-opacity duration-200", textDimmed && "opacity-30")}>
+              {seg.text}
+            </span>
+          );
         }
 
         const colorIdx = colorMap.get(seg.categoryId) ?? 0;
@@ -145,7 +164,10 @@ export function HighlightedEssay({ result }: HighlightedEssayProps) {
 
       {tooltip && (
         <div
-          className="pointer-events-none absolute z-50 max-w-xs -translate-x-1/2 -translate-y-full rounded-md border bg-popover px-3 py-2 text-popover-foreground shadow-md"
+          className={cn(
+            "pointer-events-none absolute z-50 max-w-xs -translate-x-1/2 rounded-md border bg-popover px-3 py-2 text-popover-foreground shadow-md",
+            !tooltip.placeBelow && "-translate-y-full",
+          )}
           style={{ top: tooltip.top, left: tooltip.left }}
         >
           <div
