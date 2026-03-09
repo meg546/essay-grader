@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 
 Milestone: v1.1 UX Redesign -- COMPLETE (shipped 2026-03-09)
 Status: Between milestones
-Last activity: 2026-03-09 -- Completed v1.1 milestone (audit passed, archived)
+Last activity: 2026-03-09 -- Completed quick task 1: Scroll-dismissable hero with richer content
 
 Milestones shipped: v1.0 MVP, v1.1 UX Redesign
 
@@ -52,6 +52,12 @@ None.
 ### Blockers/Concerns
 
 None.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | Scroll-dismissable hero with richer content | 2026-03-09 | 52780d5 | [1-scroll-dismissable-hero-with-richer-cont](./quick/1-scroll-dismissable-hero-with-richer-cont/) |
 
 ## Session Continuity
 
