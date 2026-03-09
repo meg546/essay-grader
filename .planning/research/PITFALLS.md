@@ -1,256 +1,300 @@
-# Domain Pitfalls
+# Pitfalls Research
 
-**Domain:** UX redesign of React essay grading app (side-by-side layout, text highlighting, collapsible hero, mock auth)
-**Researched:** 2026-03-08
-**Confidence:** HIGH (pitfalls derived from direct codebase analysis against planned features)
+**Domain:** Adding FastAPI + LLM backend with auth, database, and Docker to existing React essay grading frontend
+**Researched:** 2026-03-09
+**Confidence:** HIGH
 
 ## Critical Pitfalls
 
-Mistakes that cause rewrites or major issues.
+### Pitfall 1: Event Loop Starvation from Blocking LLM Inference
 
-### Pitfall 1: max-w-[960px] Layout Container Blocks Side-by-Side Results
+**What goes wrong:**
+Llama 3.2 3B inference is a CPU/GPU-bound operation that takes seconds to tens of seconds. If the grading endpoint is declared `async def` and calls the inference library directly (e.g., `llama_cpp.create_completion()`), the single-threaded asyncio event loop freezes. No other requests -- health checks, auth, history queries -- can be served until inference completes. Under any concurrent load, the server becomes completely unresponsive and Uvicorn workers time out.
 
-**What goes wrong:** The current `Layout.tsx` wraps all page content in `max-w-[960px]`. A side-by-side view (essay left + feedback right) inside a 960px container leaves each pane at roughly 450px -- too narrow for readable essay text alongside detailed feedback cards with score bars and collapsible sections.
+**Why it happens:**
+Developers see FastAPI tutorials using `async def` everywhere and assume all handlers should be async. They call the blocking inference function inside an async handler without offloading it. Python's GIL means even threading has limits for CPU-bound work, compounding the problem.
 
-**Why it happens:** Developers add the split pane inside the existing layout without adjusting the container width, because the container is defined in a shared Layout component and changing it feels risky.
+**How to avoid:**
+- Since the project already plans configurable endpoints (local/LAN/cloud GPU), design the inference layer as an HTTP client call from the start. Use `httpx.AsyncClient` to call Ollama, vLLM, or a remote endpoint -- this is naturally non-blocking
+- If calling a local Python inference library directly, use `await run_in_threadpool(run_inference, prompt)` from Starlette
+- Simpler alternative: declare the grading handler as plain `def` (not `async def`) -- FastAPI auto-runs sync handlers in a threadpool
+- For production: use a dedicated inference server (Ollama or vLLM) as a separate service, called over HTTP
 
-**Consequences:** Essay text gets squeezed into a narrow column with excessive line wrapping. Feedback panel has horizontal overflow or truncated score bars. The "polished QuillBot-style" side-by-side goal is missed entirely.
+**Warning signs:**
+- Other API endpoints slow down when grading is in progress
+- Uvicorn logs: "Worker timed out" or SIGTERM errors
+- Health check endpoint fails during inference
 
-**Warning signs:** Essay pane feels like a sidebar rather than a primary reading area. Score bars in the feedback panel overflow or wrap awkwardly.
-
-**Prevention:** The grading results view must break out of the shared `max-w-[960px]` container. Either (a) the Layout component accepts a `wide` prop that conditionally uses `max-w-[1280px]` or removes the constraint, or (b) the results view renders outside the `<Outlet />` container via a portal or layout route restructure. The GradingPage already conditionally renders input vs. results (`if (currentResult)`) -- use that branch to switch layout width.
-
-**Detection:** Visually test at 1280px and 1440px viewport widths early. If either pane is under 500px usable width, the container is too narrow.
-
-**Phase:** Must be addressed at the very start of the side-by-side layout work -- before building any split-pane components.
-
----
-
-### Pitfall 2: Text Highlighting Breaks on Fuzzy/Partial String Matching
-
-**What goes wrong:** The mock API returns passage references (text snippets linked to feedback categories), but finding and highlighting those passages in the essay text fails silently. Whitespace differences, minor edits, or substring ambiguity (the same phrase appears twice) cause highlights to land on wrong text or not appear at all.
-
-**Why it happens:** Naive `string.indexOf()` matching is brittle. The essay text in the textarea and the passage strings from the API may differ in whitespace, line breaks, or Unicode normalization. The planned "editable essay with resubmit" feature makes this worse -- previously matched passages shift or disappear after edits.
-
-**Consequences:** Highlights are missing or misaligned. Users see feedback referencing passages with no corresponding highlight. Trust in the tool drops immediately.
-
-**Warning signs:** Highlights work perfectly with your handcrafted mock data but break when pasting real essays with varied formatting.
-
-**Prevention:**
-1. Design the mock API response to return character offset ranges (`{ start: number, end: number, categoryIndex: number }`) rather than raw text snippets. Offset-based highlighting is deterministic and avoids string matching entirely.
-2. The current `CategoryScore` type in `api/types.ts` has no passage reference fields at all -- this schema change is a prerequisite before any UI work.
-3. For the "editable essay with resubmit" feature, treat editing as invalidating existing highlights. Show a "Re-grade to update highlights" prompt rather than trying to dynamically recompute offsets after user edits.
-
-**Detection:** Test with essays containing repeated phrases, em-dashes vs. hyphens, smart quotes, and multi-line paragraphs early.
-
-**Phase:** Must be addressed during mock API type redesign, before building any highlight UI.
+**Phase to address:**
+Phase 1 (Backend Foundation) -- the inference abstraction must be non-blocking from day one. This is architectural and painful to retrofit.
 
 ---
 
-### Pitfall 3: Overlapping Highlights Create Visual Chaos
+### Pitfall 2: Mock-to-Real API Contract Mismatch (snake_case vs camelCase)
 
-**What goes wrong:** Multiple feedback categories reference overlapping or adjacent essay passages. With 4 categories color-coded simultaneously ("always-on" per requirements), overlapping regions become unreadable -- the innermost span's background color wins, creating inconsistent visual signals.
+**What goes wrong:**
+The existing React frontend has typed interfaces (`GradingResult`, `CategoryScore`, `HighlightRange` in `src/api/types.ts`) using camelCase field names: `overallScore`, `essayText`, `gradedAt`, `maxScore`, `categoryId`. Python/FastAPI with Pydantic defaults to snake_case: `overall_score`, `essay_text`, `graded_at`. The frontend receives responses with wrong field names and every field reads as `undefined`. Scores show NaN, highlights vanish, history is empty.
 
-**Why it happens:** CSS `background-color` on nested `<span>` elements does not compose. Developers discover this late because initial mock data conveniently has non-overlapping passages.
+**Why it happens:**
+Python convention is snake_case, JavaScript convention is camelCase. FastAPI's `jsonable_encoder` and Pydantic's `.model_dump()` both output snake_case by default. Developers build the entire backend with Python conventions, then discover the contract mismatch only when connecting the frontend. Additionally, mock data was always "happy path" -- every field populated, no nulls -- but real API responses include edge cases: empty categories, zero scores, missing highlights on short essays.
 
-**Consequences:** The "always-on color-coded highlighting" feature looks broken or ugly at overlapping regions. One category's color silently overrides another's.
+**How to avoid:**
+- Treat the existing `src/api/types.ts` as the source of truth. Print it out. Pin it to the wall
+- Configure Pydantic models with camelCase aliases:
+  ```python
+  from pydantic import ConfigDict
+  from pydantic.alias_generators import to_camel
 
-**Warning signs:** Mock data avoids overlaps so everything looks fine. The problem only surfaces with realistic passage ranges.
+  class GradingResult(BaseModel):
+      model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+      overall_score: int  # serializes as "overallScore"
+  ```
+- Write a contract test early: serialize a Pydantic `GradingResult` to JSON and assert all field names match the TypeScript interface
+- Handle nullable fields in frontend: add null checks for `highlights`, default empty arrays, fallback for missing `summary`
 
-**Prevention:**
-1. Design the mock data model so passages do not overlap -- each character belongs to at most one category. Enforce this constraint in the mock API. This is the simplest approach and matches realistic backend behavior (a model assigning non-overlapping spans).
-2. If overlaps must be supported later, use absolutely-positioned translucent layers behind the text rather than inline span backgrounds.
-3. Define a category priority order for deterministic conflict resolution.
+**Warning signs:**
+- TypeScript errors after swapping mock API for real endpoints
+- Components rendering `undefined` or `NaN` where values should appear
+- JSON responses in network tab show snake_case keys
 
-**Detection:** Add a mock essay with intentionally adjacent and overlapping passage ranges during early testing.
-
-**Phase:** Address during mock API data design, before building the highlight rendering component.
-
----
-
-### Pitfall 4: Collapsible Hero Animation Conflicts with Page State Transitions
-
-**What goes wrong:** The hero section should collapse when the user focuses on essay input, stay collapsed while viewing results, and re-expand on a fresh grading state. Developers implement the collapse as a CSS transition but fail to coordinate it with the application state machine. The hero re-animates on every render, flickers during route transitions, or gets stuck collapsed after clicking "Grade Another."
-
-**Why it happens:** Hero collapse is visual state driven by application state (has the user started interacting? are results showing?). The current `GradingPage` uses a conditional render (`if (currentResult) { ... }`) which causes a full re-mount, re-triggering any mount-based animations. Mixing CSS animation triggers with React state and React Router navigation creates timing conflicts.
-
-**Consequences:** Janky collapse/expand animations. Hero flashes open then immediately collapses when navigating back. Layout shift pushes content around during animation.
-
-**Warning signs:** The hero animates correctly on first interaction but behaves unexpectedly after navigating away and back, or after grading completes and the user clicks "Grade Another."
-
-**Prevention:**
-1. Derive hero visibility from a single source of truth: `collapsed = essayText.length > 0 || currentResult !== null`. Do NOT use a separate `useState` for hero visibility.
-2. Use CSS `max-height` + `overflow: hidden` + `transition` for the collapse, NOT conditional rendering (`{showHero && <Hero />}`). Conditional rendering prevents exit animations and causes layout jumps.
-3. Better yet, use CSS grid with `grid-template-rows: 1fr` transitioning to `grid-template-rows: 0fr` -- this animates cleanly without needing to guess a max-height value and is well-supported in all modern browsers.
-4. Add `pointer-events-none` to the hero during collapse transition to prevent interaction with partially-visible content.
-
-**Detection:** Test the full navigation cycle: land on page -> type in essay -> hero collapses -> submit -> see results -> click "Grade Another" -> hero should re-expand smoothly. Also test: navigate to Profile and back.
-
-**Phase:** Build the collapsible hero before integrating the side-by-side results layout. Get the animation right in isolation first.
-
-## Moderate Pitfalls
-
-### Pitfall 5: Split Pane Does Not Stack Properly on Tablet
-
-**What goes wrong:** The side-by-side layout uses `md:` (768px) as the breakpoint for switching to two columns. On tablets (the minimum supported viewport per project constraints), both panes are crammed into 768px, leaving roughly 350px per pane -- unreadable for essay text.
-
-**Why it happens:** Developers reach for Tailwind's `md:` breakpoint by habit. The existing grading page already uses `md:grid-cols-2` for essay/rubric input, which works because those are compact form inputs, not full reading panes with highlighted text and score bars.
-
-**Prevention:** Use `lg:` (1024px) as the breakpoint for the side-by-side results layout. Below 1024px, stack the essay above feedback vertically. The existing input form can keep its `md:` two-column layout. Test at exactly 1024px to verify both panes have adequate width.
-
-**Detection:** Resize browser to the 768px-1024px range during development. If either pane is under 480px, it should be stacking instead.
-
-**Phase:** Address when building the split-pane container component.
+**Phase to address:**
+Phase 1 (Backend Foundation) -- define Pydantic response models matching TypeScript interfaces before writing any endpoint logic. Verify with integration test in Phase 4 (Frontend Integration).
 
 ---
 
-### Pitfall 6: Bidirectional Scroll Sync Creates Infinite Loop
+### Pitfall 3: CORS Misconfiguration Blocking All Frontend Requests
 
-**What goes wrong:** When the essay is long, both panes scroll independently. Developers try to sync scrolling (clicking feedback scrolls essay to highlight, scrolling essay highlights active feedback) but bidirectional sync causes a scroll fight -- each pane triggers the other's scroll handler in a loop.
+**What goes wrong:**
+The React frontend at `http://localhost:5173` (Vite dev server) sends requests to `http://localhost:8000/api`. Without CORS middleware, browsers block every cross-origin request. Developers fix with `allow_origins=["*"]` but then JWT authentication breaks because `allow_credentials=True` is incompatible with wildcard origins. Or they forget to include `Authorization` in allowed headers, so authenticated requests fail while unauthenticated ones work. Preflight OPTIONS requests fail silently, making POST/PUT requests with JSON bodies get rejected with no obvious error.
 
-**Why it happens:** The intuitive desire is "feedback and essay should stay in sync." Bidirectional scroll sync requires complex debouncing with `isScrolling` ref flags, which is fragile and prone to race conditions.
+**Why it happens:**
+CORS is enforced by the browser, not the server. Everything works in Postman and curl. The server-side logs show successful processing. But the browser silently blocks the response. The interaction between credentials mode, specific origins, allowed headers, and preflight is non-obvious.
 
-**Prevention:** Implement one-directional scroll linking only: clicking or hovering a feedback category scrolls the essay pane to the relevant highlighted passage using `scrollIntoView({ behavior: 'smooth', block: 'center' })`. Do NOT try to update the feedback panel based on essay scroll position. This is simpler and more predictable.
+**How to avoid:**
+Configure CORS explicitly from the first line of `main.py`:
+```python
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # exact Vite dev URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],  # includes Authorization for JWT
+)
+```
+Key rules: (1) list exact origins with protocol and port, never wildcard with credentials, (2) add middleware before all routes, (3) use environment variable for origins so Docker/production can override, (4) `localhost` and `127.0.0.1` are different origins -- be consistent.
 
-**Detection:** If you find yourself adding `isScrolling` ref flags to debounce scroll handlers, you have fallen into this trap.
+**Warning signs:**
+- Browser console shows "blocked by CORS policy" errors
+- Requests work in Postman but fail from the React app
+- POST requests fail but GET works (preflight issue)
+- Auth requests fail after adding JWT (missing Authorization header)
 
-**Phase:** Address after both panes render correctly with static content. Scroll linking is a polish feature, not structural.
-
----
-
-### Pitfall 7: Mock Auth Accidentally Gates the Core Grading Flow
-
-**What goes wrong:** Mock authentication is added with protected route wrappers that redirect unauthenticated users to a sign-in page. This blocks the grading feature -- the entire point of the app -- behind a fake sign-in form. Demo viewers must create fake credentials before seeing the actual product.
-
-**Why it happens:** Developers cargo-cult real auth patterns (`<ProtectedRoute>`, redirect-to-login) for what is explicitly a mock/demo feature. The project requirements say "mock email+password authentication on profile page" -- not "gate the entire app behind auth."
-
-**Consequences:** The grading feature is unusable without first signing into a fake system. The app's core value proposition is hidden behind friction.
-
-**Warning signs:** You are writing a `<ProtectedRoute>` component. You are adding auth checks to the Home or grading routes.
-
-**Prevention:**
-1. Mock auth should ONLY affect the Profile page. The grading flow must work without signing in.
-2. The `profile-store.ts` already has `isSignedIn` -- use it to conditionally show "Sign in to save preferences" on the Profile page, not to redirect away from other routes.
-3. Do NOT add `<Navigate to="/login" />` guards on Home or grading routes.
-4. The sign-in screen should remain a section within the Profile page (which it already is), not a separate route. The redesign adds a password field -- keep it in-page.
-
-**Detection:** Can a first-time visitor grade an essay without signing in? If no, auth scope has leaked.
-
-**Phase:** Mock auth should be one of the last features implemented, after the core grading UX redesign is solid.
+**Phase to address:**
+Phase 1 (Backend Foundation) -- CORS is literally the first thing to configure. Test with the Vite dev server before writing any business logic.
 
 ---
 
-### Pitfall 8: Highlight Colors Have Poor Contrast in Dark Mode
+### Pitfall 4: Alembic Migration Chaos in Docker
 
-**What goes wrong:** Category highlight colors are chosen for visual distinctiveness in light mode (blue, green, yellow, pink backgrounds), but the highlighted text becomes unreadable in dark mode. Solid pastel backgrounds like `bg-blue-200` clash with dark mode text colors.
+**What goes wrong:**
+Developers create database tables with `Base.metadata.create_all()` during initial development, then try to add Alembic later. Alembic autogenerate sees existing tables and either generates a migration that fails ("table already exists") or generates an empty migration (thinks everything is in sync). In Docker, migrations run before PostgreSQL is ready, causing "Connection refused" errors. Or `env.py` does not import all model modules, so autogenerate silently misses tables.
 
-**Why it happens:** Developers test with one theme on one monitor. The app uses `next-themes` for dark mode support, but highlight colors are hardcoded for light backgrounds.
+**Why it happens:**
+`create_all()` is convenient for getting started but creates schema outside Alembic's tracking. Docker Compose `depends_on` only waits for the container to start, not for PostgreSQL to accept connections (port 5432 may not be listening yet). The `env.py` model import requirement is poorly documented and easy to miss.
 
-**Consequences:** Highlighted essay text is hard to read in dark mode. For an educational tool, this is a usability failure.
+**How to avoid:**
+- Never use `create_all()` in application code. Use Alembic from the very first migration, even for the initial schema
+- In `env.py`, import all model modules explicitly: `from app.models import user, submission, result` -- or use a central `app.models.__init__` that imports all models
+- Use `alembic init -t async` if using async SQLAlchemy engine with asyncpg
+- Add a database readiness check in Docker entrypoint before running migrations:
+  ```bash
+  # entrypoint.sh
+  while ! pg_isready -h db -p 5432; do sleep 1; done
+  alembic upgrade head
+  uvicorn app.main:app --host 0.0.0.0 --port 8000
+  ```
+- Run migrations as an entrypoint step, NOT inside FastAPI's lifespan handler (async context conflicts with Alembic's sync execution)
 
-**Prevention:**
-1. Use low-opacity translucent highlights (`bg-blue-500/15`, `bg-emerald-500/20`) rather than solid pastel backgrounds. These work in both themes because the underlying text color is preserved.
-2. Define highlight colors as CSS custom properties scoped to light and dark themes so they can be tuned independently.
-3. Reuse the existing color hues from `CategoryFeedback.tsx` (emerald for strengths, amber for improvements) to maintain visual consistency between highlights and feedback cards.
-4. Test all 4 category colors in both light and dark modes. Text on highlighted background must meet WCAG AA contrast (4.5:1).
+**Warning signs:**
+- `alembic revision --autogenerate` produces empty migration files
+- "Table already exists" or "relation does not exist" errors
+- Migrations work locally but fail in Docker
+- Some tables exist but others are missing
 
-**Detection:** Toggle dark mode and check if all highlighted text is legible.
-
-**Phase:** Address when defining the highlight color system, before building the highlight rendering component.
-
----
-
-### Pitfall 9: Zustand Store Grows Into a God Object
-
-**What goes wrong:** Highlighting state (active category, hovered passage), hero collapse state, and auth form state all get added to the existing `app-store.ts`. The single store becomes a monolith that re-renders many components on unrelated state changes.
-
-**Why it happens:** The app already has `app-store.ts` and `profile-store.ts`. Adding new fields to the existing store feels easier than creating new ones. Developers forget to use granular selectors and destructure the entire store in components.
-
-**Consequences:** Typing in the essay textarea re-renders the highlight layer. Hovering a feedback category re-renders the essay input. Performance degrades with long essays.
-
-**Prevention:**
-1. Keep `app-store` for grading workflow state (essay text, rubric, results, history) -- it already does this well.
-2. Create a new `highlight-store` for ephemeral highlighting UI state (active category index, hovered passage). This state should NOT be persisted.
-3. Hero collapse state should be derived from existing state (see Pitfall 4), not stored.
-4. Always use individual selectors: `useAppStore((s) => s.essayText)` not `const { essayText, currentResult, ... } = useAppStore()`.
-
-**Detection:** React DevTools Profiler showing re-renders in components that should be idle during unrelated interactions.
-
-**Phase:** Establish the store architecture at the start, before building new features.
-
-## Minor Pitfalls
-
-### Pitfall 10: Textarea vs. ContentEditable for Editable Essay in Results
-
-**What goes wrong:** The results view needs to show the essay with inline highlights AND be editable for resubmit. A `<textarea>` cannot render inline highlights (plain text only). Developers reach for `contentEditable` divs, which introduce cursor management, paste handling, undo/redo, and HTML sanitization complexity.
-
-**Why it happens:** The requirement combines two conflicting needs -- rich visual rendering (highlights) and text editing -- in the same element.
-
-**Prevention:** Use a two-mode approach: render the essay in a read-only div with highlight spans by default, and toggle to a plain `<textarea>` when the user clicks "Edit." The textarea does not need highlights -- just the text. On re-submit, fresh results will have new highlights. Do NOT use `contentEditable`. Do NOT import TipTap, Slate, or ProseMirror for this.
-
-**Detection:** If you are researching rich text editor libraries, you are overengineering this feature.
-
-**Phase:** Design the edit/view toggle pattern during the side-by-side layout phase.
+**Phase to address:**
+Phase 2 (Database) -- establish Alembic from the first model definition. Docker migration execution in Phase 3 (Docker Compose).
 
 ---
 
-### Pitfall 11: Route Structure Conflicts When Merging Home and Grade Pages
+### Pitfall 5: LLM Response Format Instability
 
-**What goes wrong:** The current app has three routes: `/` (LandingPage), `/grade` (GradingPage), `/profile` (ProfilePage). The redesign merges Home and Grade into a single combined page. Developers create the new combined page but leave stale routes, navigation items, and click handlers pointing to the old structure.
+**What goes wrong:**
+The grading endpoint sends a prompt expecting structured JSON output from Llama 3.2 3B with specific fields: `categories` array, numeric `scores`, `highlights` with character offsets, `strengths` and `improvements` arrays. The 3B model intermittently returns malformed JSON (unclosed braces, trailing commas), omits required fields, hallucinates extra fields, produces scores outside valid ranges (negative numbers, exceeding maxScore), or generates highlight character offsets that are out of bounds for the essay text.
 
-**Why it happens:** The merge seems simple but the route table in `App.tsx`, the `navItems` array in `Header.tsx` (currently 3 items including "Home", "Grade", "Profile"), and the history click handler in `ProfilePage.tsx` (which calls `navigate("/grade")`) all reference the old structure.
+**Why it happens:**
+LLMs are probabilistic. A 3B parameter model is particularly prone to format instability compared to larger models. Character-level offset generation is fundamentally unreliable -- the model has no reliable concept of character positions. Even with structured output prompting, some percentage of responses will be malformed.
 
-**Consequences:** Dead links, duplicate pages, or navigating to a history entry lands on a blank or wrong page.
+**How to avoid:**
+- Wrap all LLM output parsing in try/except with a structured degraded fallback (return scores without highlights rather than 500 error)
+- Use Pydantic to validate LLM JSON output: parse into model, catch `ValidationError`, retry once with a simpler prompt, or return degraded response
+- For highlights: have the model return quoted text snippets, then use Python string matching (`str.find()`) to compute actual character offsets. Never trust the LLM to produce correct numerical offsets directly
+- Clamp scores to valid ranges: `score = max(0, min(score, max_score))`
+- Set maximum retry count (2) before returning degraded result
+- Log all LLM parsing failures with the raw output for prompt iteration
 
-**Prevention:**
-1. Plan the route migration explicitly: `/` becomes the combined home+grade page, `/grade` either redirects to `/` or is removed, `/profile` stays.
-2. Update `navItems` in `Header.tsx` from 3 items to 2 (Home, Profile).
-3. Update the `ProfilePage.tsx` history click handler which navigates to `/grade`.
-4. Do the route change as a discrete, testable step before building new features on top.
+**Warning signs:**
+- Intermittent 500 errors on the grading endpoint
+- Highlights appearing at wrong positions or causing IndexError
+- Scores of -1, 150/100, or NaN reaching the frontend
+- Grading working "most of the time" but randomly failing
 
-**Detection:** Click every navigation link and every history entry after the merge. Check that no route shows a blank page.
-
-**Phase:** This should be the very first change -- before building the collapsible hero or side-by-side layout.
+**Phase to address:**
+Phase 1 (Backend Foundation) -- build the response parsing and validation layer with fallback from the start. This is not optional polish.
 
 ---
 
-### Pitfall 12: CSS Transition on Height: Auto Does Not Animate
+### Pitfall 6: JWT Token Handling Breaks the Existing Frontend Auth Flow
 
-**What goes wrong:** Developers try `transition: height 300ms` on the hero section, but CSS cannot transition from `height: auto` to `height: 0`. The hero snaps instantly instead of animating.
+**What goes wrong:**
+The existing frontend has mock auth in `profile-store.ts` that persists `isSignedIn`, `email`, and `gradeLevel` to localStorage. Developers add real JWT auth but: (1) stale `isSignedIn: true` in localStorage from the mock era causes the frontend to think the user is logged in when they have no valid token, (2) tokens stored in localStorage are XSS-vulnerable, (3) no token refresh mechanism means users get logged out mid-essay and lose their work, (4) Axios requests do not include the Authorization header.
 
-**Why it happens:** CSS transitions require explicit numeric start and end values. `auto` is not numeric.
+**Why it happens:**
+The mock auth stores a boolean `isSignedIn` with no token concept. The migration from mock to real auth requires changing how auth state is represented (boolean to token), how it is stored (localStorage to memory or httpOnly cookies), and how it is transmitted (no header to Bearer token). Developers update the backend but leave the frontend store logic unchanged.
 
-**Prevention:** Use CSS grid with `grid-template-rows: 1fr` transitioning to `grid-template-rows: 0fr` with `overflow: hidden` on the child. This animates cleanly without needing to guess a max-height value. Alternatively, use `max-height` with a generous upper bound, though this produces timing inconsistencies when the actual content height varies.
+**How to avoid:**
+- Clear existing localStorage keys (`essay-grader-profile`) during migration, or version the store key
+- Store JWT in Zustand state (in-memory, not persisted). On page refresh, attempt a token refresh or redirect to login
+- Add an Axios request interceptor that attaches `Authorization: Bearer <token>` to every request
+- Add an Axios response interceptor that catches 401 responses, attempts token refresh, and retries the original request
+- Keep the existing pattern: grading works without auth, auth only required for history persistence and profile settings
+- Use short-lived access tokens (15-30 min) with a `/refresh` endpoint
 
-**Detection:** If the hero pops open/closed instead of sliding, check whether you are transitioning `height: auto`.
+**Warning signs:**
+- Users appear logged in but API calls return 401
+- Token visible in browser DevTools > Application > localStorage
+- No 401 handling in Axios -- user sees generic "network error" on token expiry
+- Refresh loses auth state entirely
 
-**Phase:** Address during collapsible hero implementation.
+**Phase to address:**
+Phase 2 (Authentication) for backend JWT implementation. Phase 4 (Frontend Integration) for Axios interceptors and store migration.
 
-## Phase-Specific Warnings
+---
 
-| Phase Topic | Likely Pitfall | Mitigation |
-|-------------|---------------|------------|
-| Route restructuring (merge Home+Grade) | Stale routes and nav links (Pitfall 11) | Do route merge as an isolated first step; test all navigation paths |
-| Mock API schema update | Missing passage reference fields in types (Pitfall 2) | Add `highlights: { start, end, categoryIndex }[]` to `GradingResult` before building UI |
-| Mock API schema update | Overlapping passage ranges (Pitfall 3) | Enforce non-overlapping ranges in mock data |
-| Collapsible hero section | CSS height:auto does not animate (Pitfall 12) | Use CSS grid-template-rows animation |
-| Collapsible hero section | Hero state conflicts with navigation (Pitfall 4) | Derive collapse from essayText/currentResult state, not separate useState |
-| Side-by-side layout | 960px container too narrow (Pitfall 1) | Break out of shared container; use wider max-width for results view |
-| Side-by-side layout | Bad tablet stacking breakpoint (Pitfall 5) | Use `lg:` (1024px) not `md:` for the split |
-| Text highlighting | Poor contrast in dark mode (Pitfall 8) | Use translucent highlight colors with CSS custom properties |
-| Editable essay + highlights | contentEditable complexity (Pitfall 10) | Read-only highlight view + toggle to plain textarea for editing |
-| Scroll linking between panes | Bidirectional scroll sync loop (Pitfall 6) | One-directional only: feedback click scrolls essay pane |
-| Mock authentication | Auth gating blocks core grading (Pitfall 7) | Only gate Profile page settings; never gate grading routes |
-| Store architecture | God object Zustand store (Pitfall 9) | Create dedicated highlight-store for ephemeral UI state |
+## Technical Debt Patterns
+
+| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
+|----------|-------------------|----------------|-----------------|
+| `Base.metadata.create_all()` instead of Alembic | DB works in 2 minutes | Cannot evolve schema, no rollback, migration nightmare | Never -- Alembic adds 30 min setup to save days of pain |
+| JWT in localStorage | Simple, persists across tabs/refreshes | XSS vulnerability | Academic project with no real user data -- document the risk |
+| Sync inference in async handler | Works for single user testing | Server freezes under any concurrency | Never -- use threadpool or HTTP client from day one |
+| `allow_origins=["*"]` CORS | "It just works" | Breaks with credentials, insecure | Only during first 10 minutes of debugging, replace immediately |
+| Single Dockerfile for backend + model | Simpler container management | Cannot scale inference independently, huge image size | Acceptable for academic project if model is called via HTTP |
+| Skipping Pydantic response models | Faster to return raw dicts | No validation, contract drift, serialization bugs | Never -- Pydantic models ARE the API contract |
+| Hardcoded inference timeout | Avoid timeout configuration | Different models/hardware need different timeouts | Only acceptable if using env variable for the timeout value |
+
+## Integration Gotchas
+
+| Integration | Common Mistake | Correct Approach |
+|-------------|----------------|------------------|
+| React Axios + FastAPI | Not adding Authorization header | Create Axios instance with request interceptor: `config.headers.Authorization = \`Bearer ${token}\`` |
+| Vite dev + FastAPI | Assuming `localhost` and `127.0.0.1` are same origin | They are different for CORS. Use consistent hostname. Vite defaults to `localhost` |
+| Zustand persist + Real Auth | Persisted `isSignedIn: true` from mock era causes phantom auth | On app load, validate token with `/api/auth/me` endpoint; clear state if invalid |
+| FastAPI + PostgreSQL in Docker | Using `localhost` as DB host in app config | Docker services use service names: `DATABASE_URL=postgresql+asyncpg://user:pass@db:5432/essays` |
+| Alembic in Docker | Running migrations inside FastAPI lifespan handler | Run `alembic upgrade head` in entrypoint.sh before `uvicorn`, or as `docker compose run backend alembic upgrade head` |
+| Frontend PDF upload | Sending PDF as base64 in JSON body | Use `multipart/form-data` with FastAPI `UploadFile`. Set correct Content-Type in Axios |
+| Frontend history | Fetching full `GradingResult` for history list | History list endpoint returns lightweight `HistoryItem`; fetch full result only on click |
+| Docker Compose networking | Frontend container calling `localhost:8000` | In Docker network, use service name `backend:8000`. For dev, use Vite proxy or env-based API URL |
+
+## Performance Traps
+
+| Trap | Symptoms | Prevention | When It Breaks |
+|------|----------|------------|----------------|
+| Loading LLM model per request | 30-60 second cold start per grading | Load model once at startup via FastAPI lifespan, or use persistent inference server (Ollama) | Every request after idle |
+| No DB connection pooling | "Too many connections" errors | SQLAlchemy async engine: `pool_size=5, max_overflow=10` | 10+ concurrent users |
+| Unbounded essay in LLM context | OOM, inference takes minutes | Enforce essay length limit (e.g., 10,000 chars). Llama 3.2 3B has 128K context but inference time scales quadratically | Essays > 5000 words |
+| Full essay text in history list response | Slow history loading, excessive bandwidth | History endpoint returns `HistoryItem` with excerpt only. Full `GradingResult` fetched via `/submissions/{id}` | 50+ submissions |
+| No response streaming | User stares at spinner for 30+ seconds | Use SSE (Server-Sent Events) to stream partial results | Always -- UX concern |
+| Synchronous PDF parsing in request handler | Blocks event loop for large PDFs | Use `run_in_threadpool` for PDF extraction, or process async | PDFs > 5MB |
+
+## Security Mistakes
+
+| Mistake | Risk | Prevention |
+|---------|------|------------|
+| JWT secret hardcoded in source code | Token forgery if repo is public | Use env variable `JWT_SECRET_KEY`. Generate: `openssl rand -hex 32`. Add to `.gitignore` via `.env` |
+| No password hashing (or using MD5/SHA256) | Password leak exposes plaintext credentials | Use `passlib[bcrypt]` or `pwdlib` with Argon2. Never store reversible hashes |
+| No rate limiting on grading endpoint | Inference is expensive; abuse exhausts GPU resources | Use `slowapi` middleware: 10 grades/hour per user |
+| Exposing stack traces in error responses | Information leakage about internals | FastAPI exception handler returns generic error in production. Log details server-side |
+| No input validation on essay text length | Prompt injection, resource exhaustion via huge essays | Validate: 50 chars min, 50,000 chars max. Reject before hitting LLM |
+| Database URL with credentials in docker-compose.yml | Credentials in version control | Use `.env` file referenced by `env_file:` in docker-compose.yml. Keep `.env` in `.gitignore` |
+
+## UX Pitfalls
+
+| Pitfall | User Impact | Better Approach |
+|---------|-------------|-----------------|
+| No progress feedback during inference (30+ sec) | User thinks app broke, refreshes, loses context | Show staged progress: "Analyzing essay...", "Evaluating criteria...", "Generating feedback..." Even approximate stages improve perceived performance |
+| Hard logout on token expiry | User loses essay text mid-writing | Essay text is already in Zustand (persisted to localStorage). On re-auth, state survives. But add Axios 401 interceptor to auto-refresh |
+| Requiring auth before any grading | Friction kills first-time usage | Keep current pattern: grading works without auth. Auth only for saving history and profile settings |
+| Different error formats per endpoint | Frontend needs endpoint-specific error handling | Standardize: `{"detail": "Human message", "code": "ERROR_CODE"}` everywhere |
+| PDF upload fails silently on server | User thinks rubric was received but grading ignores it | Return rubric text preview in grading response. Frontend already shows preview on upload -- backend should confirm what it parsed |
+| Grading fails with no actionable error | User has no idea what went wrong | Differentiate errors: "Essay too short" vs "Rubric could not be parsed" vs "Grading service unavailable" -- give specific user-facing messages |
+
+## "Looks Done But Isn't" Checklist
+
+- [ ] **CORS:** Tested with actual browser from Vite dev server, not just curl/Postman. Includes preflight for POST with JSON body
+- [ ] **Auth flow:** Token refresh works -- set token expiry to 1 minute, use the app for 2 minutes, verify auto-refresh
+- [ ] **API contract:** Every field in `src/api/types.ts` has a matching camelCase field in the API response. No extra fields, no missing fields
+- [ ] **Alembic:** `alembic upgrade head` works on completely empty database. Tested by dropping all tables and re-running
+- [ ] **Docker startup:** `docker compose down -v && docker compose up` creates schema, runs migrations, starts all services without manual intervention
+- [ ] **LLM error handling:** Grading endpoint returns a valid degraded response when LLM output is garbage JSON. Test by temporarily corrupting the prompt
+- [ ] **Highlight offsets:** Every `start`/`end` in highlights response is a valid index into the essay text. No off-by-one, no out-of-bounds
+- [ ] **History pagination:** Works with 0 items, 1 item, and 100+ items. Empty state handled gracefully
+- [ ] **PDF upload:** Tested with: normal PDF, scanned image PDF (should fail gracefully), large PDF (>5MB, size limit), and password-protected PDF (clear error)
+- [ ] **localStorage migration:** App works after clearing all localStorage. No stale mock-era data confuses real auth state
+- [ ] **Environment:** `.env` in `.gitignore`. `.env.example` with all required variables exists and is documented
+- [ ] **Docker networking:** Backend connects to `db` service name, not `localhost`. Frontend API URL is configurable via env variable
+
+## Recovery Strategies
+
+| Pitfall | Recovery Cost | Recovery Steps |
+|---------|---------------|----------------|
+| Event loop starvation | LOW | Refactor to `run_in_threadpool` or HTTP client call. No schema changes needed, just handler refactor |
+| CORS misconfiguration | LOW | Fix middleware config in `main.py`, restart server. 5-minute fix once diagnosed |
+| snake_case/camelCase mismatch | MEDIUM | Add `alias_generator=to_camel` to all Pydantic models. May need frontend null-safety patches for edge cases |
+| No Alembic from start | HIGH | Must stamp current schema state, recreate migration history. Risk of schema drift or data loss |
+| JWT localStorage + no refresh | MEDIUM | Move token to memory, add refresh endpoint and Axios interceptors. Both backend and frontend changes |
+| LLM output not validated | MEDIUM | Add Pydantic parsing layer and fallback responses. Must identify all failure modes through testing |
+| Docker migration timing | LOW | Add `pg_isready` wait loop to entrypoint script. Quick fix once diagnosed |
+
+## Pitfall-to-Phase Mapping
+
+| Pitfall | Prevention Phase | Verification |
+|---------|------------------|--------------|
+| Event loop starvation | Phase 1: Backend Foundation | 5 concurrent grading requests complete without timeout. Other endpoints respond during inference |
+| API contract mismatch | Phase 1: Backend Foundation | Serialize Pydantic models to JSON; all field names match TypeScript interfaces exactly |
+| CORS blocking | Phase 1: Backend Foundation | React dev server calls all endpoints without browser CORS errors |
+| Alembic migration chaos | Phase 2: Database | `docker compose down -v && docker compose up` recreates schema from scratch |
+| JWT token handling | Phase 2: Auth + Phase 4: Frontend | Token refresh works. Stale localStorage does not cause phantom auth |
+| LLM response instability | Phase 1: Backend Foundation | Grading returns valid degraded response when LLM returns malformed JSON |
+| Docker networking | Phase 3: Docker Compose | All services start and communicate. Frontend reaches backend, backend reaches DB and inference |
+| Mock-to-real state migration | Phase 4: Frontend Integration | App works correctly after clearing all localStorage |
+| No streaming UX | Phase 4: Frontend Integration | User sees progressive status within 5 seconds of submission |
 
 ## Sources
 
-- Direct codebase analysis: `Layout.tsx` (960px max-width constraint), `GradingPage.tsx` (conditional render pattern causing re-mount), `app-store.ts` (current Zustand structure and persist config), `profile-store.ts` (existing `isSignedIn` state), `CategoryFeedback.tsx` (emerald/amber color scheme), `Header.tsx` (3-item navItems array), `App.tsx` (3-route structure), `ProfilePage.tsx` (history navigate to /grade), `api/types.ts` (CategoryScore lacks passage references)
-- CSS grid-template-rows animation: well-supported in all modern browsers since 2023
-- CSS height:auto transition limitation: fundamental browser behavior, not version-dependent
-- WCAG 2.1 Level AA contrast requirements: 4.5:1 minimum for normal text
-- Zustand selector patterns: standard guidance on avoiding unnecessary re-renders via granular selectors
+- [FastAPI CORS Documentation](https://fastapi.tiangolo.com/tutorial/cors/)
+- [FastAPI Async / Await Guide](https://fastapi.tiangolo.com/async/)
+- [FastAPI JWT / OAuth2 Tutorial](https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/)
+- [FastAPI Docker Deployment Guide](https://fastapi.tiangolo.com/deployment/docker/)
+- [Running Blocking ML Operations Asynchronously in FastAPI](https://apxml.com/courses/fastapi-ml-deployment/chapter-5-async-operations-performance/running-blocking-ml-operations)
+- [Async Gotchas in FastAPI](https://medium.com/@rameshkannanyt0078/async-isnt-always-faster-common-gotchas-in-fastapi-5308480a48db)
+- [FastAPI + SQLAlchemy + Alembic + Docker Setup](https://berkkaraal.com/blog/2024/09/19/setup-fastapi-project-with-async-sqlalchemy-2-alembic-postgresql-and-docker/)
+- [Alembic Async Engine Context Issues](https://github.com/sqlalchemy/alembic/issues/1606)
+- [FastAPI Security Design: JWT, OAuth2, CSRF Pitfalls](https://blog.greeden.me/en/2025/10/14/a-beginners-guide-to-serious-security-design-with-fastapi-authentication-authorization-jwt-oauth2-cookie-sessions-rbac-scopes-csrf-protection-and-real-world-pitfalls/)
+- [Streaming LLM Output in FastAPI](https://junkangworld.com/blog/stream-llm-output-in-fastapi-a-5-step-2025-tutorial)
+- [Ollama VRAM Requirements for Local LLMs](https://localllm.in/blog/ollama-vram-requirements-for-local-llms)
+- [Celery + Redis for Long-Running AI Jobs](https://markaicode.com/redis-celery-long-running-ai-jobs/)
+- Direct codebase analysis: `src/api/types.ts` (camelCase TypeScript interfaces), `src/api/grading.ts` (mock API structure), `src/stores/profile-store.ts` (mock auth with localStorage persistence), `src/stores/app-store.ts` (Zustand persist config)
 
 ---
-*Pitfalls research for: AI Essay Grader v1.1 UX Redesign*
-*Researched: 2026-03-08*
+*Pitfalls research for: AI Essay Grader v2.0 Backend Implementation*
+*Researched: 2026-03-09*

@@ -1,146 +1,206 @@
 # Feature Landscape
 
-**Domain:** AI essay grading tool -- v1.1 UX redesign (side-by-side layout, highlighting, collapsible hero, mock auth)
-**Researched:** 2026-03-08
-**Confidence:** MEDIUM (web research verified against Turnitin official docs, Grammarly engineering blog, QuillBot product pages)
+**Domain:** FastAPI backend for AI essay grading (v2.0 -- replacing mock frontend API layer with real backend)
+**Researched:** 2026-03-09
+**Confidence:** MEDIUM-HIGH (official docs for FastAPI, vLLM, PyMuPDF verified; LLM grading patterns from academic research)
 
 ## Context
 
-v1.0 is built and working: essay input, rubric upload, submission flow, score bars, feedback sections, history, profile with grade level. This research covers the NEW features for v1.1 -- how they work in comparable tools, what's table stakes vs differentiating, and implementation considerations.
+The React frontend (v1.1) is complete with mock data behind typed async API functions. This research covers ONLY the backend features needed to replace mock data with real inference, persistence, and authentication. The frontend API contract (`GradingResult`, `HistoryItem`, `GradeEssayRequest`) is already defined and must be matched exactly.
 
 ---
 
 ## Table Stakes
 
-Features users expect once a tool claims to show "feedback in context." Missing any of these makes the v1.1 redesign feel half-done.
+Features the backend MUST have for the frontend to function. Without these, the mock-to-real swap cannot happen.
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Side-by-side essay + feedback layout | Every serious writing feedback tool (Grammarly editor, Turnitin Feedback Studio, GPTZero reviewer) places source text next to results. Users need to cross-reference feedback with their writing without scrolling between sections. This is THE defining UX pattern for writing feedback tools. | Medium | Core layout change -- transforms the entire GradingPage. Turnitin uses essay on left, insight panel on right. Grammarly uses text on left, suggestions sidebar on right. Use a fixed split ratio (not resizable). |
-| Color-coded text highlighting linked to feedback categories | Turnitin's multicolor highlighting maps colors to match sources/categories; clicking the filter icon toggles them. The Highlight Tool for Google Docs assigns colors per category (yellow = dangling modifiers, red = run-ons). Users expect to SEE where feedback applies in the actual text, not just read about it abstractly. | Medium-High | Requires mock API to return passage references (start/end character positions or exact text snippets). Always-on highlighting (no hover required) is the right call -- matches Turnitin's default multicolor view. Colors should correlate with the rubric category color-coding already used in score bars. |
-| Collapsible hero on input focus | QuillBot, Grammarly, and AI checker tools use a "get out of the way" pattern: branding/marketing content recedes once the user starts working. Google Search does this (logo shrinks after first query). Once a user focuses on the textarea, the tool area should dominate the viewport. | Low | CSS transition + state toggle on textarea focus. Standard progressive disclosure. The hero should contain the app title, brief description, and visually collapse (not disappear) to a minimal bar. |
-| Mock sign-in screen on profile | Any tool with a profile page needs a sign-in gate. Without it, the profile settings feel disconnected -- why does user config exist if there's no user identity? Standard pattern: email + password form, centered card layout, clean typography. | Low | Mock-only: validate email format and password length, store fake session in Zustand + localStorage. Simulate 300-500ms delay for realism. No real auth backend. |
-| Two-tab navigation (Home / Profile) | With home + grading merged into one page, a 3-tab nav is confusing (what would the third tab even be?). Two tabs cleanly maps to the app's actual page structure. | Low | Simple route restructure. Already planned. |
-| Scroll synchronization between essay panel and feedback | When the essay is long, users expect clicking a feedback item to scroll the essay to the relevant highlighted passage. Turnitin does this -- clicking a numbered match scrolls to its source in the document. Without this, highlighting on long essays is nearly useless because users can't find the relevant passage. | Medium | Not explicitly in PROJECT.md scope but strongly expected once side-by-side + highlighting exist. Use scrollIntoView with smooth behavior and a brief highlight pulse on the target passage. |
+| Feature | Why Expected | Complexity | Depends On |
+|---------|--------------|------------|------------|
+| **POST /api/grade endpoint returning `GradingResult` JSON** | Frontend `gradeEssay()` expects exact shape: `id`, `essayText`, `essayExcerpt`, `overallScore`, `maxScore`, `summary`, `categories[]` with scores/strengths/improvements/justification/highlights, and `gradedAt`. Any deviation breaks the entire results view. | High | LLM inference, structured output, prompt engineering |
+| **GET /api/history returning `HistoryItem[]`** | Profile page lists past submissions; frontend expects array with `id`, `essayExcerpt`, `overallScore`, `maxScore`, `categoryCount`, `gradedAt` | Low | PostgreSQL, JWT auth |
+| **GET /api/history/:id returning full `GradingResult`** | Clicking a history entry loads full result with all categories, highlights, and essay text for the side-by-side view | Low | PostgreSQL, JWT auth |
+| **POST /api/auth/register (email + password)** | Frontend has sign-in form on ProfilePage; needs real user creation. Currently mock accepts any valid email format + 6+ char password | Low | PostgreSQL, password hashing (bcrypt/argon2) |
+| **POST /api/auth/login returning JWT access token** | Frontend needs Bearer token; profile store already has `signIn()` method that will call this endpoint | Low | JWT signing (python-jose) |
+| **Token-based route protection** | All /api/grade and /api/history endpoints must be user-scoped; unauthorized requests get 401 | Low | FastAPI `Depends()` with OAuth2PasswordBearer |
+| **Server-side rubric PDF text extraction** | Frontend currently extracts rubric text client-side with `unpdf` and sends `rubricText` string in `GradeEssayRequest`. Backend should also accept raw PDF upload as a fallback/primary path | Med | PyMuPDF (pymupdf4llm) |
+| **Structured JSON from LLM matching `GradingResult` schema** | Model must return valid JSON with nested categories, highlight ranges, score integers -- not free-form prose requiring regex parsing | High | vLLM constrained decoding or Ollama JSON mode + Pydantic validation |
+| **Docker Compose for FastAPI + PostgreSQL** | Project requirement: single `docker compose up` runs the backend stack. Model server runs separately (not in Docker) | Med | Dockerfile, docker-compose.yml, health checks |
+| **CORS middleware** | Vite dev server at localhost:5173 must reach FastAPI at localhost:8000 | Low | `CORSMiddleware` in FastAPI |
+| **Pydantic response models matching frontend types** | FastAPI response schemas must mirror the TypeScript interfaces in `src/api/types.ts` exactly -- field names, types, nesting. This IS the API contract | Low | Direct translation of existing TypeScript types |
+| **Database schema for users, submissions, results** | Users table (id, email, hashed_password). Submissions table (id, user_id, essay_text, rubric_text, grade_level, created_at). Results stored as JSON blob or normalized category/highlight tables | Med | SQLAlchemy models, Alembic migrations |
 
 ## Differentiators
 
-Features that elevate the app beyond typical AI essay graders. Not expected, but create a noticeably better experience.
+Features that go beyond basic mock replacement and add real value to the grading experience.
 
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Editable essay with inline resubmit | Most grading tools are submit-once, read-results. Letting users edit the essay IN the results view and resubmit without navigating away is a QuillBot-style interactive workflow. CoGrader and EssayGrader.ai are upload-and-wait; this feels live. | Medium | Requires maintaining essay state in the left panel of the split view, re-triggering the grading API on resubmit, clearing old highlights, and rendering new ones. Key state management challenge: what happens to the right panel during re-grading (loading skeleton vs stale results). |
-| Category-color legend with toggle visibility | Turnitin lets users toggle multicolor highlighting per source via a filter icon. A small legend mapping colors to rubric categories (with on/off toggles) lets users focus on one feedback dimension at a time -- e.g., "show me only the Organization highlights." | Low | Small UI addition layered on top of the highlighting system. Adds meaningful control without complexity. Place it as a floating legend or at the top of the essay panel. |
-| Smooth hero collapse animation | Most tools just hide content abruptly. A polished animation (hero compresses vertically, title fades to a compact bar, input area expands upward) creates a premium feel. Grammarly and QuillBot both have smooth transitions in their editor chrome. | Low | Pure CSS transitions or Framer Motion. Small effort, disproportionate polish impact. Use max-height transition or transform: scaleY with opacity fade. |
-| Feedback-to-highlight hover linkage | Hovering over a feedback card in the right panel intensifies (or pulses) the corresponding highlight in the essay panel, and vice versa. Creates a visual connection between abstract feedback and concrete text. Grammarly does this with its inline underlines + sidebar suggestions. | Low-Medium | Shared hover state in Zustand or React context. Each feedback card and highlight group shares a category ID. On hover, add a CSS class to the paired elements. |
-| Highlight intensity for severity | Rather than binary highlight/no-highlight, vary opacity or border weight to indicate feedback severity (minor suggestion vs critical issue). Adds information density without clutter. | Low-Medium | Depends on mock API data shape including a severity field. Stretch goal -- only if highlighting base is solid. |
+| Feature | Value Proposition | Complexity | Depends On |
+|---------|-------------------|------------|------------|
+| **Rubric-aligned dynamic category generation** | Instead of hardcoded 4 categories (Content & Ideas, Organization, Style & Voice, Language Conventions), the LLM reads the rubric PDF text and generates scoring categories that match the rubric's actual criteria. A biology rubric gets "Scientific Accuracy" and "Data Analysis" categories, not generic writing ones | High | Quality rubric text extraction, sophisticated prompt engineering, schema flexibility |
+| **Character-offset highlight ranges from LLM** | LLM identifies specific essay passages and returns `start`/`end` character positions linked to feedback. This powers the side-by-side highlighting. The two-pass approach (LLM quotes text, post-processing computes offsets) is far more reliable than asking the LLM to count characters | High | Two-pass inference or post-processing pipeline |
+| **Grade-level calibration** | Frontend sends `gradeLevel` (elementary/middle-school/high-school/college) via `GradeEssayRequest`. LLM adjusts scoring strictness and feedback language accordingly -- an elementary essay scored at college level would get 1/6 on everything | Med | Prompt engineering with grade-level instructions |
+| **Configurable model endpoint (local/LAN/cloud)** | Environment variable points to wherever the model runs: `http://localhost:11434` (Ollama local), `http://192.168.1.x:8000` (LAN vLLM), or cloud GPU endpoint. FastAPI backend is a thin proxy | Med | Abstraction layer, OpenAI-compatible client |
+| **Alembic database migrations** | Schema versioning so the database evolves without manual SQL or data loss. Standard for any production FastAPI+PostgreSQL setup | Med | Alembic + SQLAlchemy |
+| **Streaming inference with SSE** | Stream partial results as the LLM generates them instead of a 10-30s blocking wait. Frontend progressively renders scores and feedback sections | High | vLLM streaming, FastAPI `EventSourceResponse`, frontend SSE client changes |
+| **Refresh token rotation** | Short-lived access tokens (15min) with longer refresh tokens (7d). Better security without constant re-login | Med | Separate refresh token table, rotation logic |
 
 ## Anti-Features
 
-Features to explicitly NOT build for v1.1. Tempting but wrong.
+Features to explicitly NOT build in v2.0.
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| Real OAuth / social login (Google, GitHub) | Massive complexity for a demo app. OAuth redirect flows, token refresh, provider setup -- none serves the grading UX. PROJECT.md explicitly excludes this. | Mock email+password form that validates format, stores a fake user object in Zustand. Simulate async delay. |
-| Resizable / draggable split panes | Libraries like react-resizable-panels or allotment add dependency weight, accessibility concerns, and interaction complexity. Users of a grading tool need to READ, not fiddle with panel sizes. VS Code needs resizable panes; a grading tool does not. | Fixed 50/50 or 55/45 CSS grid split. On tablet (<1024px), stack vertically with essay on top, feedback below. |
-| Rich text editing (bold, italic, toolbar) | Essay grading evaluates plain text content, not formatting. Adding Tiptap, Slate, or ProseMirror introduces enormous dependency and complexity for zero grading value. Turnitin and all essay graders accept plain text. | Plain textarea or simple contenteditable div. The "editable" in "editable essay" means text content editing, not document formatting. |
-| Character-level annotation (inline comments) | Turnitin supports this, but it requires a sophisticated text annotation engine, selection handling, and popover positioning. Way too complex for a mock-data frontend. | Passage-level highlighting (entire sentences or phrases) with feedback cards in the side panel. Achieves 80% of the UX value at 20% of the implementation cost. |
-| Plagiarism / AI detection scoring | Different product domain from essay grading. Turnitin keeps these as distinct tools. Mixing them confuses the UX and doubles mock data requirements. PROJECT.md excludes this. | Keep scope to rubric-aligned grading and feedback only. |
-| PDF export of results | PROJECT.md marks this as out of scope. Proper PDF generation (html2canvas, jsPDF, or server-side) is disproportionate to demo value. | At most, a disabled "Export PDF" button as a placeholder signaling future capability. |
-| Mobile-first responsive layout | Side-by-side layout fundamentally doesn't work on phone screens (<768px). Trying to make it responsive to 375px would compromise the core desktop/tablet experience. PROJECT.md sets tablet as the minimum. | Design for >= 768px width. Below that, show a graceful degradation message or auto-stack panels vertically. |
+| **Fine-tuning pipeline for Llama 3.2 3B** | Requires training data collection, GPU hours for training, evaluation methodology, and experiment tracking. This is a separate research project, not a backend feature | Use base Llama 3.2 3B Instruct with prompt engineering. Design inference layer so a fine-tuned model is a drop-in replacement via config change |
+| **OAuth / social login (Google, GitHub)** | OAuth redirect flows, provider registration, callback handling -- massive complexity for zero demo value | Email + password with bcrypt + JWT. The existing frontend auth UI already works this way |
+| **GPU inference inside Docker** | Running vLLM/Ollama in Docker requires NVIDIA Container Toolkit, GPU passthrough config, 10+ GB image sizes, and GPU memory management | Model server runs OUTSIDE Docker on bare metal or dedicated GPU host. FastAPI container calls it via HTTP. Docker Compose runs only FastAPI + PostgreSQL |
+| **Model evaluation framework** | Automated scoring accuracy metrics (QWK, Cohen's kappa) against human graders requires labeled essay datasets that do not exist for this project | Manual spot-checking of output quality. If scores feel reasonable on 10-20 test essays, that is sufficient for v2.0 |
+| **Rate limiting / abuse prevention** | Single-user course project demo. No adversarial users | Can be added as FastAPI middleware later (slowapi) if ever needed |
+| **Plagiarism / AI detection** | Different product domain requiring corpus comparison or classifier models. Explicitly out of scope per PROJECT.md | Not even a placeholder -- separate concern entirely |
+| **Multi-language support** | Requires multilingual models and i18n infrastructure | English only per PROJECT.md |
+| **PDF export of grading results** | Proper PDF generation (WeasyPrint, reportlab) adds a dependency for a rarely-used feature | At most a disabled "Export" button on frontend |
+| **WebSocket real-time updates** | No multi-user collaboration. SSE is simpler for uni-directional streaming and does not require WebSocket infrastructure | If streaming is added, use SSE (Server-Sent Events) which works over standard HTTP |
+| **Caching layer (Redis)** | Adds infrastructure complexity. Same essay+rubric combo being re-graded is unlikely in normal usage | Database stores results; if same essay is resubmitted, re-grade it (results may vary and that is fine) |
 
 ## Feature Dependencies
 
 ```
-Combined home/grade page (route merge)
-    |
-    +---> Collapsible hero section (hero must exist on this combined page)
-    |
-    +---> Two-tab navigation (reduces routes from 3 to 2)
-    |
-    +---> Side-by-side results layout (restructures where results render)
-              |
-              +---> Text highlighting (highlights render in the essay panel of the split view)
-              |         |
-              |         +---> Scroll sync (needs highlight anchors to scroll to)
-              |         |
-              |         +---> Category toggle legend (layers on top of highlighting)
-              |         |
-              |         +---> Feedback-to-highlight hover linkage (needs both panels)
-              |
-              +---> Editable essay + resubmit (edit happens in left panel, triggers re-grade)
+Docker Compose (FastAPI + PostgreSQL)
+  -> Alembic migrations (creates tables)
+    -> User model + password hashing
+      -> POST /api/auth/register
+      -> POST /api/auth/login (returns JWT)
+        -> FastAPI Depends() auth middleware
+          -> All protected endpoints below
 
-Mock API passage references
-    |
-    +---> Text highlighting (API must return highlight data: category, start, end, text)
+PostgreSQL + Auth
+  -> Submission persistence (INSERT on grade, SELECT on history)
+    -> GET /api/history (user-scoped)
+    -> GET /api/history/:id (user-scoped)
 
-Mock authentication (INDEPENDENT -- no dependencies on layout features)
-    |
-    +---> Profile page gate (already exists, just needs conditional rendering)
-```
+LLM serving (Ollama for dev, vLLM for production)
+  -> Structured JSON output (constrained decoding)
+    -> POST /api/grade
+      -> Score generation (per-category scores + feedback text)
+      -> Highlight generation (two-pass: LLM quotes text -> post-process computes offsets)
+        -> Full GradingResult response
 
-**Critical path:** Combined page --> Side-by-side layout --> Text highlighting --> Scroll sync
+PyMuPDF server-side extraction
+  -> Rubric text available for grading prompt
+    -> POST /api/grade accepts multipart/form-data (PDF file) OR JSON (pre-extracted text)
 
-**Independent tracks:** Mock auth and two-tab nav can be built in parallel with the layout work.
-
-**Mock API dependency:** Text highlighting requires updating the mock grading API response to include passage references. This should be designed FIRST so the highlighting UI has data to work with. Suggested shape:
-
-```typescript
-interface PassageHighlight {
-  categoryId: string;       // maps to rubric category
-  text: string;             // exact text to highlight
-  startIndex: number;       // character offset in essay
-  endIndex: number;         // character offset in essay
-  feedbackType: 'strength' | 'improvement';
-}
+Frontend integration (LAST)
+  -> Replace gradeEssay() body with Axios POST to /api/grade
+  -> Replace getHistory() / getHistoryItem() with Axios GET calls
+  -> Replace signIn() with Axios POST to /api/auth/login
+  -> Add Axios interceptor for Authorization: Bearer header
+  -> Handle 401 -> auto sign-out
 ```
 
 ## MVP Recommendation
 
-**Prioritize (must ship for v1.1 to feel like a real redesign):**
+**Prioritize (in build order):**
 
-1. **Combined home/grade page with collapsible hero** -- Foundation for everything else. Low complexity, high structural impact. The hero collapse IS the first visible change of the redesign.
-2. **Side-by-side results layout (fixed split)** -- Table stakes for any tool showing feedback on text. Without this, the app still feels like v1.0 with cosmetic changes. Use CSS grid, no resize library.
-3. **Color-coded essay highlighting linked to rubric categories** -- The feature that makes feedback contextual rather than abstract. Turnitin proved this is what users expect. Requires mock API update to include passage references.
-4. **Mock authentication on profile** -- Low effort, makes the profile page feel intentional. Simple email/password form with format validation and fake session.
-5. **Two-tab navigation** -- Trivial but necessary cleanup once home/grade are merged.
+1. **Docker Compose with FastAPI skeleton + PostgreSQL** -- Foundation everything sits on. Includes health checks, CORS middleware, Alembic for schema setup. Validates the infrastructure before writing business logic.
 
-**Stretch (build if time allows, in priority order):**
+2. **User model + JWT auth (register/login/protect routes)** -- Unblocks all user-scoped endpoints. Follow FastAPI's official OAuth2+JWT pattern. Use `passlib[bcrypt]` for hashing and `python-jose[cryptography]` for JWT. Simple access token with 24h expiry (no refresh token needed for demo).
 
-- **Scroll synchronization** -- Medium complexity but transforms the highlighting from "nice" to "actually useful" on longer essays. Click feedback card --> essay scrolls to highlighted passage.
-- **Editable essay with resubmit** -- Medium complexity, careful state management needed. High value but not blocking for demo.
-- **Feedback-to-highlight hover linkage** -- Low effort polish that connects the two panels visually.
-- **Category toggle legend** -- Nice-to-have layered on highlighting.
+3. **Submission persistence + history endpoints** -- Straightforward CRUD: store `GradingResult` as JSONB in PostgreSQL on grade completion, query by user_id for history. Validates the database layer works before adding LLM complexity.
 
-## Complexity Budget
+4. **LLM inference endpoint with structured output** -- The hard part. Start with Ollama locally for easy dev setup (`ollama pull llama3.2:3b`). Use Ollama's JSON mode (`format: "json"`) with Pydantic validation. Design the inference client interface so vLLM is a config swap later. Use two-pass approach: (a) LLM generates scores + feedback + quoted text spans, (b) Python post-processing finds quoted spans in essay text and computes character offsets.
 
-| Feature | Estimated Effort | Risk Level | Notes |
-|---------|-----------------|------------|-------|
-| Combined page + collapsible hero | 1-2 days | Low | CSS transitions, route merge, state toggle on focus |
-| Two-tab navigation | 0.5 day | Low | Route config change, header update |
-| Mock auth (profile gate) | 1 day | Low | Form validation, Zustand session, localStorage |
-| Side-by-side layout | 2-3 days | Medium | Restructures GradingPage entirely, responsive breakpoints, existing component relocation |
-| Mock API passage data | 0.5-1 day | Low | Update mock response type and data to include highlights |
-| Text highlighting | 2-3 days | Medium-High | Text matching/splitting, color system, rendering highlighted spans, handling overlaps |
-| Scroll synchronization | 1-2 days | Medium | Anchor refs, scrollIntoView, smooth behavior, edge cases |
-| Editable essay + resubmit | 2-3 days | Medium | State management, loading states in split view, highlight refresh |
-| Hover linkage | 0.5-1 day | Low | Shared hover state, CSS class toggling |
+5. **Server-side PDF extraction** -- PyMuPDF (`pymupdf4llm`) for rubric parsing. Accept both `multipart/form-data` (PDF file upload) and JSON body with `rubricText` string. Frontend currently sends pre-extracted text, so the JSON path is the primary flow; PDF upload is the robust fallback.
 
-**Total: ~12-16 days full scope, ~7-9 days for MVP (first 5 items).**
+6. **Frontend integration** -- Swap mock API function bodies to real Axios calls. Add auth token to Zustand profile store. Wire up Axios interceptor for Bearer header. Handle error responses (401 -> sign out, 422 -> validation error display, 500 -> generic error).
+
+**Defer to v2.1:**
+
+- **Streaming SSE**: Synchronous grading works first. The 10-30s wait is acceptable; streaming is polish.
+- **Refresh token rotation**: 24h access token expiry is fine for a demo. No refresh token complexity.
+- **Dynamic rubric category extraction**: Start with a fixed prompt that always produces 4 categories matching the existing frontend mock structure. Rubric text is included for context but categories are predefined. Dynamic extraction can come later.
+- **Alembic migrations**: For v2.0 initial setup, `Base.metadata.create_all()` is sufficient. Add Alembic when the schema needs to evolve.
+
+## Complexity Deep Dive
+
+### The Hard Problem: Structured LLM Output with Highlight Ranges
+
+The most complex feature is getting Llama 3.2 3B to reliably produce:
+1. Valid JSON matching the nested `GradingResult` schema
+2. Character-offset highlight ranges (`start`, `end`) that correspond to actual positions in the essay text
+
+**Why this is hard:**
+- Llama 3.2 3B (3 billion params) struggles with complex JSON schemas out-of-the-box. HuggingFace forum reports confirm this -- the model often produces malformed JSON or misses required fields without constrained decoding.
+- Character offset calculation requires "counting" characters -- LLMs cannot do this reliably. Asking for `{"start": 142, "end": 198}` will produce wrong numbers.
+- The target schema is non-trivial: 4 categories, each with arrays of strings and arrays of highlight objects containing integers.
+
+**Recommended two-pass approach:**
+
+Pass 1 -- LLM generates grading content:
+```json
+{
+  "categories": [
+    {
+      "name": "Content & Ideas",
+      "score": 5,
+      "maxScore": 6,
+      "strengths": ["Strong thesis..."],
+      "improvements": ["Needs more evidence..."],
+      "justification": "The essay presents...",
+      "highlightQuotes": [
+        {"text": "technology has fundamentally transformed", "type": "strength", "feedback": "Strong opening..."},
+        {"text": "Schools must address infrastructure gaps", "type": "improvement", "feedback": "Needs data..."}
+      ]
+    }
+  ],
+  "summary": "Overall assessment..."
+}
+```
+
+Pass 2 -- Python post-processing:
+- For each `highlightQuotes[].text`, find the substring in the original essay using `str.find()` or fuzzy matching
+- Compute `start` and `end` integer offsets
+- If a quote is not found (LLM hallucinated or paraphrased), drop that highlight silently
+- Assemble the final `GradingResult` with computed offsets
+
+**Confidence:** HIGH that this approach works. Quoting text is something LLMs do well. String matching is deterministic. The only failure mode is the LLM paraphrasing instead of quoting exactly, which fuzzy matching mitigates.
+
+### Auth Token Integration with Existing Frontend
+
+The frontend Zustand profile store already has `signIn()`, `signOut()`, `isSignedIn`, and `email`. The integration path:
+
+- `signIn()` calls `POST /api/auth/login`, receives `{ access_token, token_type }`, stores token in Zustand (persisted to localStorage via existing `persist` middleware)
+- New Axios interceptor reads token from store, adds `Authorization: Bearer <token>` header to all requests
+- 401 responses trigger `signOut()` which clears token and redirects to profile page
+- Registration is a new `POST /api/auth/register` call; on success, auto-login
+
+This is straightforward because the frontend already has the complete auth UI and store structure -- only the function bodies change, exactly as designed in v1.1.
+
+### Rubric PDF Handling: Client-Side vs Server-Side
+
+Current flow: Frontend extracts text client-side with `unpdf` library, sends `rubricText` string in `GradeEssayRequest`. This works but has limitations:
+- `unpdf` is less robust than server-side extractors for complex PDFs
+- Large PDFs slow down the browser
+
+Recommended approach for v2.0:
+- **Primary path**: Frontend continues sending `rubricText` string (backward compatible, no upload needed)
+- **Enhanced path**: Frontend sends PDF as `multipart/form-data`, backend extracts with PyMuPDF (more robust, handles scanned PDFs with OCR if needed)
+- **Backend endpoint accepts both**: Check Content-Type; if `multipart/form-data` with a PDF file, extract server-side; if JSON with `rubricText`, use it directly
+- This avoids breaking the existing frontend flow while enabling a better path
 
 ## Sources
 
-- [Turnitin multicolor highlighting -- official guide](https://guides.turnitin.com/hc/en-us/articles/23754255595149-Using-multicolor-highlighting-in-the-classic-Similarity-Report-view) -- MEDIUM confidence, official docs
-- [Turnitin Feedback Studio next generation](https://www.turnitin.com/blog/unlocking-insights-whats-new-in-turnitin-feedback-studio) -- MEDIUM confidence, official blog
-- [Grammarly real-time feedback UX](https://www.grammarly.com/blog/product/grammarly-feedback/) -- MEDIUM confidence, official product blog
-- [Grammarly text input lag engineering](https://www.grammarly.com/blog/engineering/reducing-text-input-lag/) -- HIGH confidence, engineering blog with implementation details on highlight rendering performance
-- [The Highlight Tool for Google Docs -- color-coded feedback pattern](https://edtechteacher.org/the-highlight-tool-google-doc-add-on-for-writing-and-feedback/) -- MEDIUM confidence, describes the color-to-category mapping UX
-- [QuillBot AI Detector -- product overview](https://quillbot.com/blog/quillbot-tools/ai-detector/) -- MEDIUM confidence, official blog
-- [react-resizable-panels](https://github.com/bvaughn/react-resizable-panels) -- HIGH confidence, referenced to justify NOT using a resize library
-- [Hero section UX best practices -- LogRocket](https://blog.logrocket.com/ux-design/hero-section-examples-best-practices/) -- MEDIUM confidence, design patterns reference
-- [GPTZero AI reviewer](https://gptzero.me/ai-reviewer) -- LOW confidence, competitor reference for side-by-side feedback layout
-- [Turnitin Clarity side panel pattern](https://guides.turnitin.com/hc/en-us/articles/36917529868429-AI-Tools-with-Turnitin-Clarity) -- MEDIUM confidence, official guide showing panel-based feedback
+- [FastAPI Official JWT/OAuth2 Tutorial](https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/) -- HIGH confidence, official docs
+- [vLLM Structured Outputs Documentation](https://docs.vllm.ai/en/v0.8.2/features/structured_outputs.html) -- HIGH confidence, official docs
+- [vLLM Structured Outputs in Practice (Red Hat)](https://developers.redhat.com/articles/2025/06/03/structured-outputs-vllm-guiding-ai-responses) -- MEDIUM confidence
+- [Ollama vs vLLM Performance Comparison (Red Hat)](https://developers.redhat.com/articles/2025/08/08/ollama-vs-vllm-deep-dive-performance-benchmarking) -- MEDIUM confidence
+- [vLLM vs Ollama vs llama.cpp 2025 Guide (ITECS)](https://itecsonline.com/post/vllm-vs-ollama-vs-llama.cpp-vs-tgi-vs-tensort) -- MEDIUM confidence
+- [PyMuPDF Documentation](https://pymupdf.readthedocs.io/en/latest/tutorial.html) -- HIGH confidence, official docs
+- [Python PDF Extractors 2025 Comparison](https://onlyoneaman.medium.com/i-tested-7-python-pdf-extractors-so-you-dont-have-to-2025-edition-c88013922257) -- MEDIUM confidence
+- [LLM-based Automated Essay Scoring (Nature, 2025)](https://www.nature.com/articles/s41598-025-87862-3) -- HIGH confidence, peer-reviewed
+- [Multi-Step Grading Rubrics with LLMs](https://www.thegreenreport.blog/articles/multi-step-grading-rubrics-with-llms-for-answer-evaluation/multi-step-grading-rubrics-with-llms-for-answer-evaluation.html) -- MEDIUM confidence
+- [Llama 3.2 3B Structured JSON (HuggingFace Forums)](https://discuss.huggingface.co/t/ask-for-a-structured-json-object-in-the-call-to-meta-llama-llama-3-2-3b-instruct/138998) -- MEDIUM confidence, community reports
+- [FastAPI LLM Best Practices (Agents Arcade)](https://agentsarcade.com/blog/building-llm-apps-with-fastapi-best-practices) -- MEDIUM confidence
+- [Docker Compose FastAPI + PostgreSQL patterns](https://blog.devops.dev/a-scalable-approach-to-fastapi-projects-with-postgresql-alembic-pytest-and-docker-using-uv-78ebf6f7fb9a) -- MEDIUM confidence
+- [LLM JSON Structured Output (Llama API)](https://llama.developer.meta.com/docs/features/structured-output/) -- HIGH confidence, official Meta docs
 
 ---
-*Feature research for: AI Essay Grader v1.1 UX Redesign*
-*Researched: 2026-03-08*
+*Feature research for: AI Essay Grader v2.0 Backend Implementation*
+*Researched: 2026-03-09*
