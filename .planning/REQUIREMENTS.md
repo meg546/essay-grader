@@ -24,9 +24,9 @@ Requirements for backend implementation. Each maps to roadmap phases.
 
 ### Grading
 
-- [ ] **GRADE-01**: User can submit essay + rubric and receive full GradingResult JSON (POST /api/grade)
-- [ ] **GRADE-02**: Backend generates character-offset highlight ranges via two-pass approach (LLM quotes text, Python computes offsets)
-- [ ] **GRADE-03**: Grading adjusts scoring strictness based on grade level parameter
+- [x] **GRADE-01**: User can submit essay + rubric and receive full GradingResult JSON (POST /api/grade)
+- [x] **GRADE-02**: Backend generates character-offset highlight ranges via two-pass approach (LLM quotes text, Python computes offsets)
+- [x] **GRADE-03**: Grading adjusts scoring strictness based on grade level parameter
 - [x] **GRADE-04**: Model inference endpoint is configurable via environment variable (local/LAN/cloud)
 
 ### Persistence
@@ -94,9 +94,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-02 | Phase 12 | Complete |
 | AUTH-03 | Phase 12 | Complete |
 | AUTH-04 | Phase 12 | Complete |
-| GRADE-01 | Phase 13 | Pending |
-| GRADE-02 | Phase 13 | Pending |
-| GRADE-03 | Phase 13 | Pending |
+| GRADE-01 | Phase 13 | Complete |
+| GRADE-02 | Phase 13 | Complete |
+| GRADE-03 | Phase 13 | Complete |
 | GRADE-04 | Phase 13 | Complete |
 | PERSIST-01 | Phase 14 | Pending |
 | PERSIST-02 | Phase 14 | Pending |
