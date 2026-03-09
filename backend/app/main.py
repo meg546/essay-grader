@@ -2,7 +2,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
-from .routes import auth, health
+from .routes import auth, grading, health
 
 settings = get_settings()
 
@@ -19,4 +19,5 @@ app.add_middleware(
 api_router = APIRouter(prefix="/api")
 api_router.include_router(health.router)
 api_router.include_router(auth.router)
+api_router.include_router(grading.router)
 app.include_router(api_router)
