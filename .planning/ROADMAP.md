@@ -144,7 +144,7 @@ v2.0: 11 → 12 → 13 → 14 → 15
 | 9. Side-by-Side Results & Highlighting | v1.1 | 2/2 | Complete | 2026-03-09 |
 | 10. Mock Auth & Editable Essay | v1.1 | 2/2 | Complete | 2026-03-09 |
 | 11. Backend Foundation | v2.0 | 2/2 | Complete | 2026-03-09 |
-| 12. Authentication | 2/2 | Complete   | 2026-03-09 | - |
+| 12. Authentication | 2/2 | Complete    | 2026-03-09 | - |
 | 13. LLM Inference & Grading | v2.0 | 0/? | Not started | - |
 | 14. Persistence & History | v2.0 | 0/? | Not started | - |
 | 15. Frontend Integration | v2.0 | 0/? | Not started | - |
