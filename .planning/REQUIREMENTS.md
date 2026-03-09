@@ -53,8 +53,8 @@
 - [ ] **LAYOUT-02**: Hero section collapses to a minimal bar when user focuses on the essay input textarea
 - [ ] **LAYOUT-03**: After grading, results display in side-by-side layout with essay on left and feedback/scores on right
 - [ ] **LAYOUT-04**: Side-by-side layout stacks vertically on tablet breakpoints (<1024px)
-- [ ] **NAV-01**: Navigation has two tabs: Home and Profile
-- [ ] **NAV-02**: Home tab navigates to the combined grading page, Profile tab to profile/auth page
+- [x] **NAV-01**: Navigation has two tabs: Home and Profile
+- [x] **NAV-02**: Home tab navigates to the combined grading page, Profile tab to profile/auth page
 
 ### Text Highlighting
 
@@ -105,8 +105,8 @@
 | LAYOUT-02 | Phase 8 | Pending |
 | LAYOUT-03 | Phase 9 | Pending |
 | LAYOUT-04 | Phase 9 | Pending |
-| NAV-01 | Phase 7 | Pending |
-| NAV-02 | Phase 7 | Pending |
+| NAV-01 | Phase 7 | Complete |
+| NAV-02 | Phase 7 | Complete |
 | HLGT-01 | Phase 7 | Pending |
 | HLGT-02 | Phase 9 | Pending |
 | HLGT-03 | Phase 9 | Pending |
