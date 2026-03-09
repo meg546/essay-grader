@@ -57,7 +57,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. FastAPI serves a response at http://localhost:8000/api with CORS headers allowing the Vite dev server origin
   3. Pydantic response models serialize to camelCase JSON matching the existing frontend TypeScript types (GradingResult, HistoryItem)
   4. Alembic can generate and apply migrations against the running PostgreSQL instance
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 11-01-PLAN.md -- FastAPI scaffold, Docker Compose with PostgreSQL, health endpoint with CORS
@@ -142,7 +142,7 @@ v2.0: 11 → 12 → 13 → 14 → 15
 | 8. Collapsible Hero & Grading Workspace | v1.1 | 1/1 | Complete | 2026-03-09 |
 | 9. Side-by-Side Results & Highlighting | v1.1 | 2/2 | Complete | 2026-03-09 |
 | 10. Mock Auth & Editable Essay | v1.1 | 2/2 | Complete | 2026-03-09 |
-| 11. Backend Foundation | v2.0 | 0/2 | Not started | - |
+| 11. Backend Foundation | 1/2 | In Progress|  | - |
 | 12. Authentication | v2.0 | 0/? | Not started | - |
 | 13. LLM Inference & Grading | v2.0 | 0/? | Not started | - |
 | 14. Persistence & History | v2.0 | 0/? | Not started | - |
