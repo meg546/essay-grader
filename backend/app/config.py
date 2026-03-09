@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -18,6 +19,13 @@ class Settings(BaseSettings):
     jwt_secret: str = "change-me-in-production"
     jwt_algorithm: str = "HS256"
     jwt_expire_hours: int = 24
+
+    # LLM inference settings
+    model_provider: Literal["ollama", "anthropic", "openai"] = "ollama"
+    model_name: str = "llama3.2:3b"
+    model_endpoint: str = "http://localhost:11434"
+    anthropic_api_key: str = ""
+    openai_api_key: str = ""
 
 
 @lru_cache
