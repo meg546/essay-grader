@@ -85,34 +85,34 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | — | Pending |
-| INFRA-02 | — | Pending |
-| INFRA-03 | — | Pending |
-| INFRA-04 | — | Pending |
-| INFRA-05 | — | Pending |
-| AUTH-01 | — | Pending |
-| AUTH-02 | — | Pending |
-| AUTH-03 | — | Pending |
-| AUTH-04 | — | Pending |
-| GRADE-01 | — | Pending |
-| GRADE-02 | — | Pending |
-| GRADE-03 | — | Pending |
-| GRADE-04 | — | Pending |
-| PERSIST-01 | — | Pending |
-| PERSIST-02 | — | Pending |
-| PERSIST-03 | — | Pending |
-| PDF-01 | — | Pending |
-| PDF-02 | — | Pending |
-| FRONT-01 | — | Pending |
-| FRONT-02 | — | Pending |
-| FRONT-03 | — | Pending |
-| FRONT-04 | — | Pending |
+| INFRA-01 | Phase 11 | Pending |
+| INFRA-02 | Phase 11 | Pending |
+| INFRA-03 | Phase 11 | Pending |
+| INFRA-04 | Phase 11 | Pending |
+| INFRA-05 | Phase 11 | Pending |
+| AUTH-01 | Phase 12 | Pending |
+| AUTH-02 | Phase 12 | Pending |
+| AUTH-03 | Phase 12 | Pending |
+| AUTH-04 | Phase 12 | Pending |
+| GRADE-01 | Phase 13 | Pending |
+| GRADE-02 | Phase 13 | Pending |
+| GRADE-03 | Phase 13 | Pending |
+| GRADE-04 | Phase 13 | Pending |
+| PERSIST-01 | Phase 14 | Pending |
+| PERSIST-02 | Phase 14 | Pending |
+| PERSIST-03 | Phase 14 | Pending |
+| PDF-01 | Phase 13 | Pending |
+| PDF-02 | Phase 13 | Pending |
+| FRONT-01 | Phase 15 | Pending |
+| FRONT-02 | Phase 15 | Pending |
+| FRONT-03 | Phase 15 | Pending |
+| FRONT-04 | Phase 15 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 22 total
-- Mapped to phases: 0
-- Unmapped: 22
+- Mapped to phases: 22
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-09 after initial definition*
+*Last updated: 2026-03-09 after roadmap creation*
