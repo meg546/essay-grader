@@ -1,399 +1,346 @@
 # Architecture Patterns
 
-**Domain:** AI essay grading frontend (React SPA with mock-first API layer)
+**Domain:** Essay grading SPA -- v1.1 UX redesign (side-by-side results, text highlighting, collapsible hero, mock auth)
 **Researched:** 2026-03-08
-**Confidence:** HIGH -- well-established React/TypeScript patterns applied to a clearly scoped project
+**Confidence:** HIGH -- existing codebase analyzed directly, patterns are standard React/Zustand
+
+## Current Architecture Snapshot
+
+Before describing the target architecture, here is what exists today:
+
+```
+App.tsx (BrowserRouter)
+  Layout (Header + Outlet, max-w-[960px])
+    LandingPage        /           -- hero CTA + link to /grade
+    GradingPage        /grade      -- input form OR results (conditional on currentResult)
+    ProfilePage        /profile    -- sign-in, grade level, history list
+```
+
+**Stores:** `app-store` (essayText, rubricFile, currentResult, history) and `profile-store` (email, gradeLevel, isSignedIn). Both use zustand/persist.
+
+**Key observation:** GradingPage already toggles between input mode and results mode via `if (currentResult)`. The redesign replaces this binary toggle with a combined layout where both are visible simultaneously.
 
 ## Recommended Architecture
 
-Feature-sliced folder structure with a centralized API abstraction layer, Zustand stores per domain, and React Router v6 for page routing. The critical architectural decision is the API layer boundary: all backend interactions flow through typed async functions that return mock data now and will swap to real Axios calls later by changing only function bodies.
+### Route Consolidation
+
+Merge LandingPage and GradingPage into a single `HomePage` at `/`. The current LandingPage is just a hero with a CTA button -- it becomes the collapsible hero section at the top of the combined page. Navigation drops from 3 tabs to 2 (Home, Profile).
 
 ```
-src/
-  api/                  # API abstraction layer (mock-first)
-    client.ts           # Axios instance config (baseURL, interceptors)
-    essays.ts           # submitEssay(), getEssayResult(), getHistory()
-    mock/               # Mock data and delay simulation
-      essays.ts         # Mock response factories
-      delay.ts          # Simulated network delay helper
-  components/           # Shared/reusable UI components
-    ui/                 # Primitives: Button, Card, Input, TextArea, Badge
-    layout/             # Shell, Header, Footer, PageContainer
-    feedback/           # ScoreBar, FeedbackSection, CollapsiblePanel
-    rubric/             # RubricEditor, RubricCategory, ScoreSlider
-    essay/              # EssayInput, FileUpload, WordCount
-  pages/                # Route-level page components (one per route)
-    LandingPage.tsx
-    GradingPage.tsx
-    ResultsPage.tsx
-    HistoryPage.tsx
-  stores/               # Zustand stores
-    useEssayStore.ts    # Current essay text, file, submission state
-    useRubricStore.ts   # Rubric categories, scores, customization
-    useResultStore.ts   # Grading results, feedback data
-    useHistoryStore.ts  # Past submissions list
-  types/                # Shared TypeScript interfaces
-    essay.ts            # Essay, EssaySubmission
-    rubric.ts           # RubricCategory, RubricConfig
-    result.ts           # GradingResult, CategoryScore, Feedback
-    api.ts              # API response wrappers
-  hooks/                # Custom React hooks
-    useSubmitEssay.ts   # Orchestrates submission flow
-    useFileUpload.ts    # File reading, validation, extraction
-  utils/                # Pure utility functions
-    scoring.ts          # Color thresholds, percentage calculations
-    validation.ts       # Input validation rules
-  router.tsx            # React Router v6 route definitions
-  App.tsx               # Root component (providers, layout shell)
-  main.tsx              # Vite entry point
+App.tsx (BrowserRouter)
+  Layout (Header + Outlet)
+    HomePage           /           -- hero (collapsible) + grading input + results split-pane
+    ProfilePage        /profile    -- mock auth (email+password) + settings + history
+```
+
+The Layout component currently constrains content to `max-w-[960px]`. A side-by-side view at 960px gives each pane only ~460px, which is too tight. **Move width constraints out of Layout and into each page.** Layout becomes just `Header + Outlet + min-h-screen`. HomePage sets `max-w-[1280px]` for the split-pane view. ProfilePage keeps `max-w-[960px]`. This is a small refactor with high flexibility payoff.
+
+### Component Tree (Target)
+
+```
+HomePage
+  HeroSection                     -- collapsible via CSS max-height transition
+  GradingWorkspace                -- full-width container managing input/results modes
+    [INPUT MODE]
+      EssayInput                  -- existing, reused as-is
+      RubricUpload                -- existing, reused as-is
+      SubmitButton
+    [RESULTS MODE]
+      HighlightProvider           -- React context for active-category hover state
+        SplitPaneLayout           -- CSS grid, two columns
+          EssayPanel (left)
+            HighlightedEssay      -- essay text with color-coded <mark> spans
+            EditToggle            -- switches to textarea for resubmit
+          FeedbackPanel (right)
+            ResultsSummary        -- existing, reused
+            ScoreOverview         -- existing, reused
+            CategoryFeedback[]    -- existing, enhanced with hover linkage
+            ResubmitButton
 ```
 
 ### Component Boundaries
 
-| Component | Responsibility | Communicates With |
-|-----------|---------------|-------------------|
-| **Pages** | Route-level orchestration. Compose feature components, trigger store actions, handle navigation. | Stores (read/write), API layer (via hooks), Router |
-| **API Layer** | All backend communication. Typed async functions returning domain objects. Mock implementations now, real Axios later. | External backend (future), Mock data module (now) |
-| **Zustand Stores** | Domain state. Each store owns one slice of application state. No cross-store dependencies. | Pages and components read; pages and hooks write |
-| **Shared Components** | Reusable UI primitives and domain-specific display components. No direct store access -- receive data via props. | Parent components only (props in, callbacks out) |
-| **Hooks** | Complex multi-step logic (submit essay, upload file). Coordinate between API layer and stores. | API layer, Zustand stores |
-| **Types** | Shared TypeScript interfaces. No runtime behavior. | Imported everywhere |
-| **Utils** | Pure functions with no side effects or state. | Imported by components, hooks, stores |
+| Component | Responsibility | Reads From | Writes To |
+|-----------|---------------|------------|-----------|
+| HomePage | Orchestrates hero collapse + workspace rendering | app-store (currentResult) | -- |
+| HeroSection | Marketing copy, animated collapse/expand | app-store (heroCollapsed) | app-store (setHeroCollapsed) |
+| GradingWorkspace | Manages input-vs-results mode, handles submission logic | app-store (essayText, rubricFile, currentResult), profile-store (gradeLevel) | app-store (setCurrentResult, addToHistory) |
+| HighlightProvider | Scoped React context for active-category index | -- | -- (provides context value) |
+| SplitPaneLayout | Pure layout: left/right CSS grid columns | -- | -- |
+| HighlightedEssay | Renders essay with inline color-coded highlights per category | essayText + highlights (props), HighlightContext (active category) | -- |
+| EssayPanel | Wraps HighlightedEssay, toggles between read-only and editable modes | app-store (essayText) | app-store (setEssayText) |
+| FeedbackPanel | Stacks score overview + category feedback cards | currentResult (prop) | -- |
+| CategoryFeedback | Per-category feedback display, triggers active highlight on hover | category (prop), HighlightContext | HighlightContext (setActiveCategoryIndex) |
 
-### Data Flow
+## Data Flow for Text Highlighting
 
-```
-User Action
-    |
-    v
-Page Component (event handler)
-    |
-    v
-Custom Hook (useSubmitEssay)
-    |
-    +--> Zustand Store: set loading state
-    |
-    +--> API Layer: submitEssay(essayText, rubricConfig)
-    |       |
-    |       v
-    |    Mock Module (now) / Axios call (future)
-    |       |
-    |       v
-    |    Returns: GradingResult (typed)
-    |
-    +--> Zustand Store: set result data, clear loading
-    |
-    v
-React re-renders (store subscription triggers UI update)
-    |
-    v
-Results displayed in ScoreBar, FeedbackSection components
-```
+This is the most architecturally significant new feature. The key question: how does feedback map to essay passages?
 
-**Key principle:** Data flows down (props), actions flow up (callbacks), state lives in stores, API calls happen in hooks. Components never call the API layer directly -- they use hooks or store actions.
+### Highlight Data Model
 
-## Patterns to Follow
-
-### Pattern 1: Mock-First API Layer with Typed Contracts
-
-**What:** Every API function has a concrete TypeScript return type. Mock implementations live in a separate module. Swapping to real backend means changing the function body, not the signature.
-
-**When:** Always. This is the core architectural pattern for this project.
-
-**Example:**
+The mock API response needs passage references. Extend the existing types:
 
 ```typescript
-// types/result.ts
-export interface CategoryScore {
-  category: string;
-  score: number;
-  maxScore: number;
-  feedback: {
-    strengths: string[];
-    improvements: string[];
-    justification: string;
-  };
+// New type
+interface PassageHighlight {
+  categoryName: string;       // links to CategoryScore.name
+  startOffset: number;        // character offset in essayText
+  endOffset: number;          // character offset in essayText
 }
 
-export interface GradingResult {
+// Extended GradingResult (add two fields)
+interface GradingResult {
   id: string;
   essayExcerpt: string;
+  essayText: string;              // NEW: full essay stored with result
   overallScore: number;
-  maxPossibleScore: number;
+  maxScore: number;
   summary: string;
-  categoryScores: CategoryScore[];
+  categories: CategoryScore[];
+  highlights: PassageHighlight[];  // NEW: all highlights across categories
   gradedAt: string;
 }
-
-// api/essays.ts
-import { mockSubmitEssay } from './mock/essays';
-import type { GradingResult } from '../types/result';
-import type { RubricConfig } from '../types/rubric';
-
-export async function submitEssay(
-  essayText: string,
-  rubric: RubricConfig
-): Promise<GradingResult> {
-  // MOCK: Replace this body with real Axios call later
-  return mockSubmitEssay(essayText, rubric);
-}
-
-// api/mock/essays.ts
-import { delay } from './delay';
-import type { GradingResult } from '../../types/result';
-
-export async function mockSubmitEssay(
-  essayText: string,
-  rubric: RubricConfig
-): Promise<GradingResult> {
-  await delay(1500); // Simulate network latency
-  return {
-    id: crypto.randomUUID(),
-    essayExcerpt: essayText.slice(0, 100),
-    overallScore: 18,
-    maxPossibleScore: 24,
-    summary: "The essay demonstrates solid understanding...",
-    categoryScores: rubric.categories.map(cat => ({
-      category: cat.name,
-      score: Math.floor(Math.random() * (cat.maxScore + 1)),
-      maxScore: cat.maxScore,
-      feedback: {
-        strengths: ["Clear thesis statement", "Good use of evidence"],
-        improvements: ["Transitions between paragraphs could be smoother"],
-        justification: "The essay meets most criteria for this category..."
-      }
-    })),
-    gradedAt: new Date().toISOString()
-  };
-}
 ```
 
-### Pattern 2: Zustand Store Per Domain (No Cross-Store Dependencies)
+**Keep highlights as a flat array on GradingResult**, not nested inside each CategoryScore. Reasons: (1) rendering the highlighted essay requires iterating ALL highlights sorted by offset, which is simpler from a flat list; (2) categories already have `name` as the linkage key; (3) the future backend will likely return highlights as a separate array.
 
-**What:** Each Zustand store manages one domain concept. Stores do not import or reference each other. Coordination happens in hooks or page components.
+Store `essayText` on the result so history entries can re-render highlights without needing the original input text to still be in the store.
 
-**When:** Always. Keeps stores testable and prevents circular dependency issues.
+### Highlight Rendering Pipeline
 
-**Example:**
+```
+GradingResult.highlights (flat array of {categoryName, startOffset, endOffset})
+        |
+        v
+    sortByStartOffset()
+        |
+        v
+    buildSegments(essayText, sortedHighlights)
+        |   Splits essay into alternating segments:
+        |   [{type:"text", content:"..."}, {type:"highlight", content:"...", categoryName:"..."}, ...]
+        v
+    HighlightedEssay component
+        |   Maps each segment to:
+        |   - <span> for plain text
+        |   - <mark className={categoryColorMap[categoryName]}> for highlighted text
+        v
+    Rendered DOM with color-coded passages
+```
+
+### Category-to-Color Mapping
+
+Use a deterministic color palette indexed by category position (not name). The existing score-utils uses emerald/amber/rose for score levels, so highlight colors must be distinct:
 
 ```typescript
-// stores/useRubricStore.ts
-import { create } from 'zustand';
-import type { RubricCategory } from '../types/rubric';
-
-const DEFAULT_CATEGORIES: RubricCategory[] = [
-  { id: '1', name: 'Content & Ideas', maxScore: 6 },
-  { id: '2', name: 'Organization', maxScore: 6 },
-  { id: '3', name: 'Style/Voice', maxScore: 6 },
-  { id: '4', name: 'Language Conventions', maxScore: 6 },
-];
-
-interface RubricState {
-  categories: RubricCategory[];
-  addCategory: (name: string, maxScore: number) => void;
-  removeCategory: (id: string) => void;
-  updateCategory: (id: string, updates: Partial<RubricCategory>) => void;
-  resetToDefaults: () => void;
-}
-
-export const useRubricStore = create<RubricState>((set) => ({
-  categories: [...DEFAULT_CATEGORIES],
-  addCategory: (name, maxScore) =>
-    set((state) => ({
-      categories: [...state.categories, { id: crypto.randomUUID(), name, maxScore }],
-    })),
-  removeCategory: (id) =>
-    set((state) => ({
-      categories: state.categories.filter((c) => c.id !== id),
-    })),
-  updateCategory: (id, updates) =>
-    set((state) => ({
-      categories: state.categories.map((c) =>
-        c.id === id ? { ...c, ...updates } : c
-      ),
-    })),
-  resetToDefaults: () => set({ categories: [...DEFAULT_CATEGORIES] }),
-}));
+const CATEGORY_HIGHLIGHT_COLORS = [
+  { bg: "bg-blue-100",   text: "text-blue-800",   name: "blue"   },
+  { bg: "bg-purple-100", text: "text-purple-800", name: "purple" },
+  { bg: "bg-orange-100", text: "text-orange-800", name: "orange" },
+  { bg: "bg-teal-100",   text: "text-teal-800",   name: "teal"   },
+  { bg: "bg-pink-100",   text: "text-pink-800",   name: "pink"   },
+  { bg: "bg-yellow-100", text: "text-yellow-800", name: "yellow" },
+] as const;
 ```
 
-### Pattern 3: Page Components as Orchestrators
+Assign colors by the order categories appear in `GradingResult.categories`. The same index drives both the CategoryFeedback card accent color and the `<mark>` highlight color in the essay, creating visual linkage without interaction.
 
-**What:** Page components (route-level) are the only components that directly access stores and coordinate between hooks. Shared components receive everything via props.
+### Interactive Highlight-Feedback Linkage
 
-**When:** Always. This keeps shared components reusable and testable without store mocking.
+When a user hovers over a CategoryFeedback card, corresponding highlights in the essay emphasize (full opacity) while other highlights dim (~40% opacity).
 
-**Example:**
+**Use a scoped React context, NOT Zustand.** This is ephemeral UI state -- no persistence needed, no cross-page use, no reason to pollute the store:
 
 ```typescript
-// pages/GradingPage.tsx
-export function GradingPage() {
-  const { categories } = useRubricStore();
-  const { essayText, setEssayText } = useEssayStore();
-  const { submit, isLoading } = useSubmitEssay();
-  const navigate = useNavigate();
-
-  const handleSubmit = async () => {
-    const result = await submit(essayText, { categories });
-    if (result) navigate(`/results/${result.id}`);
-  };
-
-  return (
-    <PageContainer>
-      <EssayInput value={essayText} onChange={setEssayText} />
-      <RubricEditor categories={categories} /* ...callbacks */ />
-      <Button onClick={handleSubmit} loading={isLoading}>
-        Grade Essay
-      </Button>
-    </PageContainer>
-  );
+interface HighlightContextValue {
+  activeCategoryIndex: number | null;
+  setActiveCategoryIndex: (index: number | null) => void;
 }
 ```
 
-### Pattern 4: Collocated Route Definitions
+- `CategoryFeedback`: `onMouseEnter` sets active index, `onMouseLeave` clears it.
+- `HighlightedEssay`: reads active index. Active highlights get full opacity. Others dim via Tailwind `opacity-40` conditional class.
 
-**What:** All routes defined in a single `router.tsx` file using React Router v6 `createBrowserRouter`. Keeps routing centralized and easy to reason about.
+The `HighlightProvider` wraps only the `SplitPaneLayout`, keeping the context tightly scoped.
 
-**When:** Always for apps with fewer than ~15 routes.
+## State Management Changes
 
-**Example:**
+### app-store Modifications
 
-```typescript
-// router.tsx
-import { createBrowserRouter } from 'react-router-dom';
-import { AppLayout } from './components/layout/AppLayout';
-import { LandingPage } from './pages/LandingPage';
-import { GradingPage } from './pages/GradingPage';
-import { ResultsPage } from './pages/ResultsPage';
-import { HistoryPage } from './pages/HistoryPage';
-
-export const router = createBrowserRouter([
-  {
-    element: <AppLayout />,
-    children: [
-      { path: '/', element: <LandingPage /> },
-      { path: '/grade', element: <GradingPage /> },
-      { path: '/results/:id', element: <ResultsPage /> },
-      { path: '/history', element: <HistoryPage /> },
-    ],
-  },
-]);
-```
-
-### Pattern 5: Score Color Coding as Pure Utility
-
-**What:** Score-to-color mapping is a pure function, not embedded in components. Thresholds are configurable.
-
-**When:** Any time scores are displayed visually.
-
-**Example:**
+Two additions to the existing store:
 
 ```typescript
-// utils/scoring.ts
-export type ScoreLevel = 'low' | 'medium' | 'high';
-
-export function getScoreLevel(score: number, maxScore: number): ScoreLevel {
-  const ratio = score / maxScore;
-  if (ratio >= 0.7) return 'high';
-  if (ratio >= 0.4) return 'medium';
-  return 'low';
+interface AppState {
+  // ... existing fields unchanged ...
+  heroCollapsed: boolean;                    // NEW
+  setHeroCollapsed: (collapsed: boolean) => void;  // NEW
 }
-
-export const SCORE_COLORS: Record<ScoreLevel, string> = {
-  high: 'bg-green-500',
-  medium: 'bg-yellow-500',
-  low: 'bg-red-500',
-};
 ```
+
+Persist `heroCollapsed` via the existing `partialize` config (alongside `history`) so returning users who have already used the app do not see the hero re-expand.
+
+The `GradingResult` type gains `essayText: string` and `highlights: PassageHighlight[]`. The existing `essayExcerpt` remains for history list display. Note: storing full essayText per history entry increases localStorage usage. Cap persisted history at ~20 entries to stay under the ~5MB localStorage limit.
+
+### profile-store Modifications
+
+Add a password parameter to `signIn` for the mock auth form (the value is ignored internally -- it just makes the sign-in form look realistic):
+
+```typescript
+signIn: (email: string, password: string) => void;  // password param ignored
+```
+
+### No New Stores Needed
+
+Everything fits within the existing two-store pattern. The highlight interaction state uses React context (scoped to the split-pane) precisely because it should NOT be in a store.
+
+## Collapsible Hero Section
+
+### Collapse Triggers
+
+The hero collapses when:
+1. User focuses the essay textarea (input begins)
+2. User uploads a file
+3. Results are showing (`currentResult` is non-null)
+4. Previously collapsed (persisted `heroCollapsed` state)
+
+The hero re-expands when:
+1. User clicks "Grade Another" (full reset flow)
+
+### Animation Approach
+
+Use CSS `max-height` + `overflow-hidden` + `transition`. Set a generous `max-height` (e.g., 500px) on expanded state, `max-height: 0` on collapsed. Duration: 300ms ease-out.
+
+Do NOT use the existing Radix Collapsible component for this. Radix Collapsible adds ARIA disclosure semantics and keyboard handling meant for interactive widgets. The hero is decorative content, not a disclosure. A simple conditional-class div is correct:
+
+```tsx
+<div className={cn(
+  "overflow-hidden transition-all duration-300 ease-out",
+  heroCollapsed ? "max-h-0 opacity-0" : "max-h-[500px] opacity-100"
+)}>
+  <HeroContent />
+</div>
+```
+
+## Split-Pane Layout
+
+### CSS Grid, Not a Library
+
+The design is a fixed ~50/50 split with no user-resizable divider. CSS Grid handles this:
+
+```tsx
+<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+  <EssayPanel />
+  <FeedbackPanel />
+</div>
+```
+
+Below `lg` breakpoint, it stacks vertically (essay on top, feedback below), maintaining tablet responsiveness.
+
+### Independent Scroll
+
+Both panes should scroll independently. Use a fixed height relative to viewport on each:
+
+```tsx
+<div className="h-[calc(100vh-12rem)] overflow-y-auto">
+  {/* pane content */}
+</div>
+```
+
+This keeps both panes visible simultaneously. The exact offset (12rem) accounts for header height + hero + padding and should be fine-tuned during implementation.
+
+## Essay Editing in Results View
+
+### Do NOT Use contentEditable
+
+`contentEditable` and React are notoriously incompatible. Highlight `<mark>` elements inside a contentEditable div create cursor/selection nightmares. Text edits would also invalidate all character offsets.
+
+**Instead: toggle between two modes in EssayPanel.**
+
+- **Read mode (default):** `HighlightedEssay` renders the essay with color-coded highlights. An "Edit" button is visible.
+- **Edit mode:** A plain `<textarea>` (or the existing `EssayInput` component) replaces the highlighted view. Highlights disappear because the text is being modified. A "Cancel" button restores read mode. A "Resubmit" button sends the modified text through the grading API for fresh results with new highlights.
+
+This is simpler, more reliable, and matches the mental model: editing invalidates previous feedback, so hiding highlights during editing is correct behavior.
+
+## Mock Auth Guard
+
+A simple wrapper component for route protection:
+
+```tsx
+function AuthGuard({ children }: { children: React.ReactNode }) {
+  const isSignedIn = useProfileStore((s) => s.isSignedIn);
+  if (!isSignedIn) {
+    return <Navigate to="/profile" replace />;
+  }
+  return <>{children}</>;
+}
+```
+
+**For this project: do NOT gate the grading flow behind auth.** The grading page should work without sign-in for demo purposes. Instead, show a subtle "Sign in to save history" nudge. The auth guard pattern is here for if/when gating is desired, but keeping the demo frictionless is more important.
 
 ## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: Store Access in Shared Components
+### Anti-Pattern 1: Ephemeral UI State in Zustand
+**What:** Storing hover/active highlight category index in the Zustand store.
+**Why bad:** Triggers unnecessary re-renders across unrelated subscribers. Persisting ephemeral hover state is meaningless. Pollutes the store with transient data.
+**Instead:** Scoped React context within `SplitPaneLayout`.
 
-**What:** Importing `useRubricStore` or `useEssayStore` directly inside `<ScoreBar>` or `<RubricCategory>`.
+### Anti-Pattern 2: contentEditable for Essay Editing
+**What:** Making the highlighted essay div `contentEditable` to allow inline editing.
+**Why bad:** React and contentEditable fight over DOM ownership. Highlight `<mark>` elements break cursor positioning. Any text change invalidates all character offsets for highlights.
+**Instead:** Toggle between read-only highlighted view and plain textarea edit mode.
 
-**Why bad:** Makes components untestable without store mocking. Breaks reusability. Creates hidden coupling that makes refactoring painful.
+### Anti-Pattern 3: Dynamic max-height Calculation for Hero Collapse
+**What:** Using `ref.scrollHeight` to compute exact max-height for smooth animation.
+**Why bad:** Requires ResizeObserver for responsive changes, adds complexity, and is fragile across layout shifts.
+**Instead:** Use a generous fixed `max-height` that exceeds the hero's natural height. The CSS transition still looks smooth because it animates from the current rendered height toward 0.
 
-**Instead:** Pass data via props. Only page-level components access stores.
+### Anti-Pattern 4: Overlapping Highlight Spans
+**What:** Allowing highlights from different categories to overlap the same text range, creating nested `<mark>` elements.
+**Why bad:** Nested marks create ambiguous visual styling and complex DOM. Which color wins?
+**Instead:** In `buildSegments`, if two highlights overlap, split into sub-segments where each has a single category. For the mock data, simply avoid overlapping ranges entirely.
 
-### Anti-Pattern 2: API Calls in Components
+### Anti-Pattern 5: Resizable Split Pane Library
+**What:** Installing `react-split-pane` or similar for the side-by-side layout.
+**Why bad:** Over-engineered for a fixed split. Adds a dependency, drag handle UX, and state management for pane sizes that are not part of the design.
+**Instead:** CSS Grid with fixed column ratios. Two lines of Tailwind.
 
-**What:** Calling `submitEssay()` directly from a component's onClick handler.
+## Suggested Build Order (Dependencies)
 
-**Why bad:** Mixes concerns. Makes loading/error state management ad-hoc. When you need the same API call from two places, you duplicate logic.
+Each step builds on the previous. Items at the same level can be parallelized.
 
-**Instead:** Use custom hooks (e.g., `useSubmitEssay`) that encapsulate the API call, loading state, error handling, and store updates.
+| Order | Component(s) | Depends On | Rationale |
+|-------|-------------|------------|-----------|
+| 1 | Type extensions (`PassageHighlight`, extend `GradingResult` with `essayText` + `highlights`) | Nothing | Everything downstream depends on the data shape |
+| 2 | Mock data with highlights + updated `gradeEssay` mock returning essayText | Step 1 | Need realistic data to develop and test against |
+| 3 | `highlight-utils.ts` (`buildSegments`, `sortByOffset`) + `category-colors.ts` | Step 1 | Pure logic, testable in isolation, critical correctness |
+| 4 | Layout refactor: move `max-w-*` from Layout to individual pages | Nothing | Unblocks the wider split-pane; can be done in parallel with steps 1-3 |
+| 5 | Route consolidation: create HomePage, merge LandingPage content, update Header nav to 2 tabs | Step 4 | Structural change that everything else sits within |
+| 6 | `HeroSection` + `heroCollapsed` state in app-store | Step 5 | Hero lives inside HomePage; needs the route to exist |
+| 7 | `HighlightedEssay` component + `HighlightContext` / `HighlightProvider` | Steps 2, 3 | Core rendering for the left pane of results view |
+| 8 | `SplitPaneLayout` + `EssayPanel` + `FeedbackPanel` | Step 7, existing results components | Composes the two-column results view |
+| 9 | `GradingWorkspace` (input mode -> submission -> results mode transition) | Steps 6, 8 | Orchestration layer tying hero collapse to grading flow |
+| 10 | `CategoryFeedback` hover linkage via HighlightContext | Steps 7, 8 | Interactive polish: hover a card, highlights emphasize |
+| 11 | Edit mode toggle + resubmit in EssayPanel | Step 9 | Requires full flow working before adding edit capability |
+| 12 | Mock auth enhancement (add password field to ProfilePage sign-in form) | Nothing | Independent, lowest priority, purely cosmetic |
 
-### Anti-Pattern 3: Shared Zustand Store for Everything
-
-**What:** One massive store with essay text, rubric categories, results, history, loading states all together.
-
-**Why bad:** Every component that reads any state re-renders on any state change. Becomes unmaintainable quickly. Testing requires setting up the entire application state.
-
-**Instead:** One store per domain. Four small stores are better than one large store.
-
-### Anti-Pattern 4: Inline Mock Data
-
-**What:** Hardcoding mock responses inside API functions or components.
-
-**Why bad:** When swapping to real backend, you have to hunt through the codebase for mock data. No single place to update mock responses during development.
-
-**Instead:** All mock data lives in `api/mock/`. API functions delegate to mock module. To swap, change one import or function body.
-
-### Anti-Pattern 5: Business Logic in Event Handlers
-
-**What:** Computing aggregate scores, validating rubric constraints, or formatting feedback strings inline in JSX event handlers.
-
-**Why bad:** Untestable, duplicated when the same logic is needed elsewhere, clutters component code.
-
-**Instead:** Extract to `utils/` for pure computation or `hooks/` for stateful logic.
-
-## Build Order (Dependency Chain)
-
-The architecture has clear dependency layers. Build from the bottom up:
-
-```
-Layer 0: Types + Utils (no dependencies)
-    |
-Layer 1: API Layer + Mock Data (depends on Types)
-    |
-Layer 2: Zustand Stores (depends on Types)
-    |
-Layer 3: Shared Components (depends on Types, Utils -- NOT stores)
-    |
-Layer 4: Custom Hooks (depends on API Layer, Stores, Types)
-    |
-Layer 5: Pages (depends on everything above)
-    |
-Layer 6: Router + App Shell (depends on Pages, Layout components)
-```
-
-**Recommended build sequence:**
-
-1. **Foundation:** Types, utility functions, Tailwind config, base layout shell
-2. **Data layer:** API abstraction with mocks, Zustand stores
-3. **UI primitives:** Button, Card, Input, TextArea -- shared across all pages
-4. **Landing page:** Simple, proves routing and layout work
-5. **Essay input + Rubric editor:** Core input experience (GradingPage minus submission)
-6. **Submission flow + Results display:** Connect API layer, show grading output
-7. **History page:** Read-only list page, simpler than grading flow
-8. **Polish:** Loading states, error handling, responsive tweaks, color palette refinement
+**Phase groupings for the roadmap:**
+- **Data layer** (steps 1-3): Type changes, mock data, highlight utilities
+- **Structural** (steps 4-6): Layout refactor, route merge, hero section
+- **Core feature** (steps 7-10): Highlighting, split-pane, workspace orchestration
+- **Polish** (steps 11-12): Edit/resubmit, auth form enhancement
 
 ## Scalability Considerations
 
-This is an academic project with no real scaling needs, but the architecture supports growth cleanly:
-
-| Concern | Current (Demo) | If It Grew |
-|---------|----------------|------------|
-| State management | Zustand (4 small stores) | Same pattern scales to 10+ stores. Add persistence middleware if needed. |
-| API layer | Mock functions | Swap to real Axios calls. Add error interceptors, retry logic, auth headers in `client.ts`. |
-| Component library | Hand-built with Tailwind | Could adopt shadcn/ui or Radix primitives if component count exceeds ~20 unique elements. |
-| Routing | 4 flat routes | React Router v6 supports nested routes, lazy loading via `React.lazy()` if bundle grows. |
-| File uploads | Client-side text extraction | Would need server-side PDF parsing for production. Current architecture isolates this in `useFileUpload` hook. |
+| Concern | Now (Mock Data) | At Backend Integration | Mitigation |
+|---------|----------------|----------------------|------------|
+| Essay length | ~500 words mock | Up to 5000+ words | `buildSegments` is O(n+h) where n=text length, h=highlight count. Fine for any essay length. |
+| Highlight count | 4-8 mock highlights | Could be 20-50 from real AI | Sort + segment build stays fast. May need a "show fewer categories" toggle if visual density gets high. |
+| Re-render on hover | Context triggers re-render of both panes | Same | `useMemo` on segments prevents recomputation. Only opacity CSS class toggles on hover. |
+| History + localStorage | Full essayText + highlights per entry | Will move to backend DB | Cap history at ~20 entries. Strip highlights from old entries if storage grows. |
+| Layout at narrow widths | CSS Grid stacks to single column below `lg` | Same | When stacked, highlights and feedback are above/below -- still usable, just not side-by-side. |
 
 ## Sources
 
-- React and Vite project structure patterns are well-established community conventions (HIGH confidence -- standard React architecture)
-- Zustand store-per-domain pattern is recommended in Zustand documentation and community guides (HIGH confidence)
-- Mock-first API abstraction is a standard pattern for frontend-first development (HIGH confidence)
-- React Router v6 `createBrowserRouter` is the current recommended API per React Router docs (HIGH confidence)
-- Build ordering follows standard dependency-layer reasoning (HIGH confidence)
+- Existing codebase analysis (all files in `src/`) -- primary source for integration decisions
+- React documentation: Context API for scoped state, avoiding contentEditable with controlled components
+- CSS specification: `max-height` transitions for collapsible sections
+- Zustand persist middleware `partialize` configuration (existing usage in codebase)

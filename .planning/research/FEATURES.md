@@ -1,183 +1,146 @@
-# Feature Research
+# Feature Landscape
 
-**Domain:** AI Essay Grading Frontend (Academic/Course Project)
+**Domain:** AI essay grading tool -- v1.1 UX redesign (side-by-side layout, highlighting, collapsible hero, mock auth)
 **Researched:** 2026-03-08
-**Confidence:** MEDIUM (based on training data knowledge of Turnitin, Gradescope, Grammarly, CoGrader, EssayGrader.ai, ASAP dataset conventions; no live web verification available)
+**Confidence:** MEDIUM (web research verified against Turnitin official docs, Grammarly engineering blog, QuillBot product pages)
 
-## Feature Landscape
+## Context
 
-### Table Stakes (Users Expect These)
+v1.0 is built and working: essay input, rubric upload, submission flow, score bars, feedback sections, history, profile with grade level. This research covers the NEW features for v1.1 -- how they work in comparable tools, what's table stakes vs differentiating, and implementation considerations.
 
-Features an instructor expects when they hear "AI essay grading tool." Missing any of these makes the product feel like a toy.
+---
+
+## Table Stakes
+
+Features users expect once a tool claims to show "feedback in context." Missing any of these makes the v1.1 redesign feel half-done.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Text input (paste or upload) | Instructors need to get essay text into the system; copy-paste is minimum, file upload (.txt, .pdf) is expected | LOW | Already in PROJECT.md requirements. Support paste first, upload second. |
-| Rubric definition with categories and scales | The entire value prop is rubric-aligned grading; without editable rubrics the tool is useless for real instructor workflows | MEDIUM | Default ASAP categories (Content, Organization, Style, Conventions) on 0-6 scales. Allow add/remove/edit. |
-| Per-category numerical scores | Instructors need to see how the essay performed on each rubric dimension, not just a single number | LOW | Score bars with color coding (green/yellow/red) are the standard pattern in Gradescope, Turnitin |
-| Aggregate/total score | A single summary number is expected alongside breakdowns; instructors need a quick "how did this essay do" answer | LOW | Sum or weighted average of category scores |
-| Written feedback per category | Numbers without explanation are useless; instructors expect justification for why an essay got that score | MEDIUM | Structure as: strengths, areas for improvement, score justification. Collapsible sections keep it scannable. |
-| Overall summary | A top-level paragraph synthesizing the essay's quality before the per-category breakdown | LOW | 2-4 sentences covering the main takeaway |
-| Loading/processing state | AI grading takes time (or appears to); users need to know the system is working | LOW | Progress indicator or skeleton screen during simulated delay |
-| Submission history | Instructors grade many essays; they need to review past results without re-submitting | MEDIUM | Table with essay title/excerpt, date, score. Clickable rows to view full results. |
-| Clean, professional UI | Education tools have a high bar for visual trust; a sloppy UI makes instructors doubt the AI's quality | MEDIUM | Calm color palette, clear typography, whitespace. Think "academic tool" not "startup MVP." |
-| Responsive layout (tablet+) | Instructors often use tablets in classroom settings or while reviewing at home | LOW | Tailwind responsive utilities handle this naturally |
+| Side-by-side essay + feedback layout | Every serious writing feedback tool (Grammarly editor, Turnitin Feedback Studio, GPTZero reviewer) places source text next to results. Users need to cross-reference feedback with their writing without scrolling between sections. This is THE defining UX pattern for writing feedback tools. | Medium | Core layout change -- transforms the entire GradingPage. Turnitin uses essay on left, insight panel on right. Grammarly uses text on left, suggestions sidebar on right. Use a fixed split ratio (not resizable). |
+| Color-coded text highlighting linked to feedback categories | Turnitin's multicolor highlighting maps colors to match sources/categories; clicking the filter icon toggles them. The Highlight Tool for Google Docs assigns colors per category (yellow = dangling modifiers, red = run-ons). Users expect to SEE where feedback applies in the actual text, not just read about it abstractly. | Medium-High | Requires mock API to return passage references (start/end character positions or exact text snippets). Always-on highlighting (no hover required) is the right call -- matches Turnitin's default multicolor view. Colors should correlate with the rubric category color-coding already used in score bars. |
+| Collapsible hero on input focus | QuillBot, Grammarly, and AI checker tools use a "get out of the way" pattern: branding/marketing content recedes once the user starts working. Google Search does this (logo shrinks after first query). Once a user focuses on the textarea, the tool area should dominate the viewport. | Low | CSS transition + state toggle on textarea focus. Standard progressive disclosure. The hero should contain the app title, brief description, and visually collapse (not disappear) to a minimal bar. |
+| Mock sign-in screen on profile | Any tool with a profile page needs a sign-in gate. Without it, the profile settings feel disconnected -- why does user config exist if there's no user identity? Standard pattern: email + password form, centered card layout, clean typography. | Low | Mock-only: validate email format and password length, store fake session in Zustand + localStorage. Simulate 300-500ms delay for realism. No real auth backend. |
+| Two-tab navigation (Home / Profile) | With home + grading merged into one page, a 3-tab nav is confusing (what would the third tab even be?). Two tabs cleanly maps to the app's actual page structure. | Low | Simple route restructure. Already planned. |
+| Scroll synchronization between essay panel and feedback | When the essay is long, users expect clicking a feedback item to scroll the essay to the relevant highlighted passage. Turnitin does this -- clicking a numbered match scrolls to its source in the document. Without this, highlighting on long essays is nearly useless because users can't find the relevant passage. | Medium | Not explicitly in PROJECT.md scope but strongly expected once side-by-side + highlighting exist. Use scrollIntoView with smooth behavior and a brief highlight pulse on the target passage. |
 
-### Differentiators (Competitive Advantage)
+## Differentiators
 
-Features that elevate this beyond a basic grading form. Not expected in a course project, but they make the demo impressive and the product feel polished.
+Features that elevate the app beyond typical AI essay graders. Not expected, but create a noticeably better experience.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Inline text highlighting with feedback annotations | Most grading tools (Turnitin, Gradescope) highlight specific passages; showing WHERE in the essay a score comes from is far more useful than abstract feedback | HIGH | Requires mapping feedback to text spans. Could be simplified to highlighting key sentences rather than character-level annotation. Significant frontend complexity. |
-| Side-by-side essay + feedback view | Seeing the essay and its feedback simultaneously (rather than scrolling between them) dramatically improves the review experience | MEDIUM | Split-pane layout. The essay on the left, feedback on the right. Standard in Turnitin's interface. |
-| Rubric templates/presets | Instead of building rubrics from scratch each time, offer preset rubrics for common essay types (argumentative, narrative, expository, research paper) | LOW | Just JSON presets. Low effort, high perceived polish. Good differentiator for a course project demo. |
-| Score comparison visualization | Show how this essay's scores compare to the batch average (mock data) via a simple radar/spider chart or bar overlay | MEDIUM | Gives instructors context for individual scores. Requires chart library (recharts). Impressive in demos. |
-| Feedback tone controls | Let instructors choose feedback style: encouraging, balanced, or critical. Controls how the AI frames strengths vs weaknesses | LOW | In a mock-first frontend, this is just a dropdown that switches which mock response is returned. Demonstrates thoughtful UX. |
-| PDF/print export of results | Instructors need to share feedback with students; a clean PDF export of scores + feedback is valuable | MEDIUM | Use browser print styles or a library like react-to-print. PROJECT.md marks this as placeholder-only, which is fine for v1. |
-| Batch/multi-essay upload | Grade multiple essays against the same rubric at once | HIGH | Significant UI complexity (file list, progress per essay, results table). Defer to v2 but design the API layer to support it. |
-| Dark mode | Instructors grading late at night appreciate it; also demonstrates UI polish | LOW | Tailwind dark mode utilities. Low effort if planned from the start, painful to retrofit. |
+| Editable essay with inline resubmit | Most grading tools are submit-once, read-results. Letting users edit the essay IN the results view and resubmit without navigating away is a QuillBot-style interactive workflow. CoGrader and EssayGrader.ai are upload-and-wait; this feels live. | Medium | Requires maintaining essay state in the left panel of the split view, re-triggering the grading API on resubmit, clearing old highlights, and rendering new ones. Key state management challenge: what happens to the right panel during re-grading (loading skeleton vs stale results). |
+| Category-color legend with toggle visibility | Turnitin lets users toggle multicolor highlighting per source via a filter icon. A small legend mapping colors to rubric categories (with on/off toggles) lets users focus on one feedback dimension at a time -- e.g., "show me only the Organization highlights." | Low | Small UI addition layered on top of the highlighting system. Adds meaningful control without complexity. Place it as a floating legend or at the top of the essay panel. |
+| Smooth hero collapse animation | Most tools just hide content abruptly. A polished animation (hero compresses vertically, title fades to a compact bar, input area expands upward) creates a premium feel. Grammarly and QuillBot both have smooth transitions in their editor chrome. | Low | Pure CSS transitions or Framer Motion. Small effort, disproportionate polish impact. Use max-height transition or transform: scaleY with opacity fade. |
+| Feedback-to-highlight hover linkage | Hovering over a feedback card in the right panel intensifies (or pulses) the corresponding highlight in the essay panel, and vice versa. Creates a visual connection between abstract feedback and concrete text. Grammarly does this with its inline underlines + sidebar suggestions. | Low-Medium | Shared hover state in Zustand or React context. Each feedback card and highlight group shares a category ID. On hover, add a CSS class to the paired elements. |
+| Highlight intensity for severity | Rather than binary highlight/no-highlight, vary opacity or border weight to indicate feedback severity (minor suggestion vs critical issue). Adds information density without clutter. | Low-Medium | Depends on mock API data shape including a severity field. Stretch goal -- only if highlighting base is solid. |
 
-### Anti-Features (Commonly Requested, Often Problematic)
+## Anti-Features
 
-Features to deliberately NOT build, especially for a course project frontend.
+Features to explicitly NOT build for v1.1. Tempting but wrong.
 
-| Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| Real-time collaborative editing | "Google Docs for grading" sounds appealing | Enormous complexity (CRDT/OT, WebSockets, conflict resolution). Completely out of scope for a frontend demo with mock data. | Single-user experience. Keep it simple. |
-| Plagiarism detection | Adjacent to essay grading in instructor minds | Entirely different domain (text similarity, source databases). Turnitin's moat. Would dilute the grading focus. | Explicitly state this is out of scope. Link to Turnitin if needed. |
-| Student-facing portal | "Students should see their feedback too" | Doubles the UI surface area. Requires auth, roles, permissions. This is an instructor tool. | Build instructor-only. Student sharing via PDF export placeholder. |
-| Auto-save with version history | Seems like table stakes for document apps | This is a grading tool, not a document editor. Essay text is input, not authored here. Over-engineering. | Simple form state. Warn before navigating away with unsaved input. |
-| AI chatbot for rubric help | "Help me build my rubric with AI" | Scope creep. The AI is for grading, not rubric design. Requires a second AI interaction pattern. | Good default rubric presets solve the same problem with zero complexity. |
-| Detailed analytics dashboard | Charts showing score distributions, trends over time, class performance | Requires real data (many essays graded). With mock data, analytics are meaningless. Massive UI investment for no demo value. | Simple submission history table. Defer analytics to when real backend exists. |
-| Mobile-optimized layout | "Everything should work on phones" | Essay grading involves reading full essays and detailed feedback. Phone screens are too small for this workflow. Tablet is the realistic minimum. | Responsive down to tablet (768px). Phone users get a "use a larger screen" message. |
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Real OAuth / social login (Google, GitHub) | Massive complexity for a demo app. OAuth redirect flows, token refresh, provider setup -- none serves the grading UX. PROJECT.md explicitly excludes this. | Mock email+password form that validates format, stores a fake user object in Zustand. Simulate async delay. |
+| Resizable / draggable split panes | Libraries like react-resizable-panels or allotment add dependency weight, accessibility concerns, and interaction complexity. Users of a grading tool need to READ, not fiddle with panel sizes. VS Code needs resizable panes; a grading tool does not. | Fixed 50/50 or 55/45 CSS grid split. On tablet (<1024px), stack vertically with essay on top, feedback below. |
+| Rich text editing (bold, italic, toolbar) | Essay grading evaluates plain text content, not formatting. Adding Tiptap, Slate, or ProseMirror introduces enormous dependency and complexity for zero grading value. Turnitin and all essay graders accept plain text. | Plain textarea or simple contenteditable div. The "editable" in "editable essay" means text content editing, not document formatting. |
+| Character-level annotation (inline comments) | Turnitin supports this, but it requires a sophisticated text annotation engine, selection handling, and popover positioning. Way too complex for a mock-data frontend. | Passage-level highlighting (entire sentences or phrases) with feedback cards in the side panel. Achieves 80% of the UX value at 20% of the implementation cost. |
+| Plagiarism / AI detection scoring | Different product domain from essay grading. Turnitin keeps these as distinct tools. Mixing them confuses the UX and doubles mock data requirements. PROJECT.md excludes this. | Keep scope to rubric-aligned grading and feedback only. |
+| PDF export of results | PROJECT.md marks this as out of scope. Proper PDF generation (html2canvas, jsPDF, or server-side) is disproportionate to demo value. | At most, a disabled "Export PDF" button as a placeholder signaling future capability. |
+| Mobile-first responsive layout | Side-by-side layout fundamentally doesn't work on phone screens (<768px). Trying to make it responsive to 375px would compromise the core desktop/tablet experience. PROJECT.md sets tablet as the minimum. | Design for >= 768px width. Below that, show a graceful degradation message or auto-stack panels vertically. |
 
 ## Feature Dependencies
 
 ```
-[Rubric Definition]
-    └──requires──> [Per-Category Scores] (scores map to rubric categories)
-                       └──requires──> [Score Visualization] (bars need score data)
-                       └──requires──> [Per-Category Feedback] (feedback maps to categories)
+Combined home/grade page (route merge)
+    |
+    +---> Collapsible hero section (hero must exist on this combined page)
+    |
+    +---> Two-tab navigation (reduces routes from 3 to 2)
+    |
+    +---> Side-by-side results layout (restructures where results render)
+              |
+              +---> Text highlighting (highlights render in the essay panel of the split view)
+              |         |
+              |         +---> Scroll sync (needs highlight anchors to scroll to)
+              |         |
+              |         +---> Category toggle legend (layers on top of highlighting)
+              |         |
+              |         +---> Feedback-to-highlight hover linkage (needs both panels)
+              |
+              +---> Editable essay + resubmit (edit happens in left panel, triggers re-grade)
 
-[Text Input (paste/upload)]
-    └──requires──> [Submission Flow] (need essay text to submit)
-                       └──requires──> [Loading State] (submission triggers processing)
-                       └──requires──> [Results Page] (submission produces results)
+Mock API passage references
+    |
+    +---> Text highlighting (API must return highlight data: category, start, end, text)
 
-[Submission History]
-    └──requires──> [Results Page] (history links to past results)
-
-[Side-by-Side View] ──enhances──> [Results Page]
-
-[Inline Highlighting] ──enhances──> [Results Page]
-    └──requires──> [Per-Category Feedback] (highlights map to feedback)
-
-[Rubric Templates] ──enhances──> [Rubric Definition]
-
-[Score Comparison] ──requires──> [Submission History] (needs multiple scores to compare)
-
-[Dark Mode] ──independent── (can be added at any point if Tailwind dark: classes used from start)
+Mock authentication (INDEPENDENT -- no dependencies on layout features)
+    |
+    +---> Profile page gate (already exists, just needs conditional rendering)
 ```
 
-### Dependency Notes
+**Critical path:** Combined page --> Side-by-side layout --> Text highlighting --> Scroll sync
 
-- **Rubric Definition is foundational:** Every scoring and feedback feature depends on having rubric categories defined. Build this first.
-- **Text Input + Submission Flow is the critical path:** The core user journey is: enter essay + rubric -> submit -> see results. This must work end-to-end before any polish.
-- **Submission History requires Results Page:** Can't link to past results if the results page doesn't exist yet.
-- **Inline Highlighting is the hardest enhancement:** Requires text span mapping, scroll synchronization, and careful UX. Only attempt after core flow is solid.
-- **Dark Mode is free if planned early:** Use Tailwind's `dark:` prefix from the start. Retrofitting dark mode into an existing design is painful.
+**Independent tracks:** Mock auth and two-tab nav can be built in parallel with the layout work.
 
-## MVP Definition
+**Mock API dependency:** Text highlighting requires updating the mock grading API response to include passage references. This should be designed FIRST so the highlighting UI has data to work with. Suggested shape:
 
-### Launch With (v1)
+```typescript
+interface PassageHighlight {
+  categoryId: string;       // maps to rubric category
+  text: string;             // exact text to highlight
+  startIndex: number;       // character offset in essay
+  endIndex: number;         // character offset in essay
+  feedbackType: 'strength' | 'improvement';
+}
+```
 
-Minimum viable product -- what's needed for a compelling course project demo.
+## MVP Recommendation
 
-- [ ] Landing page with clear project description and "Start Grading" CTA -- first impression matters for a demo
-- [ ] Essay input via paste (textarea) with word/character count -- the minimum input method
-- [ ] File upload for .txt and .pdf -- instructors expect this, and it shows technical range
-- [ ] Default ASAP rubric with editable categories (add/remove/rename, adjust scales) -- the core differentiator of rubric-aligned grading
-- [ ] Submission flow with loading animation and simulated delay -- makes the mock feel real
-- [ ] Results page with per-category color-coded score bars -- the payoff of the entire app
-- [ ] Aggregate score display -- quick summary number
-- [ ] Per-category structured feedback (strengths, improvements, justification) in collapsible sections -- the meat of the feedback
-- [ ] Overall summary paragraph at top -- quick takeaway before details
-- [ ] Submission history table with 5-8 mock entries -- shows the app works at scale
-- [ ] Clickable history rows navigating to individual results -- completes the history feature
-- [ ] Mock API layer with typed async functions -- demonstrates production-ready architecture
+**Prioritize (must ship for v1.1 to feel like a real redesign):**
 
-### Add After Validation (v1.x)
+1. **Combined home/grade page with collapsible hero** -- Foundation for everything else. Low complexity, high structural impact. The hero collapse IS the first visible change of the redesign.
+2. **Side-by-side results layout (fixed split)** -- Table stakes for any tool showing feedback on text. Without this, the app still feels like v1.0 with cosmetic changes. Use CSS grid, no resize library.
+3. **Color-coded essay highlighting linked to rubric categories** -- The feature that makes feedback contextual rather than abstract. Turnitin proved this is what users expect. Requires mock API update to include passage references.
+4. **Mock authentication on profile** -- Low effort, makes the profile page feel intentional. Simple email/password form with format validation and fake session.
+5. **Two-tab navigation** -- Trivial but necessary cleanup once home/grade are merged.
 
-Features to add once the core flow works and demo is solid.
+**Stretch (build if time allows, in priority order):**
 
-- [ ] Rubric templates/presets (argumentative, narrative, expository, research) -- low effort, high demo polish
-- [ ] Side-by-side essay + feedback view on results page -- significantly improves the review experience
-- [ ] Feedback tone selector (encouraging/balanced/critical) -- demonstrates thoughtful UX design
-- [ ] Dark mode toggle -- shows UI polish, easy with Tailwind if dark: classes used from start
-- [ ] PDF export button (placeholder or basic react-to-print) -- completes the "share feedback" story
+- **Scroll synchronization** -- Medium complexity but transforms the highlighting from "nice" to "actually useful" on longer essays. Click feedback card --> essay scrolls to highlighted passage.
+- **Editable essay with resubmit** -- Medium complexity, careful state management needed. High value but not blocking for demo.
+- **Feedback-to-highlight hover linkage** -- Low effort polish that connects the two panels visually.
+- **Category toggle legend** -- Nice-to-have layered on highlighting.
 
-### Future Consideration (v2+)
+## Complexity Budget
 
-Features to defer until real backend integration.
+| Feature | Estimated Effort | Risk Level | Notes |
+|---------|-----------------|------------|-------|
+| Combined page + collapsible hero | 1-2 days | Low | CSS transitions, route merge, state toggle on focus |
+| Two-tab navigation | 0.5 day | Low | Route config change, header update |
+| Mock auth (profile gate) | 1 day | Low | Form validation, Zustand session, localStorage |
+| Side-by-side layout | 2-3 days | Medium | Restructures GradingPage entirely, responsive breakpoints, existing component relocation |
+| Mock API passage data | 0.5-1 day | Low | Update mock response type and data to include highlights |
+| Text highlighting | 2-3 days | Medium-High | Text matching/splitting, color system, rendering highlighted spans, handling overlaps |
+| Scroll synchronization | 1-2 days | Medium | Anchor refs, scrollIntoView, smooth behavior, edge cases |
+| Editable essay + resubmit | 2-3 days | Medium | State management, loading states in split view, highlight refresh |
+| Hover linkage | 0.5-1 day | Low | Shared hover state, CSS class toggling |
 
-- [ ] Inline text highlighting with feedback annotations -- requires real AI output with text span data
-- [ ] Score comparison/analytics visualization -- needs real grading data to be meaningful
-- [ ] Batch/multi-essay upload -- significant complexity, only valuable with real backend
-- [ ] Actual backend integration (swap mock functions for real API calls) -- the whole point of the API layer design
-
-## Feature Prioritization Matrix
-
-| Feature | User Value | Implementation Cost | Priority |
-|---------|------------|---------------------|----------|
-| Essay text input (paste + upload) | HIGH | LOW | P1 |
-| Editable rubric with defaults | HIGH | MEDIUM | P1 |
-| Submission flow + loading state | HIGH | LOW | P1 |
-| Per-category score bars (color-coded) | HIGH | LOW | P1 |
-| Aggregate score | HIGH | LOW | P1 |
-| Per-category structured feedback | HIGH | MEDIUM | P1 |
-| Overall summary paragraph | HIGH | LOW | P1 |
-| Submission history table | MEDIUM | MEDIUM | P1 |
-| Landing page | MEDIUM | LOW | P1 |
-| Responsive layout (tablet+) | MEDIUM | LOW | P1 |
-| Rubric templates/presets | MEDIUM | LOW | P2 |
-| Side-by-side essay + feedback | HIGH | MEDIUM | P2 |
-| Feedback tone selector | MEDIUM | LOW | P2 |
-| Dark mode | LOW | LOW | P2 |
-| PDF export (placeholder) | MEDIUM | MEDIUM | P2 |
-| Inline text highlighting | HIGH | HIGH | P3 |
-| Score comparison charts | MEDIUM | MEDIUM | P3 |
-| Batch upload | MEDIUM | HIGH | P3 |
-
-**Priority key:**
-- P1: Must have for launch (course project demo)
-- P2: Should have, add for polish if time permits
-- P3: Nice to have, defer to backend integration phase
-
-## Competitor Feature Analysis
-
-| Feature | Turnitin Feedback Studio | Gradescope | CoGrader / EssayGrader.ai | Our Approach |
-|---------|--------------------------|------------|---------------------------|--------------|
-| Text input | Integrated with LMS | PDF upload, scanned docs | Paste or upload | Paste + file upload (.txt, .pdf) |
-| Rubric | Pre-built + custom, complex UI | AI-assisted rubric, detailed | Simple preset rubrics | Editable ASAP defaults, add/remove categories |
-| Scoring | Per-criterion numeric | Per-question, AI-suggested | Per-category 1-10 or letter | Per-category 0-6 bars, color-coded |
-| Feedback | Inline comments + summary | Inline annotations on PDF | AI-generated paragraphs | Structured per-category (strengths/improvements/justification) |
-| Inline highlighting | Yes (core feature) | Yes (on PDF overlay) | Limited | Defer to v2 (requires real AI span data) |
-| History/batch | Full class management | Full course management | Basic history | Simple mock history table |
-| Analytics | Class-wide reports | Distribution charts | Basic stats | Defer (meaningless with mock data) |
-| Export | PDF, LMS integration | CSV, PDF | PDF | Placeholder button (v1), react-to-print (v1.x) |
-| Auth/roles | Full LMS integration | Institution SSO | Email/password | None (out of scope for course project) |
-
-**Key insight from competitor analysis:** The major players (Turnitin, Gradescope) are deeply integrated with LMS platforms and institution infrastructure. This project correctly avoids that complexity. The AI-native startups (CoGrader, EssayGrader.ai) focus on simple input -> AI feedback -> results, which is exactly the pattern this project should follow. Our differentiator within a course project context is the clean, well-structured frontend with rubric customization and a production-ready API layer.
+**Total: ~12-16 days full scope, ~7-9 days for MVP (first 5 items).**
 
 ## Sources
 
-- Training data knowledge of Turnitin Feedback Studio, Gradescope (by Turnitin), CoGrader, EssayGrader.ai, Grammarly's essay tools (MEDIUM confidence -- based on pre-May 2025 training data, features may have changed)
-- ASAP (Automated Student Assessment Prize) dataset conventions referenced in PROJECT.md (HIGH confidence -- well-established dataset)
-- General UX patterns for education technology tools (MEDIUM confidence -- training data)
-
-**Note:** Web search and fetch were unavailable during this research session. All competitor analysis is based on training data (pre-May 2025). Feature sets of specific competitors should be verified if decisions depend on them.
+- [Turnitin multicolor highlighting -- official guide](https://guides.turnitin.com/hc/en-us/articles/23754255595149-Using-multicolor-highlighting-in-the-classic-Similarity-Report-view) -- MEDIUM confidence, official docs
+- [Turnitin Feedback Studio next generation](https://www.turnitin.com/blog/unlocking-insights-whats-new-in-turnitin-feedback-studio) -- MEDIUM confidence, official blog
+- [Grammarly real-time feedback UX](https://www.grammarly.com/blog/product/grammarly-feedback/) -- MEDIUM confidence, official product blog
+- [Grammarly text input lag engineering](https://www.grammarly.com/blog/engineering/reducing-text-input-lag/) -- HIGH confidence, engineering blog with implementation details on highlight rendering performance
+- [The Highlight Tool for Google Docs -- color-coded feedback pattern](https://edtechteacher.org/the-highlight-tool-google-doc-add-on-for-writing-and-feedback/) -- MEDIUM confidence, describes the color-to-category mapping UX
+- [QuillBot AI Detector -- product overview](https://quillbot.com/blog/quillbot-tools/ai-detector/) -- MEDIUM confidence, official blog
+- [react-resizable-panels](https://github.com/bvaughn/react-resizable-panels) -- HIGH confidence, referenced to justify NOT using a resize library
+- [Hero section UX best practices -- LogRocket](https://blog.logrocket.com/ux-design/hero-section-examples-best-practices/) -- MEDIUM confidence, design patterns reference
+- [GPTZero AI reviewer](https://gptzero.me/ai-reviewer) -- LOW confidence, competitor reference for side-by-side feedback layout
+- [Turnitin Clarity side panel pattern](https://guides.turnitin.com/hc/en-us/articles/36917529868429-AI-Tools-with-Turnitin-Clarity) -- MEDIUM confidence, official guide showing panel-based feedback
 
 ---
-*Feature research for: AI Essay Grading Frontend*
+*Feature research for: AI Essay Grader v1.1 UX Redesign*
 *Researched: 2026-03-08*

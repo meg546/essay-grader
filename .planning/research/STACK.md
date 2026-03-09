@@ -1,175 +1,138 @@
 # Technology Stack
 
-**Project:** AI Essay Grader (Frontend)
+**Project:** AI Essay Grader v1.1 UX Redesign
 **Researched:** 2026-03-08
-**Overall Confidence:** HIGH
+**Scope:** Stack additions for side-by-side layout, text highlighting, collapsible hero, and mock auth
 
-## Recommended Stack
+## Existing Stack (validated, DO NOT change)
 
-### Core Framework
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| React | ^19.2.0 | UI framework |
+| Vite | ^7.3.1 | Build tool |
+| TypeScript | ~5.9.3 | Type safety |
+| Tailwind CSS v4 | ^4.2.1 | Styling |
+| Zustand | ^5.0.11 | State management (with persist middleware) |
+| React Router | ^7.13.1 | Routing |
+| @base-ui/react | ^1.2.0 | Unstyled component primitives |
+| shadcn (base-nova) | ^4.0.2 | Component generation (uses Base UI) |
+| tw-animate-css | ^1.4.0 | Tailwind animation utilities |
+| lucide-react | ^0.577.0 | Icons |
+| sonner | ^2.0.7 | Toast notifications |
+| class-variance-authority | ^0.7.1 | Variant styling |
+| clsx + tailwind-merge | latest | Class merging |
 
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| React | ^19.2.4 | UI framework | Project constraint. React 19 is stable and current. | HIGH |
-| React DOM | ^19.2.4 | DOM rendering | Matches React version | HIGH |
-| TypeScript | ^5.9.3 | Type safety | Project constraint. Catches bugs at compile time, essential for typed API layer that will swap from mocks to real backend | HIGH |
-| Vite | ^7.3.1 | Build tool / dev server | Project constraint. Instant HMR, fast builds. Vite 7 is current stable | HIGH |
-| @vitejs/plugin-react | ^5.1.4 | React fast refresh in Vite | Standard Vite+React integration, uses SWC for fast transforms | HIGH |
+## Recommended Stack Additions
 
-### Routing
+### Side-by-Side Layout: No new dependency needed
 
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| react-router-dom | ^6.30.3 | Client-side routing | Project constrains to v6. Use latest v6 (6.30.3), not v7. v6 is mature and well-documented. Only 4 routes needed (landing, grading, results, history) -- v6 handles this trivially | HIGH |
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| CSS Grid / Flexbox | (native) | Side-by-side panel layout | The results view is a fixed 50/50 split (essay left, feedback right) -- not a user-resizable IDE-style layout. CSS Grid with `grid-template-columns: 1fr 1fr` handles this perfectly. Adding react-resizable-panels (or the shadcn Resizable wrapper) would introduce unnecessary complexity for a layout where users do not need to drag panel boundaries. |
 
-**Note on React Router v7:** The latest react-router-dom is v7.13.1, which merges Remix concepts and introduces framework mode. For this project, v6 is the right call -- v7's framework features are overkill for a simple SPA with 4 routes, and the project explicitly specifies v6. Stick with v6.
+**Confidence:** HIGH -- the PROJECT.md describes a side-by-side view, not a resizable split pane. A static two-column layout is trivially achievable with Tailwind's grid/flex utilities already in the project.
 
-### State Management
+**If requirements change** to need user-resizable panels later, use `npx shadcn@latest add resizable` which wraps react-resizable-panels v4.7.x. The shadcn CLI is already configured in this project.
 
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| Zustand | ^5.0.11 | Global state | Project constraint. Minimal boilerplate, no providers needed, TypeScript-first. Perfect for this scale -- stores for rubric config, submission state, and history. No Redux ceremony for what amounts to 2-3 small stores | HIGH |
+### Text Highlighting: Custom component (no library)
 
-### Styling
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| Custom `<HighlightedText>` component | N/A | Color-coded passage highlighting linked to feedback categories | The highlighting requirement is specific: always-on, color-coded by rubric category, with known character/word offset ranges from mock API data. This is a straightforward span-wrapping problem, not a general-purpose text annotation system. A ~50-line custom component that splits text into spans by offset ranges and applies Tailwind background color classes is simpler, more maintainable, and more controllable than any third-party library. |
 
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| Tailwind CSS | ^4.2.1 | Utility-first CSS | Project constraint. Tailwind v4 is a major rewrite -- CSS-first config (no more tailwind.config.js), uses `@import "tailwindcss"` in CSS, auto-detects content sources. Much simpler setup than v3 | HIGH |
-| @tailwindcss/vite | ^4.2.1 | Tailwind Vite plugin | Tailwind v4's recommended Vite integration. Replaces the old PostCSS plugin approach. Single plugin in vite.config.ts | HIGH |
-| clsx | ^2.1.1 | Conditional class names | Tiny (228B), standard for conditional Tailwind classes. `clsx('btn', isActive && 'btn-active')` | HIGH |
-| tailwind-merge | ^3.5.0 | Merge Tailwind classes without conflicts | Prevents class conflicts when composing component variants. Use with clsx via a `cn()` utility: `cn(...inputs) { return twMerge(clsx(inputs)) }` | HIGH |
+**Confidence:** HIGH -- the requirement is well-scoped (mock API provides ranges, each range maps to a category color). No library adds value here.
 
-### HTTP / API Layer
+**Implementation approach:**
+1. Mock API responses include `highlights: Array<{ start: number; end: number; categoryId: string }>` per essay
+2. A utility function splits essay text into segments (highlighted and non-highlighted) handling overlaps by priority
+3. `<HighlightedText>` renders segments as `<span>` elements with category-specific Tailwind background colors (e.g., `bg-blue-100`, `bg-amber-100`, `bg-green-100`)
+4. Each highlighted span gets a `data-category` attribute for CSS targeting and hover/tooltip behavior
 
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| Axios | ^1.13.6 | HTTP client | Project constraint. Interceptors, request/response transforms, better error handling than fetch. API layer will start with mock implementations behind async functions, then swap to real Axios calls by changing only function bodies | HIGH |
+**Why NOT react-highlight-words:** Designed for search-term matching, not arbitrary character ranges with category metadata. Wrong abstraction.
 
-### UI Utilities
+**Why NOT CSS Custom Highlight API:** Now supported in all modern browsers (Chrome 105+, Firefox 140+, Safari 17.2+), but it operates outside React's rendering model (imperative Range/Highlight API). For a React app where highlights are driven by state (feedback categories), declarative span-based rendering is the correct pattern. The CSS Highlight API is better suited for ephemeral highlights like find-in-page, not persistent category-linked annotations.
 
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| Lucide React | ^0.577.0 | Icons | Tree-shakeable, consistent style, large icon set. Better than Heroicons for this use case (more education-relevant icons, cleaner API). Import only what you use: `import { FileText, CheckCircle } from 'lucide-react'` | MEDIUM |
-| react-dropzone | ^15.0.0 | File upload drag-and-drop | De facto standard for file upload UIs in React. Handles drag-and-drop zones, file type validation (.txt, .pdf), and accessibility. Avoids building custom drag-and-drop from scratch | HIGH |
-| sonner | ^2.0.7 | Toast notifications | Lightweight, beautiful toasts out of the box. For submission success/error feedback. Drop-in with `<Toaster />` and `toast.success('Essay submitted')` | MEDIUM |
+**Why NOT overlapping-markup:** Low maintenance, negligible community adoption, adds a dependency for what is a simple array-to-spans transform.
 
-### File Processing
+### Collapsible Hero Section: No new dependency needed
 
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| pdfjs-dist | ^5.5.207 | PDF text extraction | Mozilla's PDF.js. Required for the .pdf upload feature -- extracts text content from uploaded PDFs client-side. Heavy (~2MB) but necessary. Use dynamic import to avoid bloating initial bundle: `const pdfjs = await import('pdfjs-dist')` | HIGH |
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| Base UI Collapsible + tw-animate-css | (already installed) | Animated hero collapse on input focus | The project already has `@base-ui/react` Collapsible primitive AND a shadcn-generated `<Collapsible>` wrapper in `src/components/ui/collapsible.tsx`. The `tw-animate-css` package provides `accordion-down`/`accordion-up` animation utilities. Combined, these handle the hero collapse animation without any new dependency. |
 
-**Note:** For .txt files, use the native `FileReader` API -- no library needed. Only PDF requires a library.
+**Confidence:** HIGH -- both components verified in the codebase.
 
-### Dev Dependencies
+**Implementation approach:**
+1. Wrap hero section in `<Collapsible>` / `<CollapsibleContent>`
+2. Control `open` state via Zustand (or local state) -- set to `false` when essay textarea receives focus
+3. Apply `tw-animate-css` animation classes for smooth height transition
+4. Use `data-[state=open]` / `data-[state=closed]` selectors for Tailwind transitions on opacity, transform
 
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| Vitest | ^4.0.18 | Unit/integration testing | Native Vite integration, Jest-compatible API, fast. Standard choice for Vite projects -- shares Vite's config and transform pipeline | HIGH |
-| @testing-library/react | ^16.3.2 | Component testing | Standard React testing library. Tests components how users interact with them, not implementation details | HIGH |
-| @testing-library/jest-dom | ^6.9.1 | DOM assertions | Adds `toBeInTheDocument()`, `toHaveClass()`, etc. Standard companion to Testing Library | HIGH |
-| ESLint | ^9.x | Linting | Use flat config (eslint.config.js). Vite scaffolds this automatically with `npm create vite@latest` | HIGH |
-| Prettier | ^3.8.1 | Code formatting | Consistent formatting. Use with eslint-config-prettier to avoid conflicts | HIGH |
+**Why NOT framer-motion/motion:** Adding a 45KB+ animation library (motion v12.35.1 is current) for a single collapse animation is overkill when the project already has CSS animation utilities and a Collapsible primitive. Motion is warranted when you need spring physics, layout animations, or gesture-driven interactions -- none of which apply to a hero collapse.
+
+### Mock Authentication: No new dependency needed
+
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| Zustand persist middleware | (already installed) | Mock email+password auth state | The profile store (`src/stores/profile-store.ts`) already has `isSignedIn`, `email`, `signIn()`, and `signOut()` actions with localStorage persistence. Mock auth requires only: (1) a sign-in form component with email + password fields, (2) extending the store to accept password for validation display, and (3) conditional rendering based on `isSignedIn`. |
+
+**Confidence:** HIGH -- verified the existing store code handles this pattern.
+
+**Implementation approach:**
+1. Add a `<SignInForm>` component using existing shadcn `<Input>` and `<Button>` components
+2. Extend `useProfileStore.signIn()` to accept password (store it or just validate non-empty)
+3. Profile page conditionally renders sign-in form vs. profile settings based on `isSignedIn`
+4. No JWT, no tokens, no route guards -- just Zustand boolean state
+
+**Why NOT any auth library (e.g., next-auth, clerk, firebase-auth):** This is explicitly mock authentication for a demo. Real auth is out of scope per PROJECT.md. A form + Zustand boolean is the correct level of abstraction.
+
+## Summary: Zero New Dependencies
+
+All four feature areas are achievable with the existing stack:
+
+| Feature | Solution | New Dependency? |
+|---------|----------|----------------|
+| Side-by-side layout | Tailwind CSS Grid | No |
+| Text highlighting | Custom `<HighlightedText>` component | No |
+| Collapsible hero | Base UI Collapsible + tw-animate-css | No |
+| Mock auth | Zustand store + form components | No |
+
+This is the correct outcome for a v1.1 iteration on an already well-equipped stack. The existing tooling (React 19, Tailwind v4, Base UI, shadcn, Zustand with persistence, tw-animate-css) covers every new requirement without gaps.
 
 ## Alternatives Considered
 
 | Category | Recommended | Alternative | Why Not |
 |----------|-------------|-------------|---------|
-| State management | Zustand | Redux Toolkit | Overkill for 2-3 small stores. PROJECT.md explicitly says no Redux |
-| State management | Zustand | React Context | Causes unnecessary re-renders, no devtools, awkward with multiple stores |
-| Styling | Tailwind CSS v4 | shadcn/ui | Would add complexity for a project that needs custom education-focused design. Hand-crafted Tailwind components give more control and are better for learning |
-| Styling | Tailwind CSS v4 | CSS Modules | Tailwind is a project constraint. Utility-first is faster for prototyping |
-| Icons | Lucide React | Heroicons | Both work fine. Lucide has a slightly larger set and cleaner React API |
-| Icons | Lucide React | React Icons | React Icons bundles everything -- not tree-shakeable by default, larger bundle |
-| HTTP | Axios | fetch | Axios is a project constraint. Interceptors and transforms will be useful for backend integration |
-| Routing | React Router v6 | TanStack Router | Project constrains to React Router v6. TanStack Router is type-safe but adds learning curve |
-| Build tool | Vite | Next.js | This is a pure SPA -- no SSR, no API routes needed. Vite is simpler and the project constraint |
-| File upload | react-dropzone | Custom implementation | react-dropzone handles edge cases (accessibility, multiple files, type validation) that are tedious to build from scratch |
-| PDF parsing | pdfjs-dist | pdf-parse | pdf-parse is Node.js only. pdfjs-dist works in the browser |
-| Testing | Vitest | Jest | Jest requires separate config for ESM/TypeScript. Vitest is the standard for Vite projects |
-| Toasts | sonner | react-hot-toast | Both are good. Sonner has better defaults and newer API |
-| Animation | CSS transitions | Framer Motion | Framer Motion (12.35.1) is 32KB+. CSS transitions and Tailwind's `transition-*` classes handle everything this project needs (collapsible sections, loading states, hover effects). Only add Framer Motion if you need complex orchestrated animations |
-
-## What NOT to Use
-
-| Library | Why Not |
-|---------|---------|
-| Redux / Redux Toolkit | Project explicitly excludes it. Zustand is the right tool at this scale |
-| Next.js | Pure SPA with mock data. No SSR/SSG benefits. Would add unnecessary complexity |
-| Material UI / Ant Design / Chakra UI | Heavy component libraries that impose their design language. This project needs a custom education-focused aesthetic -- build it with Tailwind |
-| Framer Motion | Unnecessary weight. CSS transitions cover all the animation needs here |
-| React Query / TanStack Query | Overkill when all data is mocked. No real server state to cache/invalidate. Add it later when real backend is integrated |
-| Formik / React Hook Form | The rubric editor and essay input are simple enough to handle with controlled components and Zustand. No complex validation rules |
-| Storybook | Nice-to-have but scope creep for a course project. Build components in-context |
+| Side-by-side layout | CSS Grid | react-resizable-panels v4.7.1 | Not a resizable layout; static 50/50 split suffices |
+| Side-by-side layout | CSS Grid | shadcn Resizable | Same reason; just a wrapper around react-resizable-panels |
+| Text highlighting | Custom spans | react-highlight-words | Wrong abstraction (search terms vs. character ranges with category metadata) |
+| Text highlighting | Custom spans | CSS Custom Highlight API | Imperative API mismatches React's declarative model for state-driven highlights |
+| Text highlighting | Custom spans | overlapping-markup | Low adoption; trivial to build custom |
+| Hero animation | tw-animate-css + Collapsible | motion v12.35.1 | 45KB+ for one collapse animation; already have CSS animations |
+| Mock auth | Zustand boolean | Firebase Auth / Clerk | Real auth explicitly out of scope |
 
 ## Installation
 
 ```bash
-# Initialize project
-npm create vite@latest essay-grader -- --template react-ts
-cd essay-grader
-
-# Core dependencies
-npm install react-router-dom@^6.30.3 zustand@^5.0.11 axios@^1.13.6
-
-# UI utilities
-npm install clsx@^2.1.1 tailwind-merge@^3.5.0 lucide-react@^0.577.0
-npm install react-dropzone@^15.0.0 sonner@^2.0.7
-
-# PDF processing (for .pdf file upload)
-npm install pdfjs-dist@^5.5.207
-
-# Tailwind v4 (Vite plugin -- replaces PostCSS approach)
-npm install tailwindcss@^4.2.1 @tailwindcss/vite@^4.2.1
-
-# Dev dependencies
-npm install -D vitest@^4.0.18 @testing-library/react@^16.3.2 @testing-library/jest-dom@^6.9.1
+# No new packages to install.
+# All v1.1 features use existing dependencies.
 ```
 
-### Tailwind v4 Setup (Different from v3)
+## Potential Future Additions (NOT for this milestone)
 
-Tailwind v4 setup is significantly different from v3. No `tailwind.config.js` needed.
-
-**vite.config.ts:**
-```typescript
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-})
-```
-
-**src/index.css:**
-```css
-@import "tailwindcss";
-```
-
-That is it. No PostCSS config, no content paths, no config file. Tailwind v4 auto-detects your source files.
-
-### Utility Helper
-
-Create `src/lib/utils.ts`:
-```typescript
-import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
-```
-
-## Key Version Notes
-
-- **Tailwind v4 is a breaking change from v3.** CSS-first configuration replaces `tailwind.config.js`. If following v3 tutorials, the config approach will not work. Use `@import "tailwindcss"` not `@tailwind base; @tailwind components; @tailwind utilities;`.
-- **React Router v6 vs v7:** The project specifies v6. Pin to `^6.30.3` to avoid accidentally upgrading to v7, which has a different API surface (merged with Remix).
-- **React 19 is stable.** No concerns with any of the recommended libraries -- all support React 19.
-- **Zustand v5** dropped the deprecated `create` without generic syntax. Use `create<StoreType>()((set) => ...)` pattern.
+If the project later needs:
+- **User-resizable panels:** `npx shadcn@latest add resizable` (wraps react-resizable-panels)
+- **Complex animations (page transitions, drag-to-reorder):** `npm install motion` (v12.x)
+- **Real authentication:** Evaluate when backend (FastAPI) is ready; likely JWT-based with Zustand + Axios interceptors
+- **Server state caching:** TanStack Query when real API calls replace mocks
 
 ## Sources
 
-- npm registry (direct version checks via `npm view`, verified 2026-03-08) -- HIGH confidence
-- Tailwind CSS v4 setup: based on Tailwind v4 release notes and `@tailwindcss/vite` package existence -- HIGH confidence
-- React Router v6/v7 split: verified via npm (v7.13.1 is latest, v6.30.3 is latest v6) -- HIGH confidence
-- Library recommendations (Lucide, sonner, react-dropzone): based on ecosystem knowledge -- MEDIUM confidence, standard community choices
+- [react-resizable-panels GitHub](https://github.com/bvaughn/react-resizable-panels) -- evaluated, v4.7.1 current; rejected for this use case
+- [shadcn Resizable docs](https://ui.shadcn.com/docs/components/radix/resizable) -- available via CLI if needed later
+- [tw-animate-css GitHub](https://github.com/Wombosvideo/tw-animate-css) -- collapsible animation docs confirmed
+- [tw-animate-css collapsible docs](https://github.com/Wombosvideo/tw-animate-css/blob/main/docs/animations/collapsible.md) -- accordion-down/up animations verified
+- [CSS Custom Highlight API MDN](https://developer.mozilla.org/en-US/docs/Web/API/CSS_Custom_Highlight_API) -- evaluated; browser support confirmed (Chrome 105+, Firefox 140+, Safari 17.2+); rejected for React context
+- [Motion npm](https://www.npmjs.com/package/motion) -- v12.35.1 current; evaluated and rejected for this scope
+- [react-highlight-words GitHub](https://github.com/bvaughn/react-highlight-words) -- evaluated and rejected (wrong abstraction for range-based highlighting)
+- [Can I Use: Highlight API](https://caniuse.com/mdn-api_highlight) -- browser support reference

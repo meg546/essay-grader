@@ -1,236 +1,256 @@
-# Pitfalls Research
+# Domain Pitfalls
 
-**Domain:** AI Essay Grading Frontend (React/TypeScript, mock-first, education)
+**Domain:** UX redesign of React essay grading app (side-by-side layout, text highlighting, collapsible hero, mock auth)
 **Researched:** 2026-03-08
-**Confidence:** MEDIUM (domain experience + training data; WebSearch unavailable for verification)
+**Confidence:** HIGH (pitfalls derived from direct codebase analysis against planned features)
 
 ## Critical Pitfalls
 
-### Pitfall 1: Mock Data That Lies About the Real API Shape
+Mistakes that cause rewrites or major issues.
 
-**What goes wrong:**
-Mock data returns perfectly structured, predictable responses (e.g., every rubric category always has exactly 3 strengths, feedback is always 2 sentences, scores are always integers). When the real FastAPI backend is integrated, the frontend breaks because real LLM output is messy: variable-length feedback, unexpected nulls, scores that are floats instead of ints, categories the model skips or hallucinates.
+### Pitfall 1: max-w-[960px] Layout Container Blocks Side-by-Side Results
 
-**Why it happens:**
-Developers write mocks that make the UI look good rather than mocks that simulate realistic AI output variability. The mock becomes a specification of an idealized API rather than a simulation of the real one.
+**What goes wrong:** The current `Layout.tsx` wraps all page content in `max-w-[960px]`. A side-by-side view (essay left + feedback right) inside a 960px container leaves each pane at roughly 450px -- too narrow for readable essay text alongside detailed feedback cards with score bars and collapsible sections.
 
-**How to avoid:**
-- Define TypeScript interfaces for API responses FIRST, then derive mocks from those interfaces
-- Include edge cases in mock data: empty feedback strings, very long feedback (500+ words), missing categories, scores at boundaries (0 and max)
-- Create at least 3 mock response variants per endpoint: best-case, typical-case, edge-case
-- Make the mock service function signatures match the planned FastAPI OpenAPI spec exactly (request/response shapes, error codes)
-- Use `z.infer` from Zod or similar to share validation between mock and future real responses
+**Why it happens:** Developers add the split pane inside the existing layout without adjusting the container width, because the container is defined in a shared Layout component and changing it feels risky.
 
-**Warning signs:**
-- All mock responses have identical structure lengths
-- No error states in mock data
-- UI only tested with "happy path" data
-- TypeScript types defined inline in components rather than in a shared API types file
+**Consequences:** Essay text gets squeezed into a narrow column with excessive line wrapping. Feedback panel has horizontal overflow or truncated score bars. The "polished QuillBot-style" side-by-side goal is missed entirely.
 
-**Phase to address:**
-Phase 1 (Project Setup / API Layer). The typed API contract and mock data design must happen before any UI work begins. Retrofitting realistic mocks is painful.
+**Warning signs:** Essay pane feels like a sidebar rather than a primary reading area. Score bars in the feedback panel overflow or wrap awkwardly.
+
+**Prevention:** The grading results view must break out of the shared `max-w-[960px]` container. Either (a) the Layout component accepts a `wide` prop that conditionally uses `max-w-[1280px]` or removes the constraint, or (b) the results view renders outside the `<Outlet />` container via a portal or layout route restructure. The GradingPage already conditionally renders input vs. results (`if (currentResult)`) -- use that branch to switch layout width.
+
+**Detection:** Visually test at 1280px and 1440px viewport widths early. If either pane is under 500px usable width, the container is too narrow.
+
+**Phase:** Must be addressed at the very start of the side-by-side layout work -- before building any split-pane components.
 
 ---
 
-### Pitfall 2: Rubric Editor State Becomes Unmanageable
+### Pitfall 2: Text Highlighting Breaks on Fuzzy/Partial String Matching
 
-**What goes wrong:**
-The editable rubric (add/remove categories, adjust max scores, reset to defaults) creates deeply nested mutable state. Developers either put it all in component-local state (losing it on navigation) or create a Zustand store with overly complex nested update logic. The rubric state then gets out of sync between the editor, the submission payload, and the results display.
+**What goes wrong:** The mock API returns passage references (text snippets linked to feedback categories), but finding and highlighting those passages in the essay text fails silently. Whitespace differences, minor edits, or substring ambiguity (the same phrase appears twice) cause highlights to land on wrong text or not appear at all.
 
-**Why it happens:**
-Rubric state is the most complex data in this app: it is user-editable, it defines the structure of API requests AND responses, and it must persist across the submit-to-results flow. Treating it as "just another form" leads to a tangle.
+**Why it happens:** Naive `string.indexOf()` matching is brittle. The essay text in the textarea and the passage strings from the API may differ in whitespace, line breaks, or Unicode normalization. The planned "editable essay with resubmit" feature makes this worse -- previously matched passages shift or disappear after edits.
 
-**How to avoid:**
-- Define a single canonical `Rubric` type used everywhere: editor, submission, results
-- Store rubric in Zustand with normalized structure (categories as a record keyed by ID, separate ordered ID array) rather than a plain array
-- Use immutable update patterns (spread or Immer) -- Zustand supports Immer middleware
-- Rubric validation happens at the store level, not in UI components
-- Reset-to-default is a store action that replaces the entire rubric, not individual field resets
+**Consequences:** Highlights are missing or misaligned. Users see feedback referencing passages with no corresponding highlight. Trust in the tool drops immediately.
 
-**Warning signs:**
-- Rubric category IDs are array indices instead of stable identifiers
-- Components directly mutate rubric state instead of dispatching store actions
-- Rubric shape differs between what the editor produces and what the submit function expects
-- "Reset to default" only partially resets (some fields survive)
+**Warning signs:** Highlights work perfectly with your handcrafted mock data but break when pasting real essays with varied formatting.
 
-**Phase to address:**
-Phase 2 (Core Features -- Essay Input + Rubric). The rubric data model and Zustand store must be designed before building the rubric editor UI.
+**Prevention:**
+1. Design the mock API response to return character offset ranges (`{ start: number, end: number, categoryIndex: number }`) rather than raw text snippets. Offset-based highlighting is deterministic and avoids string matching entirely.
+2. The current `CategoryScore` type in `api/types.ts` has no passage reference fields at all -- this schema change is a prerequisite before any UI work.
+3. For the "editable essay with resubmit" feature, treat editing as invalidating existing highlights. Show a "Re-grade to update highlights" prompt rather than trying to dynamically recompute offsets after user edits.
+
+**Detection:** Test with essays containing repeated phrases, em-dashes vs. hyphens, smart quotes, and multi-line paragraphs early.
+
+**Phase:** Must be addressed during mock API type redesign, before building any highlight UI.
 
 ---
 
-### Pitfall 3: Results Page Is Unusable for Actual Grading Review
+### Pitfall 3: Overlapping Highlights Create Visual Chaos
 
-**What goes wrong:**
-The results page shows scores and feedback but is designed as a "dashboard" rather than a "grading review tool." Instructors need to cross-reference feedback against the original essay text, but the results page shows feedback in isolation. The instructor has to mentally context-switch between "what did the AI say about Organization?" and "what did the student actually write?" without being able to see both.
+**What goes wrong:** Multiple feedback categories reference overlapping or adjacent essay passages. With 4 categories color-coded simultaneously ("always-on" per requirements), overlapping regions become unreadable -- the innermost span's background color wins, creating inconsistent visual signals.
 
-**Why it happens:**
-Developers focus on displaying AI output prettily (score bars, collapsible sections) without considering the instructor workflow: read feedback, verify against essay, potentially disagree and adjust. The essay text disappears after submission.
+**Why it happens:** CSS `background-color` on nested `<span>` elements does not compose. Developers discover this late because initial mock data conveniently has non-overlapping passages.
 
-**How to avoid:**
-- Keep the submitted essay text accessible from the results page (expandable panel, side-by-side view, or a "View Essay" tab)
-- Design the results layout so feedback and essay can be cross-referenced without page navigation
-- Even for MVP, include the essay text in the results data structure so it is available for display later
+**Consequences:** The "always-on color-coded highlighting" feature looks broken or ugly at overlapping regions. One category's color silently overrides another's.
 
-**Warning signs:**
-- Results page component does not receive or have access to the original essay text
-- No way to get back to the essay from the results page without browser back button
-- Results data model only stores scores/feedback, not the input essay
+**Warning signs:** Mock data avoids overlaps so everything looks fine. The problem only surfaces with realistic passage ranges.
 
-**Phase to address:**
-Phase 3 (Results Display). Must be considered during data model design in Phase 2 (store the essay with results), but the UI addresses it in Phase 3.
+**Prevention:**
+1. Design the mock data model so passages do not overlap -- each character belongs to at most one category. Enforce this constraint in the mock API. This is the simplest approach and matches realistic backend behavior (a model assigning non-overlapping spans).
+2. If overlaps must be supported later, use absolutely-positioned translucent layers behind the text rather than inline span backgrounds.
+3. Define a category priority order for deterministic conflict resolution.
+
+**Detection:** Add a mock essay with intentionally adjacent and overlapping passage ranges during early testing.
+
+**Phase:** Address during mock API data design, before building the highlight rendering component.
 
 ---
 
-### Pitfall 4: File Upload Handling That Breaks on Real PDFs
+### Pitfall 4: Collapsible Hero Animation Conflicts with Page State Transitions
 
-**What goes wrong:**
-PDF upload is listed as a requirement (.txt, .pdf). Developers add a file input, read the file, and assume `FileReader.readAsText()` works for PDFs. It does not -- PDFs are binary and require a parsing library. The result is garbled text or an empty string, and this is not caught until someone actually uploads a PDF.
+**What goes wrong:** The hero section should collapse when the user focuses on essay input, stay collapsed while viewing results, and re-expand on a fresh grading state. Developers implement the collapse as a CSS transition but fail to coordinate it with the application state machine. The hero re-animates on every render, flickers during route transitions, or gets stuck collapsed after clicking "Grade Another."
 
-**Why it happens:**
-Text files work trivially with the FileReader API. Developers assume PDFs are similar or defer the problem. PDF parsing in the browser requires a library like pdf.js, which adds complexity and bundle size.
+**Why it happens:** Hero collapse is visual state driven by application state (has the user started interacting? are results showing?). The current `GradingPage` uses a conditional render (`if (currentResult) { ... }`) which causes a full re-mount, re-triggering any mount-based animations. Mixing CSS animation triggers with React state and React Router navigation creates timing conflicts.
 
-**How to avoid:**
-- Use `pdfjs-dist` (Mozilla's pdf.js) for client-side PDF text extraction
-- Handle PDF parsing failures gracefully: corrupted files, scanned-image PDFs (no extractable text), password-protected PDFs
-- Show a clear error message when text extraction fails rather than silently submitting empty content
-- Add a character/word count that updates after extraction so the instructor can verify the text was read correctly
-- Consider a "preview extracted text" step before submission
+**Consequences:** Janky collapse/expand animations. Hero flashes open then immediately collapses when navigating back. Layout shift pushes content around during animation.
 
-**Warning signs:**
-- File upload only tested with .txt files
-- No PDF parsing library in package.json
-- No error handling for file read failures
-- Word count does not update after file upload
+**Warning signs:** The hero animates correctly on first interaction but behaves unexpectedly after navigating away and back, or after grading completes and the user clicks "Grade Another."
 
-**Phase to address:**
-Phase 2 (Core Features -- Essay Input). Must be handled when building the essay input component. Do not defer PDF parsing to "later."
+**Prevention:**
+1. Derive hero visibility from a single source of truth: `collapsed = essayText.length > 0 || currentResult !== null`. Do NOT use a separate `useState` for hero visibility.
+2. Use CSS `max-height` + `overflow: hidden` + `transition` for the collapse, NOT conditional rendering (`{showHero && <Hero />}`). Conditional rendering prevents exit animations and causes layout jumps.
+3. Better yet, use CSS grid with `grid-template-rows: 1fr` transitioning to `grid-template-rows: 0fr` -- this animates cleanly without needing to guess a max-height value and is well-supported in all modern browsers.
+4. Add `pointer-events-none` to the hero during collapse transition to prevent interaction with partially-visible content.
 
----
+**Detection:** Test the full navigation cycle: land on page -> type in essay -> hero collapses -> submit -> see results -> click "Grade Another" -> hero should re-expand smoothly. Also test: navigate to Profile and back.
 
-### Pitfall 5: Scoring Visualization That Misrepresents AI Confidence
+**Phase:** Build the collapsible hero before integrating the side-by-side results layout. Get the animation right in isolation first.
 
-**What goes wrong:**
-Score bars with green/yellow/red color coding imply precision and certainty that AI essay grading does not have. A score of 4/6 displayed as a solid green bar suggests the AI is confident and correct. Instructors either over-trust the scores (defeating the purpose of human review) or distrust the entire tool when they see a score they disagree with (because the UI presented it as definitive).
+## Moderate Pitfalls
 
-**Why it happens:**
-Developers default to progress-bar patterns from dashboards. These work for factual metrics (CPU usage, download progress) but misrepresent probabilistic AI assessments.
+### Pitfall 5: Split Pane Does Not Stack Properly on Tablet
 
-**How to avoid:**
-- Pair every score with its justification text visually (not hidden behind a collapse)
-- Consider softer visual language: "Suggested score: 4/6" rather than just "4/6" with a bar
-- Use the color coding for relative comparison (low/medium/high within the rubric) rather than implying absolute quality
-- Include a brief disclaimer or framing text: "AI-suggested scores for instructor review"
-- The overall summary should frame results as suggestions, not verdicts
+**What goes wrong:** The side-by-side layout uses `md:` (768px) as the breakpoint for switching to two columns. On tablets (the minimum supported viewport per project constraints), both panes are crammed into 768px, leaving roughly 350px per pane -- unreadable for essay text.
 
-**Warning signs:**
-- Score display has no qualifying language ("suggested," "estimated")
-- Score justification is hidden by default (collapsed) while the score itself is prominent
-- No visual distinction between AI-generated scores and hypothetical instructor-confirmed scores
-- Color thresholds are hardcoded without considering different rubric scales
+**Why it happens:** Developers reach for Tailwind's `md:` breakpoint by habit. The existing grading page already uses `md:grid-cols-2` for essay/rubric input, which works because those are compact form inputs, not full reading panes with highlighted text and score bars.
 
-**Phase to address:**
-Phase 3 (Results Display). This is a design decision that must be made when building score visualization components.
+**Prevention:** Use `lg:` (1024px) as the breakpoint for the side-by-side results layout. Below 1024px, stack the essay above feedback vertically. The existing input form can keep its `md:` two-column layout. Test at exactly 1024px to verify both panes have adequate width.
+
+**Detection:** Resize browser to the 768px-1024px range during development. If either pane is under 480px, it should be stacking instead.
+
+**Phase:** Address when building the split-pane container component.
 
 ---
 
-## Technical Debt Patterns
+### Pitfall 6: Bidirectional Scroll Sync Creates Infinite Loop
 
-Shortcuts that seem reasonable but create long-term problems.
+**What goes wrong:** When the essay is long, both panes scroll independently. Developers try to sync scrolling (clicking feedback scrolls essay to highlight, scrolling essay highlights active feedback) but bidirectional sync causes a scroll fight -- each pane triggers the other's scroll handler in a loop.
 
-| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
-|----------|-------------------|----------------|-----------------|
-| Hardcoding mock data inline in API functions | Fast to write, easy to see | Cannot test edge cases, hard to swap for real API, no response variability | Never -- put mocks in separate data files from day one |
-| Using `any` types for API responses | Avoids upfront type design | Loses TypeScript's main value; bugs surface at runtime when backend integrates | Never -- define response types before building UI |
-| Storing rubric as untyped JSON blob | Flexible, no schema to maintain | Validation bugs, silent data corruption, impossible to refactor | Never -- Zod schema or equivalent from the start |
-| Skipping loading/error states in mock mode | Mocks return instantly, no visible need | When real API is slow or fails, UI has no handling; must retrofit everywhere | Only in earliest prototype; add simulated delays immediately |
-| Single mock response per endpoint | Quick to implement | UI only works for one scenario; integration reveals layout breaks | Only for initial scaffold; add variants before UI is "done" |
+**Why it happens:** The intuitive desire is "feedback and essay should stay in sync." Bidirectional scroll sync requires complex debouncing with `isScrolling` ref flags, which is fragile and prone to race conditions.
 
-## Integration Gotchas
+**Prevention:** Implement one-directional scroll linking only: clicking or hovering a feedback category scrolls the essay pane to the relevant highlighted passage using `scrollIntoView({ behavior: 'smooth', block: 'center' })`. Do NOT try to update the feedback panel based on essay scroll position. This is simpler and more predictable.
 
-Common mistakes when connecting to external services.
+**Detection:** If you find yourself adding `isScrolling` ref flags to debounce scroll handlers, you have fallen into this trap.
 
-| Integration | Common Mistake | Correct Approach |
-|-------------|----------------|------------------|
-| FastAPI backend swap | Mock functions have different signatures than real API endpoints | Define API contract (OpenAPI spec or TypeScript interfaces) first; mock functions must accept the same params and return the same shape |
-| PDF file upload | Using `readAsText()` for PDFs | Use `pdfjs-dist` for PDF text extraction; handle binary format properly |
-| Axios HTTP client | Importing Axios but only using it with mock interceptors | Create a configured Axios instance with baseURL, interceptors, and error transforms; mock at the function level above Axios, not with Axios interceptors |
-| File upload to backend | Sending file as base64 string | Plan for `multipart/form-data` upload; mock the file-to-text extraction on frontend, but design for server-side extraction later |
+**Phase:** Address after both panes render correctly with static content. Scroll linking is a polish feature, not structural.
 
-## Performance Traps
+---
 
-Patterns that work at small scale but fail as usage grows.
+### Pitfall 7: Mock Auth Accidentally Gates the Core Grading Flow
 
-| Trap | Symptoms | Prevention | When It Breaks |
-|------|----------|------------|----------------|
-| Re-rendering entire results page on any state change | Visible jank when expanding/collapsing feedback sections | Memoize score bar and feedback components; use separate Zustand selectors per section | With 8+ rubric categories and long feedback text |
-| Storing full essay text in multiple Zustand slices | Memory bloat, stale copies | Store essay text once; reference by ID from results | With essays over 5000 words |
-| Unoptimized PDF.js bundle import | 500KB+ added to initial bundle | Dynamic import `pdfjs-dist` only when user selects a PDF file | Immediately on first load (affects Lighthouse score) |
-| Submission history storing full response data in memory | Slow list rendering, high memory | Store summaries in list; load full results on demand (even from mock) | With 20+ history entries with long feedback |
+**What goes wrong:** Mock authentication is added with protected route wrappers that redirect unauthenticated users to a sign-in page. This blocks the grading feature -- the entire point of the app -- behind a fake sign-in form. Demo viewers must create fake credentials before seeing the actual product.
 
-## UX Pitfalls
+**Why it happens:** Developers cargo-cult real auth patterns (`<ProtectedRoute>`, redirect-to-login) for what is explicitly a mock/demo feature. The project requirements say "mock email+password authentication on profile page" -- not "gate the entire app behind auth."
 
-Common user experience mistakes in this domain.
+**Consequences:** The grading feature is unusable without first signing into a fake system. The app's core value proposition is hidden behind friction.
 
-| Pitfall | User Impact | Better Approach |
-|---------|-------------|-----------------|
-| No feedback while "grading" is in progress | Instructor thinks app is frozen; clicks submit again | Show animated progress with stage indicators ("Analyzing essay...", "Scoring rubric categories...", "Generating feedback...") even if simulated |
-| Rubric editor has no validation feedback | Instructor submits with empty category names or 0 max scores; gets confusing results | Inline validation: highlight empty fields, prevent submit with invalid rubric, show category count |
-| Results page requires scrolling past scores to see feedback | Instructor misses detailed feedback; only sees numbers | Put overall summary at top, then interleaved score+feedback per category, not scores-then-feedback |
-| No confirmation before leaving unsaved rubric edits | Instructor loses custom rubric by accidentally navigating away | Use `beforeunload` event and React Router's navigation blocking when rubric has unsaved changes |
-| History table shows no preview of results | Instructor cannot distinguish between submissions without clicking each one | Show essay title/first line, date, and aggregate score in the table row |
-| Color-coded scores ignore different max scales | Category with max 3 and category with max 6 have same color thresholds | Calculate color thresholds as percentage of max score, not absolute values |
+**Warning signs:** You are writing a `<ProtectedRoute>` component. You are adding auth checks to the Home or grading routes.
 
-## "Looks Done But Isn't" Checklist
+**Prevention:**
+1. Mock auth should ONLY affect the Profile page. The grading flow must work without signing in.
+2. The `profile-store.ts` already has `isSignedIn` -- use it to conditionally show "Sign in to save preferences" on the Profile page, not to redirect away from other routes.
+3. Do NOT add `<Navigate to="/login" />` guards on Home or grading routes.
+4. The sign-in screen should remain a section within the Profile page (which it already is), not a separate route. The redesign adds a password field -- keep it in-page.
 
-Things that appear complete but are missing critical pieces.
+**Detection:** Can a first-time visitor grade an essay without signing in? If no, auth scope has leaked.
 
-- [ ] **Essay Input:** Often missing max-length validation -- verify that very long essays (10,000+ words) do not crash the textarea or browser tab
-- [ ] **File Upload:** Often missing PDF support -- verify a real PDF file (not just .txt renamed to .pdf) extracts text correctly
-- [ ] **Rubric Editor:** Often missing edge cases -- verify behavior with 1 category, 10 categories, and a category with max score of 1
-- [ ] **Submit Flow:** Often missing error state -- verify what happens when the (mock) API "fails" (network error, server error, timeout)
-- [ ] **Results Page:** Often missing the original essay -- verify the instructor can view the submitted essay alongside feedback
-- [ ] **Score Bars:** Often missing responsive behavior -- verify score bars render correctly on tablet widths (768px)
-- [ ] **History Page:** Often missing empty state -- verify what the page shows when there are zero submissions
-- [ ] **Navigation:** Often missing loading state persistence -- verify that navigating away from results and back preserves data (does not re-trigger "grading")
-- [ ] **Rubric Reset:** Often missing confirmation -- verify that "reset to default" asks for confirmation and actually resets ALL fields
+**Phase:** Mock auth should be one of the last features implemented, after the core grading UX redesign is solid.
 
-## Recovery Strategies
+---
 
-When pitfalls occur despite prevention, how to recover.
+### Pitfall 8: Highlight Colors Have Poor Contrast in Dark Mode
 
-| Pitfall | Recovery Cost | Recovery Steps |
-|---------|---------------|----------------|
-| Mock data shape mismatch with real API | MEDIUM | Add Zod validation layer between API and components; fix types; update mocks to match real responses |
-| Rubric state management tangle | HIGH | Extract rubric into its own Zustand slice with normalized state; update all consumers; this is essentially a rewrite of state layer |
-| PDF upload not working | LOW | Add `pdfjs-dist`, create a `parsePdf()` utility, wire into existing file upload handler |
-| Results page missing essay context | MEDIUM | Add essay text to results data model; add expandable essay panel to results component |
-| Score visualization misleading users | LOW | Add "Suggested" labels, adjust color thresholds to percentage-based, surface justification text |
-| No loading/error states | MEDIUM | Create shared `AsyncState` wrapper component; retrofit around all API call sites |
+**What goes wrong:** Category highlight colors are chosen for visual distinctiveness in light mode (blue, green, yellow, pink backgrounds), but the highlighted text becomes unreadable in dark mode. Solid pastel backgrounds like `bg-blue-200` clash with dark mode text colors.
 
-## Pitfall-to-Phase Mapping
+**Why it happens:** Developers test with one theme on one monitor. The app uses `next-themes` for dark mode support, but highlight colors are hardcoded for light backgrounds.
 
-How roadmap phases should address these pitfalls.
+**Consequences:** Highlighted essay text is hard to read in dark mode. For an educational tool, this is a usability failure.
 
-| Pitfall | Prevention Phase | Verification |
-|---------|------------------|--------------|
-| Mock data shape mismatch | Phase 1 (Setup/API Layer) | TypeScript interfaces compile; mock data passes Zod validation; at least 3 response variants exist |
-| Rubric state tangle | Phase 2 (Core Features) | Rubric store has normalized state; add/remove/reset operations pass unit tests; same type used in editor, submission, and results |
-| PDF upload broken | Phase 2 (Core Features) | Upload a real multi-page PDF; extracted text appears in textarea with correct word count |
-| Results page missing essay | Phase 2 (Data Model) + Phase 3 (Results UI) | Results store includes essay text; results page has "View Essay" capability |
-| Score visualization misleading | Phase 3 (Results Display) | Scores labeled "Suggested"; color thresholds are percentage-based; justification visible without extra clicks |
-| No loading/error states | Phase 2 (Submission Flow) | Mock API has simulated delay (1-3s); loading spinner appears; error state renders when mock returns error |
-| Rubric editor lacks validation | Phase 2 (Rubric Editor) | Cannot submit with empty category name; cannot set max score to 0; validation messages visible |
-| History page incomplete | Phase 4 (History) | Empty state renders; rows show preview data; clicking navigates to correct results |
+**Prevention:**
+1. Use low-opacity translucent highlights (`bg-blue-500/15`, `bg-emerald-500/20`) rather than solid pastel backgrounds. These work in both themes because the underlying text color is preserved.
+2. Define highlight colors as CSS custom properties scoped to light and dark themes so they can be tuned independently.
+3. Reuse the existing color hues from `CategoryFeedback.tsx` (emerald for strengths, amber for improvements) to maintain visual consistency between highlights and feedback cards.
+4. Test all 4 category colors in both light and dark modes. Text on highlighted background must meet WCAG AA contrast (4.5:1).
+
+**Detection:** Toggle dark mode and check if all highlighted text is legible.
+
+**Phase:** Address when defining the highlight color system, before building the highlight rendering component.
+
+---
+
+### Pitfall 9: Zustand Store Grows Into a God Object
+
+**What goes wrong:** Highlighting state (active category, hovered passage), hero collapse state, and auth form state all get added to the existing `app-store.ts`. The single store becomes a monolith that re-renders many components on unrelated state changes.
+
+**Why it happens:** The app already has `app-store.ts` and `profile-store.ts`. Adding new fields to the existing store feels easier than creating new ones. Developers forget to use granular selectors and destructure the entire store in components.
+
+**Consequences:** Typing in the essay textarea re-renders the highlight layer. Hovering a feedback category re-renders the essay input. Performance degrades with long essays.
+
+**Prevention:**
+1. Keep `app-store` for grading workflow state (essay text, rubric, results, history) -- it already does this well.
+2. Create a new `highlight-store` for ephemeral highlighting UI state (active category index, hovered passage). This state should NOT be persisted.
+3. Hero collapse state should be derived from existing state (see Pitfall 4), not stored.
+4. Always use individual selectors: `useAppStore((s) => s.essayText)` not `const { essayText, currentResult, ... } = useAppStore()`.
+
+**Detection:** React DevTools Profiler showing re-renders in components that should be idle during unrelated interactions.
+
+**Phase:** Establish the store architecture at the start, before building new features.
+
+## Minor Pitfalls
+
+### Pitfall 10: Textarea vs. ContentEditable for Editable Essay in Results
+
+**What goes wrong:** The results view needs to show the essay with inline highlights AND be editable for resubmit. A `<textarea>` cannot render inline highlights (plain text only). Developers reach for `contentEditable` divs, which introduce cursor management, paste handling, undo/redo, and HTML sanitization complexity.
+
+**Why it happens:** The requirement combines two conflicting needs -- rich visual rendering (highlights) and text editing -- in the same element.
+
+**Prevention:** Use a two-mode approach: render the essay in a read-only div with highlight spans by default, and toggle to a plain `<textarea>` when the user clicks "Edit." The textarea does not need highlights -- just the text. On re-submit, fresh results will have new highlights. Do NOT use `contentEditable`. Do NOT import TipTap, Slate, or ProseMirror for this.
+
+**Detection:** If you are researching rich text editor libraries, you are overengineering this feature.
+
+**Phase:** Design the edit/view toggle pattern during the side-by-side layout phase.
+
+---
+
+### Pitfall 11: Route Structure Conflicts When Merging Home and Grade Pages
+
+**What goes wrong:** The current app has three routes: `/` (LandingPage), `/grade` (GradingPage), `/profile` (ProfilePage). The redesign merges Home and Grade into a single combined page. Developers create the new combined page but leave stale routes, navigation items, and click handlers pointing to the old structure.
+
+**Why it happens:** The merge seems simple but the route table in `App.tsx`, the `navItems` array in `Header.tsx` (currently 3 items including "Home", "Grade", "Profile"), and the history click handler in `ProfilePage.tsx` (which calls `navigate("/grade")`) all reference the old structure.
+
+**Consequences:** Dead links, duplicate pages, or navigating to a history entry lands on a blank or wrong page.
+
+**Prevention:**
+1. Plan the route migration explicitly: `/` becomes the combined home+grade page, `/grade` either redirects to `/` or is removed, `/profile` stays.
+2. Update `navItems` in `Header.tsx` from 3 items to 2 (Home, Profile).
+3. Update the `ProfilePage.tsx` history click handler which navigates to `/grade`.
+4. Do the route change as a discrete, testable step before building new features on top.
+
+**Detection:** Click every navigation link and every history entry after the merge. Check that no route shows a blank page.
+
+**Phase:** This should be the very first change -- before building the collapsible hero or side-by-side layout.
+
+---
+
+### Pitfall 12: CSS Transition on Height: Auto Does Not Animate
+
+**What goes wrong:** Developers try `transition: height 300ms` on the hero section, but CSS cannot transition from `height: auto` to `height: 0`. The hero snaps instantly instead of animating.
+
+**Why it happens:** CSS transitions require explicit numeric start and end values. `auto` is not numeric.
+
+**Prevention:** Use CSS grid with `grid-template-rows: 1fr` transitioning to `grid-template-rows: 0fr` with `overflow: hidden` on the child. This animates cleanly without needing to guess a max-height value. Alternatively, use `max-height` with a generous upper bound, though this produces timing inconsistencies when the actual content height varies.
+
+**Detection:** If the hero pops open/closed instead of sliding, check whether you are transitioning `height: auto`.
+
+**Phase:** Address during collapsible hero implementation.
+
+## Phase-Specific Warnings
+
+| Phase Topic | Likely Pitfall | Mitigation |
+|-------------|---------------|------------|
+| Route restructuring (merge Home+Grade) | Stale routes and nav links (Pitfall 11) | Do route merge as an isolated first step; test all navigation paths |
+| Mock API schema update | Missing passage reference fields in types (Pitfall 2) | Add `highlights: { start, end, categoryIndex }[]` to `GradingResult` before building UI |
+| Mock API schema update | Overlapping passage ranges (Pitfall 3) | Enforce non-overlapping ranges in mock data |
+| Collapsible hero section | CSS height:auto does not animate (Pitfall 12) | Use CSS grid-template-rows animation |
+| Collapsible hero section | Hero state conflicts with navigation (Pitfall 4) | Derive collapse from essayText/currentResult state, not separate useState |
+| Side-by-side layout | 960px container too narrow (Pitfall 1) | Break out of shared container; use wider max-width for results view |
+| Side-by-side layout | Bad tablet stacking breakpoint (Pitfall 5) | Use `lg:` (1024px) not `md:` for the split |
+| Text highlighting | Poor contrast in dark mode (Pitfall 8) | Use translucent highlight colors with CSS custom properties |
+| Editable essay + highlights | contentEditable complexity (Pitfall 10) | Read-only highlight view + toggle to plain textarea for editing |
+| Scroll linking between panes | Bidirectional scroll sync loop (Pitfall 6) | One-directional only: feedback click scrolls essay pane |
+| Mock authentication | Auth gating blocks core grading (Pitfall 7) | Only gate Profile page settings; never gate grading routes |
+| Store architecture | God object Zustand store (Pitfall 9) | Create dedicated highlight-store for ephemeral UI state |
 
 ## Sources
 
-- Domain experience with education technology UX patterns (MEDIUM confidence)
-- React/TypeScript mock-first architecture patterns (MEDIUM confidence)
-- Common pdf.js integration issues from Mozilla documentation patterns (MEDIUM confidence)
-- AI output display patterns from LLM-powered tool design (MEDIUM confidence)
-
-Note: WebSearch was unavailable during this research. Findings are based on training data and domain knowledge. Confidence is MEDIUM across the board -- recommend validating PDF parsing approach and Zustand patterns against current documentation during implementation.
+- Direct codebase analysis: `Layout.tsx` (960px max-width constraint), `GradingPage.tsx` (conditional render pattern causing re-mount), `app-store.ts` (current Zustand structure and persist config), `profile-store.ts` (existing `isSignedIn` state), `CategoryFeedback.tsx` (emerald/amber color scheme), `Header.tsx` (3-item navItems array), `App.tsx` (3-route structure), `ProfilePage.tsx` (history navigate to /grade), `api/types.ts` (CategoryScore lacks passage references)
+- CSS grid-template-rows animation: well-supported in all modern browsers since 2023
+- CSS height:auto transition limitation: fundamental browser behavior, not version-dependent
+- WCAG 2.1 Level AA contrast requirements: 4.5:1 minimum for normal text
+- Zustand selector patterns: standard guidance on avoiding unnecessary re-renders via granular selectors
 
 ---
-*Pitfalls research for: AI Essay Grading Frontend*
+*Pitfalls research for: AI Essay Grader v1.1 UX Redesign*
 *Researched: 2026-03-08*
