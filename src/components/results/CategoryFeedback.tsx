@@ -8,7 +8,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useHighlightContext } from "@/lib/highlight-context";
-import { getCategoryColor, CATEGORY_HEX } from "@/lib/highlight-utils";
+import { CATEGORY_HEX } from "@/lib/highlight-utils";
 import type { CategoryScore } from "@/api/types";
 
 interface CategoryFeedbackProps {
@@ -24,7 +24,6 @@ export function CategoryFeedback({
   const { activeCategoryId, setActiveCategoryId, setScrollTarget } =
     useHighlightContext();
 
-  const color = getCategoryColor(colorIndex);
   const hexColor = CATEGORY_HEX[colorIndex % CATEGORY_HEX.length];
   const isActive = activeCategoryId === category.id;
 

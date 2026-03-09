@@ -9,9 +9,10 @@ import { gradeEssay } from "@/api/grading";
 import { Button } from "@/components/ui/button";
 import { EssayInput } from "@/components/grading/EssayInput";
 import { RubricUpload } from "@/components/grading/RubricUpload";
-import { ResultsSummary } from "@/components/results/ResultsSummary";
-import { ScoreOverview } from "@/components/results/ScoreOverview";
-import { CategoryFeedback } from "@/components/results/CategoryFeedback";
+import { HighlightProvider } from "@/lib/highlight-context";
+import { ColorLegend } from "@/components/results/ColorLegend";
+import { EssayPanel } from "@/components/results/EssayPanel";
+import { FeedbackPanel } from "@/components/results/FeedbackPanel";
 
 export function GradingPage() {
   const essayText = useAppStore((s) => s.essayText);
@@ -58,22 +59,21 @@ export function GradingPage() {
 
   if (currentResult) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Grading Results</h1>
-          <Button variant="outline" onClick={handleReset}>
-            Grade Another
-          </Button>
+      <HighlightProvider>
+        <div className="mx-auto max-w-[1400px] space-y-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold">Grading Results</h1>
+            <Button variant="outline" onClick={handleReset}>
+              Grade Another
+            </Button>
+          </div>
+          <ColorLegend categories={currentResult.categories} />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <EssayPanel result={currentResult} />
+            <FeedbackPanel result={currentResult} />
+          </div>
         </div>
-        <ResultsSummary result={currentResult} />
-        <ScoreOverview categories={currentResult.categories} />
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Detailed Feedback</h2>
-          {currentResult.categories.map((cat) => (
-            <CategoryFeedback key={cat.name} category={cat} />
-          ))}
-        </div>
-      </div>
+      </HighlightProvider>
     );
   }
 
