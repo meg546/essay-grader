@@ -59,9 +59,9 @@
 ### Text Highlighting
 
 - [x] **HLGT-01**: Mock API responses include highlight ranges (start, end, categoryId) mapping feedback to essay passages
-- [ ] **HLGT-02**: Essay passages are always color-coded by feedback category in the results view
+- [x] **HLGT-02**: Essay passages are always color-coded by feedback category in the results view
 - [ ] **HLGT-03**: Clicking a feedback card scrolls the essay panel to the relevant highlighted passage
-- [ ] **HLGT-04**: Category color legend is visible with toggles to show/hide highlighting per category
+- [x] **HLGT-04**: Category color legend is visible with toggles to show/hide highlighting per category
 - [ ] **HLGT-05**: Hovering a feedback card pulses/intensifies the corresponding essay highlight, and vice versa
 
 ### Editing
@@ -108,9 +108,9 @@
 | NAV-01 | Phase 7 | Complete |
 | NAV-02 | Phase 7 | Complete |
 | HLGT-01 | Phase 7 | Complete |
-| HLGT-02 | Phase 9 | Pending |
+| HLGT-02 | Phase 9 | Complete |
 | HLGT-03 | Phase 9 | Pending |
-| HLGT-04 | Phase 9 | Pending |
+| HLGT-04 | Phase 9 | Complete |
 | HLGT-05 | Phase 9 | Pending |
 | EDIT-01 | Phase 10 | Pending |
 | EDIT-02 | Phase 10 | Pending |

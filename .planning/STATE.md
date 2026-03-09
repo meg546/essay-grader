@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: UX Redesign
-status: completed
-stopped_at: Completed 08-01-PLAN.md
-last_updated: "2026-03-09T04:10:43.541Z"
-last_activity: 2026-03-09 -- Completed 08-01 collapsible hero and grading workspace
+status: in_progress
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-03-09T04:34:00.000Z"
+last_activity: 2026-03-09 -- Completed 09-01 highlight rendering foundation
 progress:
   total_phases: 10
   completed_phases: 6
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 11
+  completed_plans: 10
 ---
 
 # Project State
@@ -24,12 +24,12 @@ See: .planning/PROJECT.md (updated 2026-03-08)
 
 ## Current Position
 
-Phase: 8 of 10 (Collapsible Hero & Grading Workspace)
-Plan: 1 of 1 in current phase
-Status: Phase 8 complete
-Last activity: 2026-03-09 -- Completed 08-01 collapsible hero and grading workspace
+Phase: 9 of 10 (Side-by-Side Results & Highlighting)
+Plan: 1 of 2 in current phase
+Status: Plan 09-01 complete
+Last activity: 2026-03-09 -- Completed 09-01 highlight rendering foundation
 
-Progress (v1.1): [█████████░] 90%
+Progress (v1.1): [█████████░] 91%
 
 ## Performance Metrics
 
@@ -56,6 +56,8 @@ Progress (v1.1): [█████████░] 90%
 - [Phase 07]: Highlights co-located on CategoryScore with hl() helper for programmatic offset computation
 - [Phase 08]: Hero hides entirely (not minimal bar) since header already has branding
 - [Phase 08]: Motion library with AnimatePresence for hero collapse animation (300ms easeInOut tween)
+- [Phase 09]: Overlap handling gives priority to first highlight by start offset, truncating later overlaps
+- [Phase 09]: Static Tailwind class strings in CATEGORY_COLORS array to avoid purge issues
 
 ### Pending Todos
 
@@ -67,6 +69,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T04:05:18Z
-Stopped at: Completed 08-01-PLAN.md
-Resume file: .planning/phases/08-collapsible-hero-grading-workspace/08-01-SUMMARY.md
+Last session: 2026-03-09T04:31:43Z
+Stopped at: Completed 09-01-PLAN.md
+Resume file: .planning/phases/09-side-by-side-results-highlighting/09-01-SUMMARY.md
