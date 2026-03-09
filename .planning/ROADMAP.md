@@ -88,12 +88,12 @@ Plans:
   3. Grading produces noticeably different scoring when the same essay is submitted at different grade levels
   4. Grading endpoint accepts both a PDF file upload and pre-extracted rubric text, producing equivalent results
   5. Changing the MODEL_ENDPOINT environment variable switches inference to a different host without code changes
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 13-01: TBD
-- [ ] 13-02: TBD
-- [ ] 13-03: TBD
+- [ ] 13-01-PLAN.md -- LLM client Protocol, three provider adapters (Ollama, Anthropic, OpenAI), config settings
+- [ ] 13-02-PLAN.md -- Prompt templates, highlight offset matching, GradingService orchestration
+- [ ] 13-03-PLAN.md -- PDF extraction, POST /api/grade endpoint, integration tests
 
 ### Phase 14: Persistence & History
 **Goal**: Grading results are saved and users can browse and reload past submissions
@@ -144,7 +144,7 @@ v2.0: 11 → 12 → 13 → 14 → 15
 | 9. Side-by-Side Results & Highlighting | v1.1 | 2/2 | Complete | 2026-03-09 |
 | 10. Mock Auth & Editable Essay | v1.1 | 2/2 | Complete | 2026-03-09 |
 | 11. Backend Foundation | v2.0 | 2/2 | Complete | 2026-03-09 |
-| 12. Authentication | 2/2 | Complete    | 2026-03-09 | - |
-| 13. LLM Inference & Grading | v2.0 | 0/? | Not started | - |
+| 12. Authentication | v2.0 | 2/2 | Complete | 2026-03-09 |
+| 13. LLM Inference & Grading | v2.0 | 0/3 | Not started | - |
 | 14. Persistence & History | v2.0 | 0/? | Not started | - |
 | 15. Frontend Integration | v2.0 | 0/? | Not started | - |
