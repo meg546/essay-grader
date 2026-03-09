@@ -49,8 +49,8 @@
 
 ### Layout & Navigation
 
-- [ ] **LAYOUT-01**: Home page displays hero section with app title, description, and grading input area on a single page
-- [ ] **LAYOUT-02**: Hero section collapses to a minimal bar when user focuses on the essay input textarea
+- [x] **LAYOUT-01**: Home page displays hero section with app title, description, and grading input area on a single page
+- [x] **LAYOUT-02**: Hero section collapses to a minimal bar when user focuses on the essay input textarea
 - [ ] **LAYOUT-03**: After grading, results display in side-by-side layout with essay on left and feedback/scores on right
 - [ ] **LAYOUT-04**: Side-by-side layout stacks vertically on tablet breakpoints (<1024px)
 - [x] **NAV-01**: Navigation has two tabs: Home and Profile
@@ -101,8 +101,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LAYOUT-01 | Phase 8 | Pending |
-| LAYOUT-02 | Phase 8 | Pending |
+| LAYOUT-01 | Phase 8 | Complete |
+| LAYOUT-02 | Phase 8 | Complete |
 | LAYOUT-03 | Phase 9 | Pending |
 | LAYOUT-04 | Phase 9 | Pending |
 | NAV-01 | Phase 7 | Complete |

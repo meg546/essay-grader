@@ -10,7 +10,7 @@ progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 8
-  completed_plans: 8
+  completed_plans: 9
 ---
 
 # Project State
@@ -20,16 +20,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Users can submit an essay with a rubric and immediately see clear, rubric-aligned scores with structured feedback and highlighted essay passages
-**Current focus:** Phase 7 - Data Contracts & Route Restructure
+**Current focus:** Phase 9 - Side-by-Side Results & Highlighting
 
 ## Current Position
 
-Phase: 7 of 10 (Data Contracts & Route Restructure)
-Plan: 2 of 2 in current phase
-Status: Phase 7 complete
-Last activity: 2026-03-09 -- Completed 07-02 route consolidation and nav simplification
+Phase: 8 of 10 (Collapsible Hero & Grading Workspace)
+Plan: 1 of 1 in current phase
+Status: Phase 8 complete
+Last activity: 2026-03-09 -- Completed 08-01 collapsible hero and grading workspace
 
-Progress (v1.1): [█████████░] 88%
+Progress (v1.1): [█████████░] 90%
 
 ## Performance Metrics
 
@@ -54,6 +54,8 @@ Progress (v1.1): [█████████░] 88%
 - [Research]: Scoped React context (not Zustand) for ephemeral hover-linking state
 - [Phase 07]: Removed hamburger/Sheet menu entirely since 2 tabs fit on any screen
 - [Phase 07]: Highlights co-located on CategoryScore with hl() helper for programmatic offset computation
+- [Phase 08]: Hero hides entirely (not minimal bar) since header already has branding
+- [Phase 08]: Motion library with AnimatePresence for hero collapse animation (300ms easeInOut tween)
 
 ### Pending Todos
 
@@ -65,6 +67,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T03:53:33.818Z
-Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/08-collapsible-hero-grading-workspace/08-CONTEXT.md
+Last session: 2026-03-09T04:05:18Z
+Stopped at: Completed 08-01-PLAN.md
+Resume file: .planning/phases/08-collapsible-hero-grading-workspace/08-01-SUMMARY.md

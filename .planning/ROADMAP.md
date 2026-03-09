@@ -140,7 +140,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 08-01-PLAN.md — Install Motion, create HeroSection, integrate collapsible hero into GradingPage
+- [x] 08-01-PLAN.md — Install Motion, create HeroSection, integrate collapsible hero into GradingPage
 
 ### Phase 9: Side-by-Side Results & Highlighting
 **Goal**: Users see grading feedback in direct context with their essay text, with visual links between feedback and passages
@@ -190,6 +190,6 @@ v1.1: 7 -> 8 -> 9 -> 10
 | 5. History, Landing & Polish | v1.0 | 2/2 | Complete | 2026-03-08 |
 | 6. E2E Testing | v1.0 | 2/2 | Complete | 2026-03-08 |
 | 7. Data Contracts & Route Restructure | v1.1 | 0/2 | Not started | - |
-| 8. Collapsible Hero & Grading Workspace | v1.1 | 0/1 | Not started | - |
+| 8. Collapsible Hero & Grading Workspace | v1.1 | 1/1 | Complete | 2026-03-09 |
 | 9. Side-by-Side Results & Highlighting | v1.1 | 0/3 | Not started | - |
 | 10. Mock Auth & Editable Essay | v1.1 | 0/2 | Not started | - |
