@@ -18,13 +18,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 export function ProfilePage() {
-  const { email, gradeLevel, isSignedIn, signIn, signOut, setGradeLevel } =
+  const { email, gradeLevel, isSignedIn, isSigningIn, signIn, signOut, setGradeLevel } =
     useProfileStore();
   const history = useAppStore((s) => s.history);
   const setCurrentResult = useAppStore((s) => s.setCurrentResult);
   const [emailInput, setEmailInput] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   return (
@@ -45,11 +48,13 @@ export function ProfilePage() {
             </div>
           ) : (
             <form
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
-                if (emailInput.trim()) signIn(emailInput.trim());
+                setError("");
+                const result = await signIn(emailInput.trim(), passwordInput);
+                if (!result.success) setError(result.error ?? "Sign-in failed");
               }}
-              className="flex gap-2"
+              className="space-y-3"
             >
               <Input
                 type="email"
@@ -58,75 +63,99 @@ export function ProfilePage() {
                 onChange={(e) => setEmailInput(e.target.value)}
                 required
               />
-              <Button type="submit">Sign In</Button>
+              <Input
+                type="password"
+                placeholder="Password"
+                minLength={6}
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                required
+              />
+              {error && (
+                <p className="text-sm text-destructive">{error}</p>
+              )}
+              <Button type="submit" disabled={isSigningIn}>
+                {isSigningIn ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign In"
+                )}
+              </Button>
             </form>
           )}
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Grade Level</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select
-            value={gradeLevel}
-            onValueChange={(v) => setGradeLevel(v as GradeLevel)}
-          >
-            <SelectTrigger className="w-48">
-              <SelectValue>{GRADE_LEVEL_LABELS[gradeLevel]}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(GRADE_LEVEL_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Used when no rubric is provided to calibrate feedback to your level.
-          </p>
-        </CardContent>
-      </Card>
+      {isSignedIn && (
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle>Grade Level</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Select
+                value={gradeLevel}
+                onValueChange={(v) => setGradeLevel(v as GradeLevel)}
+              >
+                <SelectTrigger className="w-48">
+                  <SelectValue>{GRADE_LEVEL_LABELS[gradeLevel]}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(GRADE_LEVEL_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Used when no rubric is provided to calibrate feedback to your level.
+              </p>
+            </CardContent>
+          </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Grading History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {history.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No grading history yet.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {history.map((result) => (
-                <button
-                  key={result.id}
-                  onClick={() => {
-                    setCurrentResult(result);
-                    navigate("/");
-                  }}
-                  className="flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors hover:bg-muted"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">
-                      {result.essayExcerpt}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(result.gradedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="ml-4 text-sm font-semibold">
-                    {result.overallScore}/{result.maxScore}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Grading History</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {history.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No grading history yet.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {history.map((result) => (
+                    <button
+                      key={result.id}
+                      onClick={() => {
+                        setCurrentResult(result);
+                        navigate("/");
+                      }}
+                      className="flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors hover:bg-muted"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">
+                          {result.essayExcerpt}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(result.gradedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="ml-4 text-sm font-semibold">
+                        {result.overallScore}/{result.maxScore}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 }
