@@ -27,6 +27,7 @@ async def grade_essay(
     rubric_text: str | None = Form(None),
     rubric_file: UploadFile | None = File(None),
     grade_level: str = Form("college"),
+    tone: str = Form("academic"),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -55,7 +56,7 @@ async def grade_essay(
     grading_service = GradingService(llm_client)
 
     try:
-        result = await grading_service.grade(essay_text, rubric_text, grade_level)
+        result = await grading_service.grade(essay_text, rubric_text, grade_level, tone)
     except ValueError as exc:
         raise HTTPException(
             status_code=502,

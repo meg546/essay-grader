@@ -57,6 +57,34 @@ _GRADE_LEVEL_CONTEXT = {
 }
 
 
+_TONE_CONTEXT = {
+    "academic": (
+        "Use formal academic language. "
+        "Evaluate for scholarly tone, precision, and objectivity."
+    ),
+    "professional": (
+        "Use professional business language. "
+        "Evaluate for clarity, conciseness, and appropriate formality."
+    ),
+    "casual": (
+        "Use conversational language. "
+        "Evaluate for readability, engagement, and natural voice."
+    ),
+    "creative": (
+        "Use expressive language. "
+        "Evaluate for originality, vivid imagery, and stylistic flair."
+    ),
+}
+
+
+def _get_tone_context(tone: str) -> str:
+    """Return tone-specific grading instructions."""
+    key = tone.lower().strip()
+    if key in _TONE_CONTEXT:
+        return _TONE_CONTEXT[key]
+    return _TONE_CONTEXT["academic"]
+
+
 def _get_grade_level_context(grade_level: str) -> str:
     """Return grade-level-specific grading instructions."""
     key = grade_level.lower().strip()
@@ -68,24 +96,30 @@ def _get_grade_level_context(grade_level: str) -> str:
     )
 
 
-def build_system_prompt(grade_level: str, rubric_text: str | None) -> str:
+def build_system_prompt(grade_level: str, rubric_text: str | None, tone: str = "academic") -> str:
     """Build the system prompt for essay grading.
 
     Args:
         grade_level: The student's grade level (e.g., "college", "high school").
         rubric_text: Optional custom rubric. Uses DEFAULT_RUBRIC if None.
+        tone: Feedback tone (e.g., "academic", "professional", "casual", "creative").
 
     Returns:
         Complete system prompt string.
     """
     rubric = rubric_text if rubric_text else DEFAULT_RUBRIC
     grade_context = _get_grade_level_context(grade_level)
+    tone_context = _get_tone_context(tone)
 
     return f"""You are an expert essay grader. Your task is to evaluate an essay according to the provided rubric and return a structured JSON response.
 
 ## Grade Level Context
 
 {grade_context}
+
+## Tone Context
+
+{tone_context}
 
 ## Rubric
 

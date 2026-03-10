@@ -6,10 +6,12 @@ export async function gradeEssay(
   gradeLevel: string,
   rubricFile?: File | null,
   rubricText?: string,
+  tone?: string,
 ): Promise<GradingResult> {
   const formData = new FormData();
   formData.append("essay_text", essayText);
   formData.append("grade_level", gradeLevel);
+  formData.append("tone", tone || "academic");
 
   if (rubricFile) {
     formData.append("rubric_file", rubricFile);

@@ -42,6 +42,7 @@ class GradingService:
         essay_text: str,
         rubric_text: str | None,
         grade_level: str,
+        tone: str = "academic",
     ) -> GradingResult:
         """Grade an essay using the LLM.
 
@@ -49,6 +50,7 @@ class GradingService:
             essay_text: The essay text to grade.
             rubric_text: Optional custom rubric text. Uses default if None.
             grade_level: Student grade level (e.g., "college", "high school").
+            tone: Feedback tone (e.g., "academic", "professional").
 
         Returns:
             A validated GradingResult with computed highlight offsets.
@@ -56,7 +58,7 @@ class GradingService:
         Raises:
             ValueError: If the LLM returns invalid JSON after one retry.
         """
-        system_prompt = build_system_prompt(grade_level, rubric_text)
+        system_prompt = build_system_prompt(grade_level, rubric_text, tone)
         user_prompt = build_user_prompt(essay_text)
         schema = build_grading_schema()
 
@@ -89,6 +91,19 @@ class GradingService:
                     candidate.append(val)
             if candidate:
                 llm_categories = candidate
+
+        # Synthesize quotes from strengths/improvements when LLM omits the quotes array
+        for cat in llm_categories:
+            quotes = cat.get("quotes", [])
+            if not quotes:
+                synthesized: list[dict] = []
+                for s in cat.get("strengths", []):
+                    if isinstance(s, str) and len(s) > 10:
+                        synthesized.append({"text": s, "type": "strength", "feedback": ""})
+                for imp in cat.get("improvements", []):
+                    if isinstance(imp, str) and len(imp) > 10:
+                        synthesized.append({"text": imp, "type": "improvement", "feedback": ""})
+                cat["quotes"] = synthesized
 
         # Compute highlight offsets from LLM quotes
         highlights_by_category = compute_highlights(essay_text, llm_categories)
