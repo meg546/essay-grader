@@ -13,6 +13,12 @@ export const GRADE_LEVEL_LABELS: Record<GradeLevel, string> = {
   college: "College",
 };
 
+export const WRITING_PURPOSE_LABELS: Record<WritingPurpose, string> = {
+  work: "Work",
+  school: "School",
+  other: "Other",
+};
+
 interface ProfileState {
   email: string;
   gradeLevel: GradeLevel | null;

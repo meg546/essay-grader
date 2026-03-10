@@ -4,6 +4,7 @@ import { GraduationCapIcon } from "lucide-react"
 
 const navItems = [
   { to: "/grade", label: "Home" },
+  { to: "/history", label: "Essays" },
   { to: "/profile", label: "Profile" },
 ] as const
 

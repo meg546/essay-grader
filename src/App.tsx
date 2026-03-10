@@ -4,6 +4,7 @@ import { LandingPage } from "@/pages/LandingPage"
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 import { Layout } from "@/components/layout/Layout"
 import { GradingPage } from "@/pages/GradingPage"
+import { EssaysPage } from "@/pages/EssaysPage"
 import { ProfilePage } from "@/pages/ProfilePage"
 import { RegisterPage } from "@/pages/RegisterPage"
 import { Toaster } from "@/components/ui/sonner"
@@ -19,6 +20,7 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
               <Route path="/grade" element={<GradingPage />} />
+              <Route path="/history" element={<EssaysPage />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
           </Route>
