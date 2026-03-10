@@ -234,5 +234,5 @@ v2.1: 16 → 17 → 18
 | 14. Persistence & History | v2.0 | 2/2 | Complete | 2026-03-10 |
 | 15. Frontend Integration | v2.0 | 3/3 | Complete | 2026-03-10 |
 | 16. Landing Page & Auth Entry | v2.1 | 2/2 | Complete | 2026-03-10 |
-| 17. Registration Wizard | 2/2 | Complete   | 2026-03-10 | - |
+| 17. Registration Wizard | 2/2 | Complete    | 2026-03-10 | - |
 | 18. Profile Settings & History Management | v2.1 | 0/? | Not started | - |
