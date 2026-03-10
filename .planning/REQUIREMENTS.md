@@ -43,9 +43,9 @@ Requirements for backend implementation. Each maps to roadmap phases.
 ### Frontend Integration
 
 - [ ] **FRONT-01**: Mock API function bodies replaced with real Axios calls to backend
-- [ ] **FRONT-02**: Axios interceptor adds Authorization Bearer header and handles 401 auto-signout
-- [ ] **FRONT-03**: Frontend handles error responses gracefully (401, 422 validation, 500 server errors)
-- [ ] **FRONT-04**: localStorage state migrated from mock auth era (clear/version persist key)
+- [x] **FRONT-02**: Axios interceptor adds Authorization Bearer header and handles 401 auto-signout
+- [x] **FRONT-03**: Frontend handles error responses gracefully (401, 422 validation, 500 server errors)
+- [x] **FRONT-04**: localStorage state migrated from mock auth era (clear/version persist key)
 
 ## v2.1 Requirements
 
@@ -104,9 +104,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PDF-01 | Phase 13 | Complete |
 | PDF-02 | Phase 13 | Complete |
 | FRONT-01 | Phase 15 | Pending |
-| FRONT-02 | Phase 15 | Pending |
-| FRONT-03 | Phase 15 | Pending |
-| FRONT-04 | Phase 15 | Pending |
+| FRONT-02 | Phase 15 | Complete |
+| FRONT-03 | Phase 15 | Complete |
+| FRONT-04 | Phase 15 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 22 total
