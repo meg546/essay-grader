@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Onboarding & Layout Redesign
 status: executing
-stopped_at: Phase 17 context gathered
-last_updated: "2026-03-10T16:49:55.698Z"
-last_activity: 2026-03-10 — Completed 16-02 landing page content sections
+stopped_at: Completed 17-01-PLAN.md
+last_updated: "2026-03-10T17:08:25.311Z"
+last_activity: 2026-03-10 — Completed 17-01 user preferences data layer
 progress:
   total_phases: 18
   completed_phases: 10
-  total_plans: 20
-  completed_plans: 20
-  percent: 100
+  total_plans: 22
+  completed_plans: 21
+  percent: 95
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Users can submit an essay with a rubric and immediately see clear, rubric-aligned scores with structured feedback and highlighted essay passages
-**Current focus:** Phase 16 — Landing Page & Auth Entry
+**Current focus:** Phase 17 — Registration Wizard
 
 ## Current Position
 
-Phase: 16 of 18 (Landing Page & Auth Entry)
-Plan: 2 of 2 in current phase (COMPLETE)
+Phase: 17 of 18 (Registration Wizard)
+Plan: 1 of 2 in current phase
 Status: Executing
-Last activity: 2026-03-10 — Completed 16-02 landing page content sections
+Last activity: 2026-03-10 — Completed 17-01 user preferences data layer
 
-Progress: [██████████] 100% (v2.1)
+Progress: [██████████] 95% (v2.1)
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Progress: [██████████] 100% (v2.1)
 - [Phase 16-01]: LandingPage returns null for authenticated users before redirect to prevent flash
 - [Phase 16-02]: Register button routes to /register placeholder page instead of redirect loop
 - [Phase 16-02]: WalkthroughDemo uses 15s animation cycle with 4 sequential frames
+- [Phase 17]: Use exclude_unset for partial PATCH updates on user preferences
 
 ### Pending Todos
 
@@ -72,9 +73,10 @@ None.
 | 4 | Sign-in popup when unauthenticated user clicks Submit for Grading | 2026-03-10 | 72f4400 | [4-sign-in-popup-when-unauthenticated-user-](./quick/4-sign-in-popup-when-unauthenticated-user-/) |
 | Phase 16 P01 | 2min | 2 tasks | 6 files |
 | Phase 16 P02 | 12min | 3 tasks | 8 files |
+| Phase 17 P01 | 3min | 2 tasks | 6 files |
 
 ## Session Continuity
 
-Last session: 2026-03-10T16:49:55.695Z
-Stopped at: Phase 17 context gathered
-Resume file: .planning/phases/17-registration-wizard/17-CONTEXT.md
+Last session: 2026-03-10T17:08:25.308Z
+Stopped at: Completed 17-01-PLAN.md
+Resume file: None

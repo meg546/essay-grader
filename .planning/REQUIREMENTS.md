@@ -59,10 +59,10 @@ Requirements for Onboarding & Layout Redesign milestone.
 
 ### Onboarding
 
-- [ ] **ONBD-01**: User goes through a multi-step slider wizard when registering
+- [x] **ONBD-01**: User goes through a multi-step slider wizard when registering
 - [ ] **ONBD-02**: Wizard asks writing purpose (work / school / other) — skippable
-- [ ] **ONBD-03**: Wizard asks grade level — required, cannot be skipped
-- [ ] **ONBD-04**: User is redirected to the grading page after completing the wizard
+- [x] **ONBD-03**: Wizard asks grade level — required, cannot be skipped
+- [x] **ONBD-04**: User is redirected to the grading page after completing the wizard
 
 ### Authentication
 
@@ -141,10 +141,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LAND-03 | Phase 16 | Complete |
 | AUTH2-01 | Phase 16 | Complete |
 | AUTH2-02 | Phase 16 | Complete |
-| ONBD-01 | Phase 17 | Pending |
+| ONBD-01 | Phase 17 | Complete |
 | ONBD-02 | Phase 17 | Pending |
-| ONBD-03 | Phase 17 | Pending |
-| ONBD-04 | Phase 17 | Pending |
+| ONBD-03 | Phase 17 | Complete |
+| ONBD-04 | Phase 17 | Complete |
 | PROF-01 | Phase 18 | Pending |
 | PROF-02 | Phase 18 | Pending |
 | HIST-01 | Phase 18 | Pending |
