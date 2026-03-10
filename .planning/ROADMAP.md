@@ -119,11 +119,11 @@ Plans:
   3. An expired or invalid token triggers automatic sign-out and redirect to the login screen
   4. Backend validation errors (422) and server errors (500) display user-friendly messages in the UI
   5. A user with leftover mock-era localStorage data is not stuck in a broken auth state after upgrading
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 15-01: TBD
-- [ ] 15-02: TBD
+- [ ] 15-01-PLAN.md -- Axios client with interceptors, error utility, auth API functions, store migrations
+- [ ] 15-02-PLAN.md -- Replace mock API calls, update UI components, remove mock files
 
 ## Progress
 
@@ -147,5 +147,5 @@ v2.0: 11 → 12 → 13 → 14 → 15
 | 11. Backend Foundation | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 12. Authentication | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 13. LLM Inference & Grading | v2.0 | 3/3 | Complete | 2026-03-09 |
-| 14. Persistence & History | 2/2 | Complete    | 2026-03-10 | - |
-| 15. Frontend Integration | v2.0 | 0/? | Not started | - |
+| 14. Persistence & History | v2.0 | 2/2 | Complete | 2026-03-10 |
+| 15. Frontend Integration | v2.0 | 0/2 | Not started | - |
