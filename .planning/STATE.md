@@ -5,7 +5,7 @@ milestone_name: Onboarding & Layout Redesign
 status: completed
 stopped_at: Completed 17-02-PLAN.md
 last_updated: "2026-03-10T18:15:13.309Z"
-last_activity: 2026-03-10 — Completed quick task 5: Remove grading page hero and enlarge input/rubric boxes
+last_activity: 2026-03-10 — Completed quick task 6: Grading page toolbar redesign
 progress:
   total_phases: 18
   completed_phases: 11
@@ -73,6 +73,7 @@ None.
 | 3 | Fix PDF upload formatting - extra blank lines between every line not preserving original structure | 2026-03-10 | 89ee416 | [3-fix-pdf-upload-formatting-extra-blank-li](./quick/3-fix-pdf-upload-formatting-extra-blank-li/) |
 | 4 | Sign-in popup when unauthenticated user clicks Submit for Grading | 2026-03-10 | 72f4400 | [4-sign-in-popup-when-unauthenticated-user-](./quick/4-sign-in-popup-when-unauthenticated-user-/) |
 | 5 | Remove grading page hero and enlarge input panels | 2026-03-10 | ac687e3 | [5-remove-grading-page-hero-and-enlarge-inp](./quick/5-remove-grading-page-hero-and-enlarge-inp/) |
+| 6 | Grading page toolbar redesign | 2026-03-10 | 6ca9a45 | [6-grading-page-toolbar-redesign](./quick/6-grading-page-toolbar-redesign/) |
 | Phase 16 P01 | 2min | 2 tasks | 6 files |
 | Phase 16 P02 | 12min | 3 tasks | 8 files |
 | Phase 17 P01 | 3min | 2 tasks | 6 files |
