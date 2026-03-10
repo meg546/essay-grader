@@ -1,7 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
-import { HeroSection } from "@/components/grading/HeroSection";
 import { toast } from "sonner";
 import { useAppStore } from "@/stores/app-store";
 import { useProfileStore } from "@/stores/profile-store";
@@ -29,20 +27,6 @@ export function GradingPage() {
   const [isGrading, setIsGrading] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [isRegrading, setIsRegrading] = useState(false);
-  const [heroCollapsed, setHeroCollapsed] = useState(essayText !== "");
-
-  useEffect(() => {
-    if (heroCollapsed) return;
-
-    function onScroll() {
-      if (window.scrollY > 50) {
-        setHeroCollapsed(true);
-      }
-    }
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [heroCollapsed]);
 
   const isSubmitDisabled = essayText.trim() === "" || isGrading;
 
@@ -80,7 +64,6 @@ export function GradingPage() {
     clearCurrentResult();
     setEssayText("");
     setRubricFile(null);
-    setHeroCollapsed(false);
   }
 
   function handleAuthenticated() {
@@ -112,41 +95,24 @@ export function GradingPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1200px] space-y-6">
-      <AnimatePresence initial={false}>
-        {!heroCollapsed && (
-          <motion.div
-            key="hero"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{
-              duration: 0.5,
-              ease: [0.4, 0, 0.2, 1],
-              opacity: { duration: 0.3, ease: "easeOut" },
-            }}
-            style={{ overflow: "hidden" }}
-          >
-            <HeroSection />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="grid gap-6 md:grid-cols-2">
+    <div className="mx-auto max-w-[1400px] flex flex-col h-[calc(100vh-7rem)]">
+      <div className="grid gap-6 md:grid-cols-2 flex-1 min-h-0">
         <EssayInput disabled={isGrading} />
         <RubricUpload disabled={isGrading} />
       </div>
 
-      <Button disabled={isSubmitDisabled} size="lg" onClick={handleSubmit}>
-        {isGrading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Reviewing your work...
-          </>
-        ) : (
-          "Submit for Grading"
-        )}
-      </Button>
+      <div className="pt-4 shrink-0">
+        <Button disabled={isSubmitDisabled} size="lg" onClick={handleSubmit}>
+          {isGrading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Reviewing your work...
+            </>
+          ) : (
+            "Submit for Grading"
+          )}
+        </Button>
+      </div>
 
       <SignInDialog open={showSignIn} onOpenChange={setShowSignIn} onAuthenticated={handleAuthenticated} />
     </div>
