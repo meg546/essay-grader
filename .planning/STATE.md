@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Backend Implementation
-status: completed
-stopped_at: Phase 14 context gathered
-last_updated: "2026-03-09T23:53:53.358Z"
-last_activity: 2026-03-09 -- Completed 13-03 grading endpoint
+status: in_progress
+stopped_at: Completed 14-01-PLAN.md
+last_updated: "2026-03-10T00:11:35Z"
+last_activity: 2026-03-10 -- Completed 14-01 submission model and auto-save
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
-  percent: 100
+  total_plans: 10
+  completed_plans: 8
+  percent: 80
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** Users can submit an essay with a rubric and immediately see clear, rubric-aligned scores with structured feedback and highlighted essay passages
-**Current focus:** v2.0 Backend Implementation -- Phase 13 Complete (LLM Inference & Grading)
+**Current focus:** v2.0 Backend Implementation -- Phase 14 In Progress (Persistence & History)
 
 ## Current Position
 
-Phase: 13 of 15 (LLM Inference & Grading)
-Plan: 03 of 03 complete (LLM Inference & Grading)
-Status: Phase Complete
-Last activity: 2026-03-09 -- Completed 13-03 grading endpoint
+Phase: 14 of 15 (Persistence & History)
+Plan: 01 of 03 complete (Persistence & History)
+Status: In Progress
+Last activity: 2026-03-10 -- Completed 14-01 submission model and auto-save
 
-Progress: [██████████] 100%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -58,6 +58,9 @@ Progress: [██████████] 100%
 - [Phase 13-02]: LLM quotes text, Python computes highlight offsets post-inference
 - [Phase 13-03]: Route instantiates LLM client inline via get_llm_client(get_settings())
 - [Phase 13-03]: Tests mock get_llm_client at route module level for deterministic integration testing
+- [Phase 14-01]: Used sqlalchemy.JSON instead of JSONB for SQLite test compatibility
+- [Phase 14-01]: Manual Alembic migration (Docker PostgreSQL not up to date for autogenerate)
+- [Phase 14-01]: Auto-save in route layer (not service layer) to keep GradingService pure
 
 ### Pending Todos
 
@@ -74,6 +77,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T23:53:53.356Z
-Stopped at: Phase 14 context gathered
-Resume file: .planning/phases/14-persistence-history/14-CONTEXT.md
+Last session: 2026-03-10T00:11:35Z
+Stopped at: Completed 14-01-PLAN.md
+Resume file: .planning/phases/14-persistence-history/14-01-SUMMARY.md

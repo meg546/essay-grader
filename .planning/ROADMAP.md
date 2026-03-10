@@ -103,7 +103,7 @@ Plans:
   1. After grading completes, the result is stored in PostgreSQL and survives a container restart
   2. GET /api/history returns a list of the authenticated user's past submissions (title, date, score)
   3. GET /api/history/:id returns the full grading result for a past submission, identical to the original response
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 14-01-PLAN.md -- Submission model, Alembic migration, auto-save in grading route
@@ -147,5 +147,5 @@ v2.0: 11 → 12 → 13 → 14 → 15
 | 11. Backend Foundation | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 12. Authentication | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 13. LLM Inference & Grading | v2.0 | 3/3 | Complete | 2026-03-09 |
-| 14. Persistence & History | v2.0 | 0/2 | Not started | - |
+| 14. Persistence & History | 1/2 | In Progress|  | - |
 | 15. Frontend Integration | v2.0 | 0/? | Not started | - |
