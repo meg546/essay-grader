@@ -5,6 +5,14 @@ interface TokenResponse {
   token_type: string;
 }
 
+export interface UserProfile {
+  id: string;
+  email: string;
+  createdAt: string;
+  gradeLevel: string | null;
+  writingPurpose: string | null;
+}
+
 export async function login(
   email: string,
   password: string
@@ -24,5 +32,17 @@ export async function register(
     email,
     password,
   });
+  return data;
+}
+
+export async function getMe(): Promise<UserProfile> {
+  const { data } = await apiClient.get<UserProfile>("/auth/me");
+  return data;
+}
+
+export async function updateProfile(
+  updates: { gradeLevel?: string; writingPurpose?: string }
+): Promise<UserProfile> {
+  const { data } = await apiClient.patch<UserProfile>("/auth/me", updates);
   return data;
 }
