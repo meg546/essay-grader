@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useAppStore } from "@/stores/app-store";
 import { useProfileStore } from "@/stores/profile-store";
 import { gradeEssay } from "@/api/grading";
+import { getErrorMessage } from "@/api/errors";
 import { Button } from "@/components/ui/button";
 import { EssayInput } from "@/components/grading/EssayInput";
 import { RubricUpload } from "@/components/grading/RubricUpload";
@@ -16,7 +17,6 @@ import { FeedbackPanel } from "@/components/results/FeedbackPanel";
 
 export function GradingPage() {
   const essayText = useAppStore((s) => s.essayText);
-  const rubricText = useAppStore((s) => s.rubricText);
   const currentResult = useAppStore((s) => s.currentResult);
   const setCurrentResult = useAppStore((s) => s.setCurrentResult);
   const clearCurrentResult = useAppStore((s) => s.clearCurrentResult);
@@ -46,14 +46,11 @@ export function GradingPage() {
   async function handleSubmit() {
     setIsGrading(true);
     try {
-      const result = await gradeEssay({
-        essayText,
-        rubricText: rubricText || undefined,
-        gradeLevel,
-      });
+      const rubricFile = useAppStore.getState().rubricFile;
+      const result = await gradeEssay(essayText, gradeLevel, rubricFile);
       setCurrentResult(result);
-    } catch {
-      toast.error("Something went wrong. Please try again.");
+    } catch (error) {
+      toast.error(getErrorMessage(error));
     } finally {
       setIsGrading(false);
     }
@@ -62,14 +59,11 @@ export function GradingPage() {
   async function handleRegrade() {
     setIsRegrading(true);
     try {
-      const result = await gradeEssay({
-        essayText,
-        rubricText: rubricText || undefined,
-        gradeLevel,
-      });
+      const rubricFile = useAppStore.getState().rubricFile;
+      const result = await gradeEssay(essayText, gradeLevel, rubricFile);
       setCurrentResult(result);
-    } catch {
-      toast.error("Re-grading failed. Please try again.");
+    } catch (error) {
+      toast.error(getErrorMessage(error));
     } finally {
       setIsRegrading(false);
     }

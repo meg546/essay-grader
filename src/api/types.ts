@@ -1,9 +1,3 @@
-export interface GradeEssayRequest {
-  essayText: string;
-  rubricText?: string;
-  gradeLevel: string;
-}
-
 export interface HighlightRange {
   start: number;
   end: number;
