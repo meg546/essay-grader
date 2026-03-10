@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 Phase: 15 of 15 (Frontend Integration)
 Plan: 03 of 03 complete (Frontend Integration - gap closure)
 Status: Complete (all tasks verified)
-Last activity: 2026-03-10 - Completed quick task 3: Fix PDF upload formatting
+Last activity: 2026-03-10 - Completed quick task 4: Sign-in popup for unauthenticated users
 
 Progress: [██████████] 100%
 
@@ -85,9 +85,10 @@ None.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 3 | Fix PDF upload formatting - extra blank lines between every line not preserving original structure | 2026-03-10 | 89ee416 | [3-fix-pdf-upload-formatting-extra-blank-li](./quick/3-fix-pdf-upload-formatting-extra-blank-li/) |
+| 4 | Sign-in popup when unauthenticated user clicks Submit for Grading | 2026-03-10 | 72f4400 | [4-sign-in-popup-when-unauthenticated-user-](./quick/4-sign-in-popup-when-unauthenticated-user-/) |
 
 ## Session Continuity
 
-Last session: 2026-03-10T03:18:12.317Z
-Stopped at: Completed 15-03-PLAN.md (all tasks including human verification)
+Last session: 2026-03-10T15:14:23Z
+Stopped at: Completed quick task 4 (sign-in popup for unauthenticated users)
 Resume file: None
