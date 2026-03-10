@@ -179,7 +179,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Clicking Sign In opens the sign-in flow and successful login redirects to the grading page
   4. Clicking Register begins the registration flow (entering the onboarding wizard in Phase 17)
   5. An already-authenticated user visiting the root URL is redirected to the grading page, bypassing the landing page
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 16-01-PLAN.md — Route restructure, ProtectedRoute, LandingLayout, auth redirects
+- [ ] 16-02-PLAN.md — Landing page content sections (hero, features, how-it-works, walkthrough, footer)
 
 ### Phase 17: Registration Wizard
 **Goal**: New users complete a multi-step onboarding wizard during registration that captures their preferences before entering the app
@@ -190,7 +193,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Wizard includes a writing purpose step (work / school / other) that can be skipped
   3. Wizard includes a grade level step that cannot be skipped -- user must select before proceeding
   4. After completing (or skipping to) the final wizard step, user is redirected to the grading page with their preferences saved
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 16-01-PLAN.md — Route restructure, ProtectedRoute, LandingLayout, auth redirects
+- [ ] 16-02-PLAN.md — Landing page content sections (hero, features, how-it-works, walkthrough, footer)
 
 ### Phase 18: Profile Settings & History Management
 **Goal**: Users can update their onboarding preferences at any time from the profile page and manage their submission history
@@ -200,7 +206,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. User can change their grade level from the profile settings page and the new value persists across sessions
   2. User can change their writing purpose from the profile settings page and the new value persists across sessions
   3. User can delete an individual grading submission from their history list and it no longer appears
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 16-01-PLAN.md — Route restructure, ProtectedRoute, LandingLayout, auth redirects
+- [ ] 16-02-PLAN.md — Landing page content sections (hero, features, how-it-works, walkthrough, footer)
 
 ## Progress
 
@@ -227,6 +236,6 @@ v2.1: 16 → 17 → 18
 | 13. LLM Inference & Grading | v2.0 | 3/3 | Complete | 2026-03-09 |
 | 14. Persistence & History | v2.0 | 2/2 | Complete | 2026-03-10 |
 | 15. Frontend Integration | v2.0 | 3/3 | Complete | 2026-03-10 |
-| 16. Landing Page & Auth Entry | v2.1 | 0/? | Not started | - |
+| 16. Landing Page & Auth Entry | v2.1 | 0/2 | Not started | - |
 | 17. Registration Wizard | v2.1 | 0/? | Not started | - |
 | 18. Profile Settings & History Management | v2.1 | 0/? | Not started | - |
