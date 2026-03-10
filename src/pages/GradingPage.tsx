@@ -8,6 +8,7 @@ import { useProfileStore } from "@/stores/profile-store";
 import { gradeEssay } from "@/api/grading";
 import { getErrorMessage } from "@/api/errors";
 import { Button } from "@/components/ui/button";
+import { SignInDialog } from "@/components/auth/SignInDialog";
 import { EssayInput } from "@/components/grading/EssayInput";
 import { RubricUpload } from "@/components/grading/RubricUpload";
 import { HighlightProvider } from "@/lib/highlight-context";
@@ -24,7 +25,9 @@ export function GradingPage() {
   const setEssayText = useAppStore((s) => s.setEssayText);
   const setRubricFile = useAppStore((s) => s.setRubricFile);
   const gradeLevel = useProfileStore((s) => s.gradeLevel);
+  const isSignedIn = useProfileStore((s) => s.isSignedIn);
   const [isGrading, setIsGrading] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
   const [isRegrading, setIsRegrading] = useState(false);
   const [heroCollapsed, setHeroCollapsed] = useState(essayText !== "");
 
@@ -44,6 +47,10 @@ export function GradingPage() {
   const isSubmitDisabled = essayText.trim() === "" || isGrading;
 
   async function handleSubmit() {
+    if (!isSignedIn) {
+      setShowSignIn(true);
+      return;
+    }
     setIsGrading(true);
     try {
       const rubricFile = useAppStore.getState().rubricFile;
@@ -76,23 +83,31 @@ export function GradingPage() {
     setHeroCollapsed(false);
   }
 
+  function handleAuthenticated() {
+    setShowSignIn(false);
+    handleSubmit();
+  }
+
   if (currentResult) {
     return (
-      <HighlightProvider key={currentResult.id}>
-        <div className="mx-auto max-w-[1400px] space-y-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Grading Results</h1>
-            <Button variant="outline" onClick={handleReset}>
-              Grade Another
-            </Button>
+      <>
+        <HighlightProvider key={currentResult.id}>
+          <div className="mx-auto max-w-[1400px] space-y-4">
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold">Grading Results</h1>
+              <Button variant="outline" onClick={handleReset}>
+                Grade Another
+              </Button>
+            </div>
+            <ColorLegend categories={currentResult.categories} />
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <EssayPanel result={currentResult} onRegrade={handleRegrade} isRegrading={isRegrading} />
+              <FeedbackPanel result={currentResult} isLoading={isRegrading} />
+            </div>
           </div>
-          <ColorLegend categories={currentResult.categories} />
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <EssayPanel result={currentResult} onRegrade={handleRegrade} isRegrading={isRegrading} />
-            <FeedbackPanel result={currentResult} isLoading={isRegrading} />
-          </div>
-        </div>
-      </HighlightProvider>
+        </HighlightProvider>
+        <SignInDialog open={showSignIn} onOpenChange={setShowSignIn} onAuthenticated={handleAuthenticated} />
+      </>
     );
   }
 
@@ -132,6 +147,8 @@ export function GradingPage() {
           "Submit for Grading"
         )}
       </Button>
+
+      <SignInDialog open={showSignIn} onOpenChange={setShowSignIn} onAuthenticated={handleAuthenticated} />
     </div>
   );
 }
