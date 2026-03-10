@@ -15,6 +15,19 @@ if TYPE_CHECKING:
     from app.llm.client import LLMClient
 
 
+def _normalize_string_list(items: list) -> list[str]:
+    """Coerce LLM output to list of strings. Some models return [{quote: "...", ...}] instead of ["..."]."""
+    result = []
+    for item in items:
+        if isinstance(item, str):
+            result.append(item)
+        elif isinstance(item, dict):
+            result.append(item.get("quote", item.get("text", str(item))))
+        else:
+            result.append(str(item))
+    return result
+
+
 class GradingService:
     """Orchestrates the full essay grading pipeline.
 
@@ -50,8 +63,34 @@ class GradingService:
         # Call LLM with one retry on JSON parse failure
         parsed = await self._call_llm_with_retry(system_prompt, user_prompt, schema)
 
-        # Compute highlight offsets from LLM quotes
+        # Normalize LLM response: some models return {catId: {...}} instead of {categories: [...]}
         llm_categories = parsed.get("categories", [])
+        if not llm_categories and isinstance(parsed, dict):
+            # Check if top-level keys are category objects (flat format)
+            candidate = []
+            for key, val in parsed.items():
+                if key == "summary":
+                    continue
+                if isinstance(val, dict) and "score" in val:
+                    val.setdefault("id", key)
+                    val.setdefault("name", key.replace("_", " ").title())
+                    val.setdefault("maxScore", 25)
+                    # Normalize "areas for improvement" -> "improvements"
+                    if "areas for improvement" in val and "improvements" not in val:
+                        val["improvements"] = val.pop("areas for improvement")
+                    # Normalize quotes field -- check alternative key names
+                    if "quotes" not in val:
+                        for alt_key in ("highlighted_passages", "evidence_quotes", "evidence"):
+                            if alt_key in val and isinstance(val[alt_key], list):
+                                val["quotes"] = val.pop(alt_key)
+                                break
+                        else:
+                            val["quotes"] = []  # Ensure key exists even if empty
+                    candidate.append(val)
+            if candidate:
+                llm_categories = candidate
+
+        # Compute highlight offsets from LLM quotes
         highlights_by_category = compute_highlights(essay_text, llm_categories)
 
         # Build the final GradingResult
@@ -81,11 +120,14 @@ class GradingService:
         """Call the LLM and parse JSON, retrying once on failure."""
         for attempt in range(2):
             raw = await self._llm.complete(system_prompt, user_prompt, schema)
+            import logging
+            logging.getLogger(__name__).warning("LLM raw response (attempt %d): %s", attempt, raw[:500] if raw else "EMPTY")
             try:
                 return json.loads(raw)
-            except (json.JSONDecodeError, TypeError):
+            except (json.JSONDecodeError, TypeError) as e:
+                logging.getLogger(__name__).warning("JSON parse error (attempt %d): %s", attempt, e)
                 if attempt == 1:
-                    raise ValueError("LLM returned invalid JSON after retry")
+                    raise ValueError(f"LLM returned invalid JSON after retry: {raw[:200] if raw else 'EMPTY'}")
         # Unreachable, but satisfies type checker
         raise ValueError("LLM returned invalid JSON after retry")  # pragma: no cover
 
@@ -115,8 +157,8 @@ class GradingService:
                     name=cat.get("name", ""),
                     score=cat.get("score", 0),
                     max_score=cat.get("maxScore", 0),
-                    strengths=cat.get("strengths", []),
-                    improvements=cat.get("improvements", []),
+                    strengths=_normalize_string_list(cat.get("strengths", [])),
+                    improvements=_normalize_string_list(cat.get("improvements", [])),
                     justification=cat.get("justification", ""),
                     highlights=highlights,
                 )

@@ -22,7 +22,14 @@ class OpenAIClient:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            "response_format": {"type": "json_object"},
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "grading_result",
+                    "schema": json_schema,
+                    "strict": False,
+                },
+            },
             "temperature": 0.3,
         }
         try:

@@ -4,7 +4,10 @@ Uses a two-pass approach: exact match first, then fuzzy fallback.
 Highlights below the confidence threshold are dropped gracefully.
 """
 
+import logging
 from difflib import SequenceMatcher
+
+logger = logging.getLogger(__name__)
 
 
 def find_passage_offset(
@@ -81,6 +84,11 @@ def compute_highlights(
     for category in categories_with_quotes:
         category_id = category.get("id", "")
         quotes = category.get("quotes", [])
+        if not quotes:
+            logger.warning(
+                "Category '%s' has no quotes -- highlights will be empty for this category",
+                category_id,
+            )
         highlights: list[dict] = []
 
         for quote in quotes:
