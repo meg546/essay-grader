@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 import httpx
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
 from app.config import get_settings
+from app.deps import get_db
 from app.llm.client import get_llm_client
 from app.llm.pdf import extract_pdf_text
+from app.models.submission import Submission
 from app.models.user import User
 from app.services.grading import GradingService
 
@@ -23,6 +28,7 @@ async def grade_essay(
     rubric_file: UploadFile | None = File(None),
     grade_level: str = Form("college"),
     user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """Grade an essay using the LLM grading pipeline.
 
@@ -60,5 +66,23 @@ async def grade_essay(
             status_code=503,
             detail="Model server unavailable. Check MODEL_ENDPOINT configuration.",
         )
+
+    # Auto-save grading result to database
+    submission = Submission(
+        user_id=user.id,
+        essay_text=essay_text,
+        rubric_text=rubric_text,
+        grade_level=grade_level,
+        result=result.model_dump(by_alias=True),
+        essay_excerpt=result.essay_excerpt,
+        overall_score=result.overall_score,
+        max_score=result.max_score,
+        category_count=len(result.categories),
+        graded_at=datetime.fromisoformat(result.graded_at),
+    )
+    db.add(submission)
+    await db.commit()
+    await db.refresh(submission)
+    result.id = str(submission.id)
 
     return result
