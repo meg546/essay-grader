@@ -59,7 +59,7 @@ export function EssayDetailPage() {
         </div>
         <ColorLegend categories={result.categories} />
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <EssayPanel result={result} />
+          <EssayPanel result={result} readOnly />
           <FeedbackPanel result={result} />
         </div>
       </div>

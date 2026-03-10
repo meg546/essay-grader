@@ -14,13 +14,11 @@ function NavLinkItem({
   label,
   onClick,
   className,
-  showDot,
 }: {
   to: string
   label: string
   onClick?: () => void
   className?: string
-  showDot?: boolean
 }) {
   const location = useLocation()
   const isActive =
@@ -40,12 +38,7 @@ function NavLinkItem({
         className
       )}
     >
-      <span className="relative">
-        {label}
-        {showDot && (
-          <span className="absolute -right-2 -top-0.5 h-2 w-2 rounded-full bg-green-500" />
-        )}
-      </span>
+      {label}
     </NavLink>
   )
 }
@@ -67,9 +60,12 @@ export function Header() {
 
         {/* Navigation */}
         <nav className="flex gap-1">
-          {navItems.map((item) => (
-            <NavLinkItem key={item.to} to={item.to} label={item.label} showDot={item.to === "/grade" && essayText.trim() !== ""} />
-          ))}
+          {navItems.map((item) => {
+            const label = item.to === "/grade" && essayText.trim() !== ""
+              ? "Draft"
+              : item.label
+            return <NavLinkItem key={item.to} to={item.to} label={label} />
+          })}
         </nav>
       </div>
     </header>

@@ -10,18 +10,22 @@ interface EssayPanelProps {
   result: GradingResult;
   onRegrade?: () => void;
   isRegrading?: boolean;
+  readOnly?: boolean;
 }
 
-export function EssayPanel({ result, onRegrade, isRegrading }: EssayPanelProps) {
+export function EssayPanel({ result, onRegrade, isRegrading, readOnly }: EssayPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
   const essayText = useAppStore((s) => s.essayText);
   const setEssayText = useAppStore((s) => s.setEssayText);
 
   useEffect(() => {
-    setEssayText(result.essayText);
-  }, [result.essayText, setEssayText]);
+    if (!readOnly) {
+      setEssayText(result.essayText);
+    }
+  }, [result.essayText, setEssayText, readOnly]);
 
-  const hasChanges = essayText !== result.essayText;
+  const displayText = readOnly ? result.essayText : essayText;
+  const hasChanges = !readOnly && essayText !== result.essayText;
 
   return (
     <Card className="lg:h-[calc(100vh-14rem)] lg:overflow-y-auto">
@@ -30,36 +34,38 @@ export function EssayPanel({ result, onRegrade, isRegrading }: EssayPanelProps) 
           <h2 className="text-sm font-semibold text-muted-foreground">
             Essay
           </h2>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsEditing(!isEditing)}
-            >
-              {isEditing ? (
-                <Check className="h-4 w-4" />
-              ) : (
-                <Pencil className="h-4 w-4" />
-              )}
-            </Button>
-            {isRegrading ? (
-              <Button variant="default" size="sm" disabled>
-                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                Re-grading...
+          {!readOnly && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                {isEditing ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Pencil className="h-4 w-4" />
+                )}
               </Button>
-            ) : (
-              hasChanges && (
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={onRegrade}
-                  disabled={isRegrading}
-                >
-                  Re-grade
+              {isRegrading ? (
+                <Button variant="default" size="sm" disabled>
+                  <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                  Re-grading...
                 </Button>
-              )
-            )}
-          </div>
+              ) : (
+                hasChanges && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={onRegrade}
+                    disabled={isRegrading}
+                  >
+                    Re-grade
+                  </Button>
+                )
+              )}
+            </div>
+          )}
         </div>
         {isEditing ? (
           <textarea
