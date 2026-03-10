@@ -33,14 +33,19 @@ async function readFileAsText(file: File): Promise<string> {
   }
 
   if (ext === ".pdf") {
-    const text = await extractTextFromPdf(file);
-    if (!text) {
-      toast.error(
-        "Could not extract text from this PDF. Try pasting the text directly."
-      );
+    try {
+      const text = await extractTextFromPdf(file);
+      if (!text) {
+        toast.error(
+          "Could not extract text from this PDF. Try pasting the text directly."
+        );
+        return "";
+      }
+      return text;
+    } catch {
+      toast.error("Failed to read PDF. Try pasting the text directly.");
       return "";
     }
-    return text;
   }
 
   toast.error("Only .txt and .pdf files are supported");
@@ -125,26 +130,24 @@ export function EssayInput({ disabled, onFocus }: EssayInputProps) {
   const charCount = essayText.length;
 
   return (
-    <Card>
+    <Card className="flex flex-col h-full">
       <CardHeader>
         <CardTitle>Your Essay</CardTitle>
       </CardHeader>
-      <CardContent className={cn("space-y-3", disabled && "opacity-60 pointer-events-none")}>
+      <CardContent className={cn("flex-1 flex flex-col min-h-0 space-y-3", disabled && "opacity-60 pointer-events-none")}>
         <div
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
-          className={`rounded-md transition-all ${
-            isDragOver ? "ring-2 ring-primary border-primary" : ""
-          }`}
+          className={cn("flex-1 flex flex-col min-h-0 rounded-md transition-all", isDragOver && "ring-2 ring-primary border-primary")}
         >
           <Textarea
             value={essayText}
             onChange={(e) => setEssayText(e.target.value)}
             onFocus={onFocus}
             placeholder="Paste your essay here or drag and drop a file..."
-            className="h-64 resize-none overflow-y-auto"
+            className="flex-1 resize-none overflow-y-auto min-h-[200px]"
           />
         </div>
 

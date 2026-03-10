@@ -76,13 +76,13 @@ export function RubricUpload({ disabled }: RubricUploadProps) {
   );
 
   return (
-    <Card>
+    <Card className="flex flex-col h-full">
       <CardHeader>
         <CardTitle>Rubric (Optional)</CardTitle>
       </CardHeader>
-      <CardContent className={cn(disabled && "opacity-60 pointer-events-none")}>
+      <CardContent className={cn("flex-1 flex flex-col", disabled && "opacity-60 pointer-events-none")}>
         {rubricFile ? (
-          <div>
+          <div className="flex-1 flex flex-col justify-center">
             <div className="flex items-center gap-3 rounded-lg border p-3">
               <FileText className="h-5 w-5 text-muted-foreground" />
               <span className="flex-1 truncate text-sm">{rubricFile.name}</span>
@@ -106,7 +106,7 @@ export function RubricUpload({ disabled }: RubricUploadProps) {
             onDragOver={handleDragOver}
             onDrop={handleDrop}
             className={cn(
-              "flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-8 text-center transition-colors",
+              "flex-1 flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-8 text-center transition-colors",
               isDragOver
                 ? "border-primary bg-primary/5"
                 : "border-muted-foreground/25"
