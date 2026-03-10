@@ -2,7 +2,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
-from .routes import auth, grading, health
+from .routes import auth, grading, health, history
 
 settings = get_settings()
 
@@ -20,4 +20,5 @@ api_router = APIRouter(prefix="/api")
 api_router.include_router(health.router)
 api_router.include_router(auth.router)
 api_router.include_router(grading.router)
+api_router.include_router(history.router)
 app.include_router(api_router)
