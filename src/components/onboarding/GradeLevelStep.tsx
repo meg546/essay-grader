@@ -30,9 +30,9 @@ export function GradeLevelStep({ onNext, onBack }: GradeLevelStepProps) {
   async function handleNext() {
     if (!selected) return
     setSaving(true)
+    useProfileStore.getState().setGradeLevel(selected)
     try {
       await updateProfile({ gradeLevel: selected })
-      useProfileStore.getState().setGradeLevel(selected)
     } catch {
       toast.error("Could not save preference. You can update this later.")
     } finally {

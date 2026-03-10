@@ -24,9 +24,9 @@ export function WritingPurposeStep({ onNext, onSkip }: WritingPurposeStepProps) 
   async function handleSelect(value: WritingPurpose) {
     setSelected(value)
     setSaving(true)
+    useProfileStore.getState().setWritingPurpose(value)
     try {
       await updateProfile({ writingPurpose: value })
-      useProfileStore.getState().setWritingPurpose(value)
     } catch {
       toast.error("Could not save preference. You can update this later.")
     } finally {
