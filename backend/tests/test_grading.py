@@ -249,3 +249,32 @@ async def test_grade_default_grade_level(client: AsyncClient, patch_llm):
     call_args = patch_llm.mock_client.complete.call_args_list[-1]
     system_prompt = call_args[0][0] if call_args[0] else call_args[1].get("system_prompt", "")
     assert "college" in system_prompt.lower()
+
+
+@pytest.mark.asyncio
+async def test_grade_saves_submission(client: AsyncClient, patch_llm):
+    """POST /api/grade auto-saves result to submissions table."""
+    headers = await _register_and_get_token(client)
+    resp = await client.post(
+        "/api/grade",
+        data={"essay_text": SAMPLE_ESSAY},
+        headers=headers,
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    # ID should be a valid UUID (from saved submission)
+    import uuid as _uuid
+
+    _uuid.UUID(body["id"])  # raises if invalid
+
+    # Verify submission exists in DB
+    from app.models.submission import Submission
+    from sqlalchemy import select
+    from tests.conftest import test_session_factory
+
+    async with test_session_factory() as session:
+        result = await session.execute(select(Submission))
+        submissions = result.scalars().all()
+        assert len(submissions) == 1
+        assert str(submissions[0].id) == body["id"]
+        assert submissions[0].overall_score == body["overallScore"]
