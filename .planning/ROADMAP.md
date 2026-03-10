@@ -44,7 +44,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 12: Authentication** — User registration, login, JWT tokens, and route protection via FastAPI dependency (completed 2026-03-09)
 - [x] **Phase 13: LLM Inference & Grading** — Model inference pipeline, prompt engineering, structured output validation, highlight generation, and rubric PDF parsing (completed 2026-03-09)
 - [x] **Phase 14: Persistence & History** — Store grading results in PostgreSQL, expose history list and detail endpoints (completed 2026-03-10)
-- [x] **Phase 15: Frontend Integration** — Replace mock API calls with real Axios requests, auth interceptors, error handling, localStorage migration (completed 2026-03-10)
+- [ ] **Phase 15: Frontend Integration** — Replace mock API calls with real Axios requests, auth interceptors, error handling, localStorage migration (gap closure in progress)
 
 ## Phase Details
 
@@ -119,11 +119,12 @@ Plans:
   3. An expired or invalid token triggers automatic sign-out and redirect to the login screen
   4. Backend validation errors (422) and server errors (500) display user-friendly messages in the UI
   5. A user with leftover mock-era localStorage data is not stuck in a broken auth state after upgrading
-**Plans:** 2/2 plans complete
+**Plans:** 3 plans (2 complete, 1 gap closure)
 
 Plans:
-- [ ] 15-01-PLAN.md -- Axios client with interceptors, error utility, auth API functions, store migrations
-- [ ] 15-02-PLAN.md -- Replace mock API calls, update UI components, remove mock files
+- [x] 15-01-PLAN.md -- Axios client with interceptors, error utility, auth API functions, store migrations
+- [x] 15-02-PLAN.md -- Replace mock API calls, update UI components, remove mock files
+- [ ] 15-03-PLAN.md -- Fix highlights bug: LLM schema enforcement and flat-format quotes normalization (gap closure)
 
 ## Progress
 
@@ -148,4 +149,4 @@ v2.0: 11 → 12 → 13 → 14 → 15
 | 12. Authentication | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 13. LLM Inference & Grading | v2.0 | 3/3 | Complete | 2026-03-09 |
 | 14. Persistence & History | v2.0 | 2/2 | Complete | 2026-03-10 |
-| 15. Frontend Integration | 2/2 | Complete    | 2026-03-10 | - |
+| 15. Frontend Integration | v2.0 | 2/3 | Gap Closure | - |
