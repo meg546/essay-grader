@@ -2,14 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Loader2 } from "lucide-react";
 
-import { getHistory, getHistoryItem } from "@/api/history";
+import { getHistory } from "@/api/history";
 import type { HistoryItem } from "@/api/types";
-import { useAppStore } from "@/stores/app-store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 export function EssaysPage() {
-  const setCurrentResult = useAppStore((s) => s.setCurrentResult);
   const navigate = useNavigate();
 
   const [items, setItems] = useState<HistoryItem[]>([]);
@@ -30,14 +28,8 @@ export function EssaysPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  async function handleCardClick(item: HistoryItem) {
-    try {
-      const result = await getHistoryItem(item.id);
-      setCurrentResult(result);
-      navigate("/grade");
-    } catch {
-      // Could not load result
-    }
+  function handleCardClick(item: HistoryItem) {
+    navigate(`/history/${item.id}`);
   }
 
   if (loading) {

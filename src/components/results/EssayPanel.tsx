@@ -8,8 +8,8 @@ import type { GradingResult } from "@/api/types";
 
 interface EssayPanelProps {
   result: GradingResult;
-  onRegrade: () => void;
-  isRegrading: boolean;
+  onRegrade?: () => void;
+  isRegrading?: boolean;
 }
 
 export function EssayPanel({ result, onRegrade, isRegrading }: EssayPanelProps) {
