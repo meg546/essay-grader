@@ -49,7 +49,36 @@ Requirements for backend implementation. Each maps to roadmap phases.
 
 ## v2.1 Requirements
 
-Deferred to future release. Tracked but not in current roadmap.
+Requirements for Onboarding & Layout Redesign milestone.
+
+### Landing Page
+
+- [ ] **LAND-01**: User sees a dedicated landing page with site info and feature highlights
+- [ ] **LAND-02**: Landing page content includes Sign In and Register buttons (not in the nav banner)
+- [ ] **LAND-03**: Landing page is separate from the grading page (grading requires auth)
+
+### Onboarding
+
+- [ ] **ONBD-01**: User goes through a multi-step slider wizard when registering
+- [ ] **ONBD-02**: Wizard asks writing purpose (work / school / other) — skippable
+- [ ] **ONBD-03**: Wizard asks grade level — required, cannot be skipped
+- [ ] **ONBD-04**: User is redirected to the grading page after completing the wizard
+
+### Authentication
+
+- [ ] **AUTH2-01**: User can sign in via the landing page Sign In button
+- [ ] **AUTH2-02**: User can register via the landing page Register button (enters wizard)
+
+### Profile
+
+- [ ] **PROF-01**: User can change grade level from the profile page
+- [ ] **PROF-02**: User can change writing purpose from the profile page
+
+### History
+
+- [ ] **HIST-01**: User can delete individual grading submissions from their history
+
+## Future Requirements
 
 ### Streaming
 
@@ -108,11 +137,25 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FRONT-03 | Phase 15 | Complete |
 | FRONT-04 | Phase 15 | Complete |
 
+| LAND-01 | — | Pending |
+| LAND-02 | — | Pending |
+| LAND-03 | — | Pending |
+| ONBD-01 | — | Pending |
+| ONBD-02 | — | Pending |
+| ONBD-03 | — | Pending |
+| ONBD-04 | — | Pending |
+| AUTH2-01 | — | Pending |
+| AUTH2-02 | — | Pending |
+| PROF-01 | — | Pending |
+| PROF-02 | — | Pending |
+| HIST-01 | — | Pending |
+
 **Coverage:**
-- v2.0 requirements: 22 total
-- Mapped to phases: 22
-- Unmapped: 0
+- v2.0 requirements: 22 total (all complete)
+- v2.1 requirements: 12 total
+- Mapped to phases: 0
+- Unmapped: 12 ⚠️
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-09 after roadmap creation*
+*Last updated: 2026-03-10 after v2.1 requirements defined*
