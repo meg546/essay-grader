@@ -55,7 +55,7 @@ Requirements for Onboarding & Layout Redesign milestone.
 
 - [ ] **LAND-01**: User sees a dedicated landing page with site info and feature highlights
 - [ ] **LAND-02**: Landing page content includes Sign In and Register buttons (not in the nav banner)
-- [ ] **LAND-03**: Landing page is separate from the grading page (grading requires auth)
+- [x] **LAND-03**: Landing page is separate from the grading page (grading requires auth)
 
 ### Onboarding
 
@@ -66,8 +66,8 @@ Requirements for Onboarding & Layout Redesign milestone.
 
 ### Authentication
 
-- [ ] **AUTH2-01**: User can sign in via the landing page Sign In button
-- [ ] **AUTH2-02**: User can register via the landing page Register button (enters wizard)
+- [x] **AUTH2-01**: User can sign in via the landing page Sign In button
+- [x] **AUTH2-02**: User can register via the landing page Register button (enters wizard)
 
 ### Profile
 
@@ -138,9 +138,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FRONT-04 | Phase 15 | Complete |
 | LAND-01 | Phase 16 | Pending |
 | LAND-02 | Phase 16 | Pending |
-| LAND-03 | Phase 16 | Pending |
-| AUTH2-01 | Phase 16 | Pending |
-| AUTH2-02 | Phase 16 | Pending |
+| LAND-03 | Phase 16 | Complete |
+| AUTH2-01 | Phase 16 | Complete |
+| AUTH2-02 | Phase 16 | Complete |
 | ONBD-01 | Phase 17 | Pending |
 | ONBD-02 | Phase 17 | Pending |
 | ONBD-03 | Phase 17 | Pending |
