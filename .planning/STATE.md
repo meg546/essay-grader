@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Backend Implementation
 status: executing
-stopped_at: Completed 15-01-PLAN.md
+stopped_at: Completed 15-02-PLAN.md
 last_updated: "2026-03-10T01:06:32.378Z"
-last_activity: 2026-03-10 -- Completed 15-01 API client foundation
+last_activity: 2026-03-10 -- Completed 15-02 API integration
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 11
-  completed_plans: 10
-  percent: 94
+  completed_plans: 11
+  percent: 100
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 15 of 15 (Frontend Integration)
-Plan: 01 of 02 complete (Frontend Integration)
-Status: In Progress
-Last activity: 2026-03-10 -- Completed 15-01 API client foundation
+Plan: 02 of 02 complete (Frontend Integration)
+Status: Complete
+Last activity: 2026-03-10 -- Completed 15-02 API integration
 
-Progress: [█████████░] 94%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -65,6 +65,8 @@ Progress: [█████████░] 94%
 - [Phase 14-02]: Uniform 404 for missing and other-user submissions (no info leakage)
 - [Phase 15-01]: Persist essayText in app store so users don't lose essay on refresh
 - [Phase 15-01]: Remove local history from app store entirely (backend is source of truth)
+- [Phase 15-02]: Always use FormData for grading requests (backend Form() fields, not JSON body)
+- [Phase 15-02]: Rubric text extraction deferred to backend; frontend only keeps File reference
 
 ### Pending Todos
 
@@ -82,5 +84,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-10T01:06:32.375Z
-Stopped at: Completed 15-01-PLAN.md
+Stopped at: Completed 15-02-PLAN.md
 Resume file: None
