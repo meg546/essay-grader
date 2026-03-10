@@ -136,26 +136,25 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FRONT-02 | Phase 15 | Complete |
 | FRONT-03 | Phase 15 | Complete |
 | FRONT-04 | Phase 15 | Complete |
-
-| LAND-01 | — | Pending |
-| LAND-02 | — | Pending |
-| LAND-03 | — | Pending |
-| ONBD-01 | — | Pending |
-| ONBD-02 | — | Pending |
-| ONBD-03 | — | Pending |
-| ONBD-04 | — | Pending |
-| AUTH2-01 | — | Pending |
-| AUTH2-02 | — | Pending |
-| PROF-01 | — | Pending |
-| PROF-02 | — | Pending |
-| HIST-01 | — | Pending |
+| LAND-01 | Phase 16 | Pending |
+| LAND-02 | Phase 16 | Pending |
+| LAND-03 | Phase 16 | Pending |
+| AUTH2-01 | Phase 16 | Pending |
+| AUTH2-02 | Phase 16 | Pending |
+| ONBD-01 | Phase 17 | Pending |
+| ONBD-02 | Phase 17 | Pending |
+| ONBD-03 | Phase 17 | Pending |
+| ONBD-04 | Phase 17 | Pending |
+| PROF-01 | Phase 18 | Pending |
+| PROF-02 | Phase 18 | Pending |
+| HIST-01 | Phase 18 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 22 total (all complete)
 - v2.1 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12 ⚠️
+- Mapped to phases: 12/12
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-10 after v2.1 requirements defined*
+*Last updated: 2026-03-10 after v2.1 roadmap created*

@@ -20,5 +20,14 @@
 5. Mock authentication — Email+password sign-in with validation, async delay, and auth-gated profile content
 6. In-place essay editing — Edit/re-grade loop without navigation, loading overlay on feedback panel
 
----
+## v2.0 Backend Implementation (Shipped: 2026-03-10)
 
+**Phases:** 11-15 (5 phases, 12 plans)
+**Delivered:** Full Python/FastAPI backend with JWT auth, LLM grading pipeline, PostgreSQL persistence, and frontend integration replacing all mock data.
+
+## v2.1 Onboarding & Layout Redesign (In Progress)
+
+**Phases:** 16-18 (3 phases)
+**Goal:** Grammarly-inspired landing page, multi-step registration wizard, and profile settings for user preferences.
+
+---

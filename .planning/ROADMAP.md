@@ -4,7 +4,8 @@
 
 - ✅ **v1.0 MVP** — Phases 1-6 (shipped 2026-03-08)
 - ✅ **v1.1 UX Redesign** — Phases 7-10 (shipped 2026-03-09)
-- 🚧 **v2.0 Backend Implementation** — Phases 11-15 (in progress)
+- ✅ **v2.0 Backend Implementation** — Phases 11-15 (shipped 2026-03-10)
+- 🚧 **v2.1 Onboarding & Layout Redesign** — Phases 16-18 (in progress)
 
 ## Phases
 
@@ -36,17 +37,79 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 </details>
 
-### 🚧 v2.0 Backend Implementation (In Progress)
-
-**Milestone Goal:** Build the full Python/FastAPI backend with model serving, database, auth, and Docker -- replacing all mock data with real API integration.
+<details>
+<summary>✅ v2.0 Backend Implementation (Phases 11-15) — SHIPPED 2026-03-10</summary>
 
 - [x] **Phase 11: Backend Foundation** — FastAPI scaffold, Docker Compose with PostgreSQL, Pydantic response models matching frontend types, Alembic migrations (completed 2026-03-09)
 - [x] **Phase 12: Authentication** — User registration, login, JWT tokens, and route protection via FastAPI dependency (completed 2026-03-09)
 - [x] **Phase 13: LLM Inference & Grading** — Model inference pipeline, prompt engineering, structured output validation, highlight generation, and rubric PDF parsing (completed 2026-03-09)
 - [x] **Phase 14: Persistence & History** — Store grading results in PostgreSQL, expose history list and detail endpoints (completed 2026-03-10)
-- [x] **Phase 15: Frontend Integration** — Replace mock API calls with real Axios requests, auth interceptors, error handling, localStorage migration (gap closure in progress) (completed 2026-03-10)
+- [x] **Phase 15: Frontend Integration** — Replace mock API calls with real Axios requests, auth interceptors, error handling, localStorage migration (completed 2026-03-10)
+
+</details>
+
+### 🚧 v2.1 Onboarding & Layout Redesign (In Progress)
+
+**Milestone Goal:** Redesign the app layout inspired by Grammarly — dedicated landing page, prominent auth buttons, multi-step registration wizard, and profile settings for changing user preferences.
+
+- [ ] **Phase 16: Landing Page & Auth Entry** — Grammarly-style landing page with feature highlights and sign-in/register entry points
+- [ ] **Phase 17: Registration Wizard** — Multi-step onboarding slider with writing purpose and grade level questions
+- [ ] **Phase 18: Profile Settings & History Management** — Update user preferences from profile and delete submissions from history
 
 ## Phase Details
+
+<details>
+<summary>v1.0 Phase Details (Phases 1-6)</summary>
+
+### Phase 1: Foundation & API Layer
+**Goal**: Project scaffolding with routing, design system, and mock API contracts
+**Plans:** 2/2 plans complete
+
+### Phase 2: Essay Input & Rubric Editor
+**Goal**: Complete input experience with essay and rubric
+**Plans:** 2/2 plans complete
+
+### Phase 3: Submission Flow
+**Goal**: Submit essay + rubric with loading state
+**Plans:** 1/1 plans complete
+
+### Phase 4: Results Display
+**Goal**: Scores, feedback, and aggregate display
+**Plans:** 1/1 plans complete
+
+### Phase 5: History, Landing & Polish
+**Goal**: History table, landing page, dark mode
+**Plans:** 2/2 plans complete
+
+### Phase 6: E2E Testing
+**Goal**: Full Playwright test coverage
+**Plans:** 2/2 plans complete
+
+</details>
+
+<details>
+<summary>v1.1 Phase Details (Phases 7-10)</summary>
+
+### Phase 7: Data Contracts & Route Restructure
+**Goal**: Highlight data schema and two-tab navigation
+**Plans:** 2/2 plans complete
+
+### Phase 8: Collapsible Hero & Grading Workspace
+**Goal**: Combined home/grade page with collapsible hero
+**Plans:** 1/1 plans complete
+
+### Phase 9: Side-by-Side Results & Highlighting
+**Goal**: Split-pane results with color-coded essay highlighting
+**Plans:** 2/2 plans complete
+
+### Phase 10: Mock Auth & Editable Essay
+**Goal**: Mock authentication and essay editing in results view
+**Plans:** 2/2 plans complete
+
+</details>
+
+<details>
+<summary>v2.0 Phase Details (Phases 11-15)</summary>
 
 ### Phase 11: Backend Foundation
 **Goal**: A running FastAPI server in Docker Compose with PostgreSQL, configured for the frontend to connect to
@@ -59,10 +122,6 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Alembic can generate and apply migrations against the running PostgreSQL instance
 **Plans:** 2/2 plans complete
 
-Plans:
-- [ ] 11-01-PLAN.md -- FastAPI scaffold, Docker Compose with PostgreSQL, health endpoint with CORS
-- [ ] 11-02-PLAN.md -- Pydantic camelCase schemas, Alembic migrations, test suite
-
 ### Phase 12: Authentication
 **Goal**: Users can register, log in, and access protected endpoints with JWT tokens
 **Depends on**: Phase 11
@@ -74,26 +133,17 @@ Plans:
   4. Requesting any protected endpoint without a valid token returns 401 Unauthorized
 **Plans:** 2/2 plans complete
 
-Plans:
-- [ ] 12-01-PLAN.md -- User model, Alembic migration, auth utilities (password hashing, JWT tokens)
-- [ ] 12-02-PLAN.md -- Auth routes (register, login, me), get_current_user dependency, integration tests
-
 ### Phase 13: LLM Inference & Grading
 **Goal**: Users can submit an essay with a rubric and receive a complete grading result with scores, feedback, and highlighted passages
 **Depends on**: Phase 11
 **Requirements**: GRADE-01, GRADE-02, GRADE-03, GRADE-04, PDF-01, PDF-02
 **Success Criteria** (what must be TRUE):
-  1. POST /api/grade with essay text and rubric returns a full GradingResult JSON (categories with scores, strengths, improvements, justification, and overall summary)
+  1. POST /api/grade with essay text and rubric returns a full GradingResult JSON
   2. Response includes character-offset highlight ranges that correctly map to passages in the submitted essay text
   3. Grading produces noticeably different scoring when the same essay is submitted at different grade levels
-  4. Grading endpoint accepts both a PDF file upload and pre-extracted rubric text, producing equivalent results
+  4. Grading endpoint accepts both a PDF file upload and pre-extracted rubric text
   5. Changing the MODEL_ENDPOINT environment variable switches inference to a different host without code changes
 **Plans:** 3/3 plans complete
-
-Plans:
-- [ ] 13-01-PLAN.md -- LLM client Protocol, three provider adapters (Ollama, Anthropic, OpenAI), config settings
-- [ ] 13-02-PLAN.md -- Prompt templates, highlight offset matching, GradingService orchestration
-- [ ] 13-03-PLAN.md -- PDF extraction, POST /api/grade endpoint, integration tests
 
 ### Phase 14: Persistence & History
 **Goal**: Grading results are saved and users can browse and reload past submissions
@@ -101,13 +151,9 @@ Plans:
 **Requirements**: PERSIST-01, PERSIST-02, PERSIST-03
 **Success Criteria** (what must be TRUE):
   1. After grading completes, the result is stored in PostgreSQL and survives a container restart
-  2. GET /api/history returns a list of the authenticated user's past submissions (title, date, score)
-  3. GET /api/history/:id returns the full grading result for a past submission, identical to the original response
+  2. GET /api/history returns a list of the authenticated user's past submissions
+  3. GET /api/history/:id returns the full grading result for a past submission
 **Plans:** 2/2 plans complete
-
-Plans:
-- [ ] 14-01-PLAN.md -- Submission model, Alembic migration, auto-save in grading route
-- [ ] 14-02-PLAN.md -- History endpoints (list, detail, delete), integration tests
 
 ### Phase 15: Frontend Integration
 **Goal**: The React frontend uses the real backend for all operations -- no mock data remains
@@ -121,17 +167,48 @@ Plans:
   5. A user with leftover mock-era localStorage data is not stuck in a broken auth state after upgrading
 **Plans:** 3/3 plans complete
 
-Plans:
-- [x] 15-01-PLAN.md -- Axios client with interceptors, error utility, auth API functions, store migrations
-- [x] 15-02-PLAN.md -- Replace mock API calls, update UI components, remove mock files
-- [ ] 15-03-PLAN.md -- Fix highlights bug: LLM schema enforcement and flat-format quotes normalization (gap closure)
+</details>
+
+### Phase 16: Landing Page & Auth Entry
+**Goal**: Users arrive at a dedicated landing page that communicates the product value and provides clear paths to sign in or register
+**Depends on**: Phase 15
+**Requirements**: LAND-01, LAND-02, LAND-03, AUTH2-01, AUTH2-02
+**Success Criteria** (what must be TRUE):
+  1. Unauthenticated user visiting the root URL sees a landing page with site description and feature highlights -- not the grading page
+  2. Landing page displays prominent Sign In and Register buttons within the page content (not only in a nav bar)
+  3. Clicking Sign In opens the sign-in flow and successful login redirects to the grading page
+  4. Clicking Register begins the registration flow (entering the onboarding wizard in Phase 17)
+  5. An already-authenticated user visiting the root URL is redirected to the grading page, bypassing the landing page
+**Plans**: TBD
+
+### Phase 17: Registration Wizard
+**Goal**: New users complete a multi-step onboarding wizard during registration that captures their preferences before entering the app
+**Depends on**: Phase 16
+**Requirements**: ONBD-01, ONBD-02, ONBD-03, ONBD-04
+**Success Criteria** (what must be TRUE):
+  1. After entering registration credentials, user sees a multi-step slider wizard (not a single form)
+  2. Wizard includes a writing purpose step (work / school / other) that can be skipped
+  3. Wizard includes a grade level step that cannot be skipped -- user must select before proceeding
+  4. After completing (or skipping to) the final wizard step, user is redirected to the grading page with their preferences saved
+**Plans**: TBD
+
+### Phase 18: Profile Settings & History Management
+**Goal**: Users can update their onboarding preferences at any time from the profile page and manage their submission history
+**Depends on**: Phase 17
+**Requirements**: PROF-01, PROF-02, HIST-01
+**Success Criteria** (what must be TRUE):
+  1. User can change their grade level from the profile settings page and the new value persists across sessions
+  2. User can change their writing purpose from the profile settings page and the new value persists across sessions
+  3. User can delete an individual grading submission from their history list and it no longer appears
+**Plans**: TBD
 
 ## Progress
 
 **Execution Order:**
 v1.0: 1 → 2 → 3 → 4 → 5 → 6 (complete)
 v1.1: 7 → 8 → 9 → 10 (complete)
-v2.0: 11 → 12 → 13 → 14 → 15
+v2.0: 11 → 12 → 13 → 14 → 15 (complete)
+v2.1: 16 → 17 → 18
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -149,4 +226,7 @@ v2.0: 11 → 12 → 13 → 14 → 15
 | 12. Authentication | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 13. LLM Inference & Grading | v2.0 | 3/3 | Complete | 2026-03-09 |
 | 14. Persistence & History | v2.0 | 2/2 | Complete | 2026-03-10 |
-| 15. Frontend Integration | 3/3 | Complete    | 2026-03-10 | - |
+| 15. Frontend Integration | v2.0 | 3/3 | Complete | 2026-03-10 |
+| 16. Landing Page & Auth Entry | v2.1 | 0/? | Not started | - |
+| 17. Registration Wizard | v2.1 | 0/? | Not started | - |
+| 18. Profile Settings & History Management | v2.1 | 0/? | Not started | - |
