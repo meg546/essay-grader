@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from "react-router"
 import { cn } from "@/lib/utils"
 import { GraduationCapIcon } from "lucide-react"
+import { useAppStore } from "@/stores/app-store"
 
 const navItems = [
   { to: "/grade", label: "Home" },
@@ -13,11 +14,13 @@ function NavLinkItem({
   label,
   onClick,
   className,
+  showDot,
 }: {
   to: string
   label: string
   onClick?: () => void
   className?: string
+  showDot?: boolean
 }) {
   const location = useLocation()
   const isActive =
@@ -37,12 +40,19 @@ function NavLinkItem({
         className
       )}
     >
-      {label}
+      <span className="relative">
+        {label}
+        {showDot && (
+          <span className="absolute -right-2 -top-0.5 h-2 w-2 rounded-full bg-green-500" />
+        )}
+      </span>
     </NavLink>
   )
 }
 
 export function Header() {
+  const essayText = useAppStore((s) => s.essayText)
+
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur-sm">
       <div className="flex h-14 items-center justify-between px-4">
@@ -58,7 +68,7 @@ export function Header() {
         {/* Navigation */}
         <nav className="flex gap-1">
           {navItems.map((item) => (
-            <NavLinkItem key={item.to} to={item.to} label={item.label} />
+            <NavLinkItem key={item.to} to={item.to} label={item.label} showDot={item.to === "/grade" && essayText.trim() !== ""} />
           ))}
         </nav>
       </div>
