@@ -5,7 +5,7 @@ milestone_name: Onboarding & Layout Redesign
 status: completed
 stopped_at: Completed 17-02-PLAN.md
 last_updated: "2026-03-10T18:15:13.309Z"
-last_activity: 2026-03-10 — Completed 17-02 registration wizard UI
+last_activity: 2026-03-10 — Completed quick task 5: Remove grading page hero and enlarge input/rubric boxes
 progress:
   total_phases: 18
   completed_phases: 11
