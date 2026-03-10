@@ -21,7 +21,14 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
 
 
+class UserUpdateRequest(CamelModel):
+    grade_level: str | None = None
+    writing_purpose: str | None = None
+
+
 class UserResponse(CamelModel):
     id: uuid.UUID
     email: str
     created_at: datetime
+    grade_level: str | None = None
+    writing_purpose: str | None = None

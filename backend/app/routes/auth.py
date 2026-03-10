@@ -7,7 +7,7 @@ from app.auth.passwords import hash_password, verify_password
 from app.auth.tokens import create_access_token
 from app.deps import get_db
 from app.models.user import User
-from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserResponse
+from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserResponse, UserUpdateRequest
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -41,4 +41,18 @@ async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
 
 @router.get("/me", response_model=UserResponse)
 async def me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
+@router.patch("/me", response_model=UserResponse)
+async def update_me(
+    body: UserUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    updates = body.model_dump(exclude_unset=True)
+    for field, value in updates.items():
+        setattr(current_user, field, value)
+    await db.commit()
+    await db.refresh(current_user)
     return current_user
