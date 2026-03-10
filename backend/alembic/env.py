@@ -12,6 +12,7 @@ from app.models.base import Base
 
 # Import all model modules here so autogenerate can detect tables.
 from app.models.user import User  # noqa: F401 -- registers table on Base.metadata
+from app.models.submission import Submission  # noqa: F401 -- registers table on Base.metadata
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
