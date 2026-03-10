@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Backend Implementation
 status: completed
-stopped_at: Completed 15-02-PLAN.md
-last_updated: "2026-03-10T01:14:06.442Z"
-last_activity: 2026-03-10 -- Completed 15-02 API integration
+stopped_at: Completed 15-03-PLAN.md (Task 1 done, Task 2 awaiting human verify)
+last_updated: "2026-03-10T02:27:00Z"
+last_activity: 2026-03-10 -- Completed 15-03 highlights bug fix
 progress:
   total_phases: 5
   completed_phases: 5
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 12
+  completed_plans: 12
   percent: 100
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 15 of 15 (Frontend Integration)
-Plan: 02 of 02 complete (Frontend Integration)
-Status: Complete
-Last activity: 2026-03-10 -- Completed 15-02 API integration
+Plan: 03 of 03 complete (Frontend Integration - gap closure)
+Status: Awaiting human verification (Task 2)
+Last activity: 2026-03-10 -- Completed 15-03 highlights bug fix
 
 Progress: [██████████] 100%
 
@@ -67,6 +67,9 @@ Progress: [██████████] 100%
 - [Phase 15-01]: Remove local history from app store entirely (backend is source of truth)
 - [Phase 15-02]: Always use FormData for grading requests (backend Form() fields, not JSON body)
 - [Phase 15-02]: Rubric text extraction deferred to backend; frontend only keeps File reference
+- [Phase 15-03]: Ollama uses response_format.schema for structured output enforcement
+- [Phase 15-03]: OpenAI uses json_schema response_format type with strict=False
+- [Phase 15-03]: Alt quote key normalization checks highlighted_passages, evidence_quotes, evidence
 
 ### Pending Todos
 
@@ -83,6 +86,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-10T01:06:32.375Z
-Stopped at: Completed 15-02-PLAN.md
+Last session: 2026-03-10T02:27:00Z
+Stopped at: Completed 15-03-PLAN.md (Task 2 checkpoint:human-verify pending)
 Resume file: None
