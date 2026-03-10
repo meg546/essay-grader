@@ -147,5 +147,5 @@ v2.0: 11 → 12 → 13 → 14 → 15
 | 11. Backend Foundation | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 12. Authentication | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 13. LLM Inference & Grading | v2.0 | 3/3 | Complete | 2026-03-09 |
-| 14. Persistence & History | 2/2 | Complete   | 2026-03-10 | - |
+| 14. Persistence & History | 2/2 | Complete    | 2026-03-10 | - |
 | 15. Frontend Integration | v2.0 | 0/? | Not started | - |
