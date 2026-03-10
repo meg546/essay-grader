@@ -34,18 +34,17 @@ Users can submit an essay with a rubric and immediately see clear, rubric-aligne
 
 ### Active
 
-#### Current Milestone: v2.0 Backend Implementation
+#### Current Milestone: v2.1 Onboarding & Layout Redesign
 
-**Goal:** Build the full Python/FastAPI backend with model serving, database, auth, and Docker — replacing all mock data with real API integration.
+**Goal:** Redesign the app layout inspired by Grammarly — dedicated landing page, prominent auth buttons, multi-step registration wizard, and profile settings for changing user preferences.
 
 **Target features:**
-- FastAPI backend with endpoints matching current mock JSON format
-- Llama 3.2 3B model inference with configurable endpoint (local/LAN/cloud GPU)
-- PostgreSQL database for submissions, history, user accounts
-- Real JWT authentication (registration, login, token-based sessions)
-- Server-side rubric PDF parsing with text fallback
-- Docker Compose for backend + DB
-- Frontend integration to swap mock API for real backend
+- Grammarly-style landing page with site info and feature highlights
+- Prominent Sign In / Register buttons at top of landing page
+- Multi-step registration wizard (slider) with writing purpose and grade level questions
+- All wizard steps skippable except grade level (required)
+- Post-registration redirect to grading page
+- Profile settings page to update grade level and other preferences
 
 ### Out of Scope
 
@@ -99,4 +98,4 @@ Users can submit an essay with a rubric and immediately see clear, rubric-aligne
 | Bidirectional hover via shared context | activeCategoryId/activeHighlightId in HighlightProvider enables card↔highlight interaction without prop drilling | ✓ Good |
 
 ---
-*Last updated: 2026-03-09 after v2.0 milestone started*
+*Last updated: 2026-03-10 after v2.1 milestone started*

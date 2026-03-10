@@ -1,36 +1,36 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: Backend Implementation
-status: verifying
-stopped_at: Completed 15-03-PLAN.md (all tasks including human verification)
-last_updated: "2026-03-10T03:22:55.538Z"
-last_activity: 2026-03-10 -- Verified highlights rendering in browser (Task 2 approved)
+milestone: v2.1
+milestone_name: Onboarding & Layout Redesign
+status: planning
+stopped_at: null
+last_updated: "2026-03-10T15:30:00.000Z"
+last_activity: 2026-03-10 -- Milestone v2.1 started
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 12
-  completed_plans: 12
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-09)
+See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Users can submit an essay with a rubric and immediately see clear, rubric-aligned scores with structured feedback and highlighted essay passages
-**Current focus:** v2.0 Backend Implementation -- Phase 15 Complete (Frontend Integration)
+**Current focus:** v2.1 Onboarding & Layout Redesign -- Defining requirements
 
 ## Current Position
 
-Phase: 15 of 15 (Frontend Integration)
-Plan: 03 of 03 complete (Frontend Integration - gap closure)
-Status: Complete (all tasks verified)
-Last activity: 2026-03-10 - Completed quick task 4: Sign-in popup for unauthenticated users
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-10 — Milestone v2.1 started
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
