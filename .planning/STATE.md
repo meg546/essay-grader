@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Backend Implementation
 status: in_progress
-stopped_at: Completed 14-01-PLAN.md
-last_updated: "2026-03-10T00:11:35Z"
-last_activity: 2026-03-10 -- Completed 14-01 submission model and auto-save
+stopped_at: Completed 14-02-PLAN.md
+last_updated: "2026-03-10T00:15:39Z"
+last_activity: 2026-03-10 -- Completed 14-02 history API endpoints
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 10
-  completed_plans: 8
-  percent: 80
+  completed_plans: 9
+  percent: 90
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 14 of 15 (Persistence & History)
-Plan: 01 of 03 complete (Persistence & History)
+Plan: 02 of 03 complete (Persistence & History)
 Status: In Progress
-Last activity: 2026-03-10 -- Completed 14-01 submission model and auto-save
+Last activity: 2026-03-10 -- Completed 14-02 history API endpoints
 
-Progress: [████████░░] 80%
+Progress: [█████████░] 90%
 
 ## Performance Metrics
 
@@ -61,6 +61,8 @@ Progress: [████████░░] 80%
 - [Phase 14-01]: Used sqlalchemy.JSON instead of JSONB for SQLite test compatibility
 - [Phase 14-01]: Manual Alembic migration (Docker PostgreSQL not up to date for autogenerate)
 - [Phase 14-01]: Auto-save in route layer (not service layer) to keep GradingService pure
+- [Phase 14-02]: Return JSONB result dict directly for detail endpoint (already camelCase)
+- [Phase 14-02]: Uniform 404 for missing and other-user submissions (no info leakage)
 
 ### Pending Todos
 
@@ -77,6 +79,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-10T00:11:35Z
-Stopped at: Completed 14-01-PLAN.md
-Resume file: .planning/phases/14-persistence-history/14-01-SUMMARY.md
+Last session: 2026-03-10T00:15:39Z
+Stopped at: Completed 14-02-PLAN.md
+Resume file: .planning/phases/14-persistence-history/14-02-SUMMARY.md

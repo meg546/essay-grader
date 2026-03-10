@@ -32,8 +32,8 @@ Requirements for backend implementation. Each maps to roadmap phases.
 ### Persistence
 
 - [x] **PERSIST-01**: Grading results are stored in PostgreSQL on completion (normalized schema)
-- [ ] **PERSIST-02**: User can view list of past submissions (GET /api/history)
-- [ ] **PERSIST-03**: User can load full grading result for a past submission (GET /api/history/:id)
+- [x] **PERSIST-02**: User can view list of past submissions (GET /api/history)
+- [x] **PERSIST-03**: User can load full grading result for a past submission (GET /api/history/:id)
 
 ### PDF Processing
 
@@ -99,8 +99,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GRADE-03 | Phase 13 | Complete |
 | GRADE-04 | Phase 13 | Complete |
 | PERSIST-01 | Phase 14 | Complete |
-| PERSIST-02 | Phase 14 | Pending |
-| PERSIST-03 | Phase 14 | Pending |
+| PERSIST-02 | Phase 14 | Complete |
+| PERSIST-03 | Phase 14 | Complete |
 | PDF-01 | Phase 13 | Complete |
 | PDF-02 | Phase 13 | Complete |
 | FRONT-01 | Phase 15 | Pending |

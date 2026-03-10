@@ -43,7 +43,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 11: Backend Foundation** — FastAPI scaffold, Docker Compose with PostgreSQL, Pydantic response models matching frontend types, Alembic migrations (completed 2026-03-09)
 - [x] **Phase 12: Authentication** — User registration, login, JWT tokens, and route protection via FastAPI dependency (completed 2026-03-09)
 - [x] **Phase 13: LLM Inference & Grading** — Model inference pipeline, prompt engineering, structured output validation, highlight generation, and rubric PDF parsing (completed 2026-03-09)
-- [ ] **Phase 14: Persistence & History** — Store grading results in PostgreSQL, expose history list and detail endpoints
+- [x] **Phase 14: Persistence & History** — Store grading results in PostgreSQL, expose history list and detail endpoints (completed 2026-03-10)
 - [ ] **Phase 15: Frontend Integration** — Replace mock API calls with real Axios requests, auth interceptors, error handling, localStorage migration
 
 ## Phase Details
@@ -103,7 +103,7 @@ Plans:
   1. After grading completes, the result is stored in PostgreSQL and survives a container restart
   2. GET /api/history returns a list of the authenticated user's past submissions (title, date, score)
   3. GET /api/history/:id returns the full grading result for a past submission, identical to the original response
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 14-01-PLAN.md -- Submission model, Alembic migration, auto-save in grading route
@@ -147,5 +147,5 @@ v2.0: 11 → 12 → 13 → 14 → 15
 | 11. Backend Foundation | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 12. Authentication | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 13. LLM Inference & Grading | v2.0 | 3/3 | Complete | 2026-03-09 |
-| 14. Persistence & History | 1/2 | In Progress|  | - |
+| 14. Persistence & History | 2/2 | Complete   | 2026-03-10 | - |
 | 15. Frontend Integration | v2.0 | 0/? | Not started | - |
