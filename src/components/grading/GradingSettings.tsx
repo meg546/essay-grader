@@ -64,11 +64,13 @@ export function GradingSettings({
           onValueChange={(val) => onGradeLevelChange(val as string)}
         >
           <SelectTrigger className="w-full">
-            <SelectValue />
+            <SelectValue>
+              {GRADE_LEVEL_LABELS[effectiveLevel as GradeLevel] || effectiveLevel}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {GRADE_LEVELS.map(([value, label]) => (
-              <SelectItem key={value} value={value}>
+              <SelectItem key={value} value={value} label={label}>
                 {label}
               </SelectItem>
             ))}

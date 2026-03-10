@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
   BookOpen,
@@ -14,7 +14,13 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { RubricModal } from "./RubricModal";
+import { EssayUploadModal } from "./EssayUploadModal";
 import { ToneSelector } from "./ToneSelector";
 import { GradingSettings } from "./GradingSettings";
 
@@ -79,15 +85,9 @@ export function GradingToolbar({
   const navigate = useNavigate();
   const rubricFile = useAppStore((s) => s.rubricFile);
   const [rubricModalOpen, setRubricModalOpen] = useState(false);
+  const [essayModalOpen, setEssayModalOpen] = useState(false);
   const [showStats, setShowStats] = useState(false);
-  const [confirmClear, setConfirmClear] = useState(false);
-  const clearTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
-
-  useEffect(() => {
-    return () => {
-      if (clearTimeoutRef.current) clearTimeout(clearTimeoutRef.current);
-    };
-  }, []);
+  const [clearOpen, setClearOpen] = useState(false);
 
   function handleStatsToggle() {
     const next = !showStats;
@@ -95,18 +95,6 @@ export function GradingToolbar({
     onStatsToggle(next);
   }
 
-  function handleClear() {
-    if (confirmClear) {
-      onClear();
-      setConfirmClear(false);
-      if (clearTimeoutRef.current) clearTimeout(clearTimeoutRef.current);
-    } else {
-      setConfirmClear(true);
-      clearTimeoutRef.current = setTimeout(() => {
-        setConfirmClear(false);
-      }, 2000);
-    }
-  }
 
   return (
     <>
@@ -127,7 +115,7 @@ export function GradingToolbar({
           )}
         </ToolbarButton>
 
-        <ToolbarButton onClick={onUploadEssayFile} label="Upload Essay">
+        <ToolbarButton onClick={() => setEssayModalOpen(true)} label="Upload Essay">
           <FileUp className="h-5 w-5 transition-all group-hover:h-[22px] group-hover:w-[22px]" />
         </ToolbarButton>
 
@@ -150,13 +138,32 @@ export function GradingToolbar({
           <Clock className="h-5 w-5 transition-all group-hover:h-[22px] group-hover:w-[22px]" />
         </ToolbarButton>
 
-        <ToolbarButton
-          onClick={handleClear}
-          label={confirmClear ? "Click again to clear" : "Clear"}
-          destructive={confirmClear}
-        >
-          <Eraser className="h-5 w-5 transition-all group-hover:h-[22px] group-hover:w-[22px]" />
-        </ToolbarButton>
+        <Popover open={clearOpen} onOpenChange={setClearOpen}>
+          <Tooltip>
+            <PopoverTrigger
+              render={
+                <TooltipTrigger className="group relative flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-150 hover:bg-primary/10 hover:scale-110 text-muted-foreground hover:text-primary cursor-pointer" />
+              }
+            >
+              <Eraser className="h-5 w-5 transition-all group-hover:h-[22px] group-hover:w-[22px]" />
+            </PopoverTrigger>
+            <TooltipContent>Clear</TooltipContent>
+          </Tooltip>
+          <PopoverContent side="left" align="start" className="w-auto max-w-[11rem] p-3">
+            <p className="text-xs text-muted-foreground mb-2">
+              Clear essay and rubric?
+            </p>
+            <button
+              onClick={() => {
+                onClear();
+                setClearOpen(false);
+              }}
+              className="w-full rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Confirm
+            </button>
+          </PopoverContent>
+        </Popover>
 
         {/* Divider */}
         <div className="w-6 border-b my-1" />
@@ -174,6 +181,10 @@ export function GradingToolbar({
       <RubricModal
         open={rubricModalOpen}
         onOpenChange={setRubricModalOpen}
+      />
+      <EssayUploadModal
+        open={essayModalOpen}
+        onOpenChange={setEssayModalOpen}
       />
     </>
   );

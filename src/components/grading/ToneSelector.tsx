@@ -40,11 +40,11 @@ export function ToneSelector({ tone, onToneChange }: ToneSelectorProps) {
         <TooltipContent>Tone</TooltipContent>
       </Tooltip>
 
-      <PopoverContent side="left" align="start" className="w-44">
+      <PopoverContent side="left" align="start" className="w-auto min-w-[10rem]">
         <p className="text-xs font-medium text-muted-foreground mb-2">
           Feedback Tone
         </p>
-        <div className="grid grid-cols-2 gap-1.5">
+        <div className="flex flex-col gap-1.5">
           {TONES.map((t) => (
             <button
               key={t}
@@ -53,7 +53,7 @@ export function ToneSelector({ tone, onToneChange }: ToneSelectorProps) {
                 setOpen(false);
               }}
               className={cn(
-                "rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                "rounded-full px-4 py-1.5 text-xs font-medium whitespace-nowrap transition-colors text-center",
                 tone.toLowerCase() === t.toLowerCase()
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted hover:bg-muted/80"
