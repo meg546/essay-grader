@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils"
 import { GraduationCapIcon } from "lucide-react"
 
 const navItems = [
-  { to: "/", label: "Home" },
+  { to: "/grade", label: "Home" },
   { to: "/profile", label: "Profile" },
 ] as const
 
@@ -20,7 +20,9 @@ function NavLinkItem({
 }) {
   const location = useLocation()
   const isActive =
-    to === "/" ? location.pathname === "/" : location.pathname.startsWith(to)
+    to === "/grade"
+      ? location.pathname === "/grade" || location.pathname.startsWith("/grade")
+      : location.pathname.startsWith(to)
 
   return (
     <NavLink
@@ -45,7 +47,7 @@ export function Header() {
       <div className="flex h-14 items-center justify-between px-4">
         {/* Branding */}
         <NavLink
-          to="/"
+          to="/grade"
           className="flex items-center gap-2 text-lg font-semibold text-primary"
         >
           <GraduationCapIcon className="size-5" />

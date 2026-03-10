@@ -73,7 +73,7 @@ export function ProfilePage() {
     try {
       const result = await getHistoryItem(item.id);
       setCurrentResult(result);
-      navigate("/");
+      navigate("/grade");
     } catch {
       // Could not load result
     }
