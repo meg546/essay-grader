@@ -1,73 +1,156 @@
-# React + TypeScript + Vite
+# EssayGrader
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+AI-powered essay grading application that provides detailed, rubric-aligned feedback with category scores, strengths/improvements, and highlighted essay passages.
 
-Currently, two official plugins are available:
+## What It Does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Submit an essay (paste or upload .txt/.pdf), optionally attach a rubric PDF, and get back:
 
-## React Compiler
+- **Overall score** with per-category breakdown (e.g., Thesis, Evidence, Organization)
+- **Strengths and areas for improvement** for each category
+- **Highlighted passages** in the essay linked to specific feedback
+- **Tone-aware feedback** — choose Academic, Professional, Casual, or Creative tone
+- **Grade level calibration** — Elementary through College
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Key Features
 
-## Expanding the ESLint configuration
+- **Grading toolbar** — vertical icon bar with rubric upload, essay upload, word stats, tone selector, grade level override, and clear with confirmation
+- **Essays history** — card grid of all past submissions with score, date, and preview snippet
+- **Essay detail view** — click any past essay to view full grading results (read-only)
+- **Active draft indicator** — nav shows "Draft" when you have an essay in progress
+- **User accounts** — registration with onboarding wizard, profile settings, password management
+- **Rubric support** — upload PDF rubrics that get extracted and included in LLM grading context
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Tech Stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS v4, shadcn/ui (Base UI) |
+| State | Zustand (with localStorage persistence) |
+| Routing | React Router v7 |
+| Backend | Python 3.12, FastAPI, SQLAlchemy (async), Alembic |
+| Database | PostgreSQL 16 |
+| AI | Anthropic Claude API (configurable — supports OpenAI too) |
+| Auth | JWT tokens with Argon2 password hashing |
+| Infra | Docker Compose |
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Prerequisites
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose
+- An [Anthropic API key](https://console.anthropic.com/) (or OpenAI key)
+
+## Getting Started
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/yourusername/essay-grader.git
+cd essay-grader
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Create environment file
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp .env.example .env
 ```
+
+Edit `.env` with your settings:
+
+```env
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/essaygrader
+MODEL_PROVIDER=anthropic
+MODEL_NAME=claude-haiku-4-5-20251001
+ANTHROPIC_API_KEY=your-api-key-here
+```
+
+For OpenAI instead:
+```env
+MODEL_PROVIDER=openai
+MODEL_NAME=gpt-4o-mini
+OPENAI_API_KEY=your-openai-key-here
+```
+
+### 3. Start the application
+
+```bash
+docker compose up -d --build
+```
+
+This starts three services:
+- **Frontend** — http://localhost:5173
+- **Backend API** — http://localhost:8000
+- **PostgreSQL** — localhost:5432
+
+The database migrations run automatically on backend startup.
+
+### 4. Use the app
+
+1. Open http://localhost:5173
+2. Register an account (completes onboarding wizard)
+3. Paste or upload an essay
+4. Optionally upload a rubric PDF and select tone/grade level
+5. Click "Submit for Grading"
+6. View detailed results with highlighted passages and category feedback
+
+## Development
+
+### Frontend (without Docker)
+
+```bash
+npm install
+npm run dev
+```
+
+Requires Node.js 20.19+ or 22.12+.
+
+### Backend (without Docker)
+
+```bash
+cd backend
+uv sync
+uv run uvicorn app.main:app --reload --port 8000
+```
+
+Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
+
+### Database
+
+```bash
+# Run migrations
+cd backend
+uv run alembic upgrade head
+
+# Create a new migration
+uv run alembic revision --autogenerate -m "description"
+```
+
+## Project Structure
+
+```
+essay-grader/
+├── src/                    # React frontend
+│   ├── api/                # API client functions
+│   ├── components/         # UI components
+│   │   ├── auth/           # Sign-in, register dialogs
+│   │   ├── grading/        # Toolbar, modals, inputs
+│   │   ├── layout/         # Header, protected routes
+│   │   ├── results/        # Essay panel, feedback panel
+│   │   └── ui/             # shadcn/ui primitives
+│   ├── pages/              # Route pages
+│   ├── stores/             # Zustand state management
+│   └── lib/                # Utilities
+├── backend/
+│   └── app/
+│       ├── llm/            # LLM client and prompt building
+│       ├── models/         # SQLAlchemy models
+│       ├── routes/         # FastAPI endpoints
+│       ├── schemas/        # Pydantic schemas
+│       └── services/       # Business logic
+├── docker-compose.yml
+├── Dockerfile.frontend
+└── backend/Dockerfile
+```
+
+## License
+
+MIT
