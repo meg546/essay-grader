@@ -1,10 +1,11 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router"
+import { BrowserRouter, Routes, Route } from "react-router"
 import { LandingLayout } from "@/components/layout/LandingLayout"
 import { LandingPage } from "@/pages/LandingPage"
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 import { Layout } from "@/components/layout/Layout"
 import { GradingPage } from "@/pages/GradingPage"
 import { ProfilePage } from "@/pages/ProfilePage"
+import { RegisterPage } from "@/pages/RegisterPage"
 import { Toaster } from "@/components/ui/sonner"
 
 export default function App() {
@@ -21,7 +22,7 @@ export default function App() {
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
           </Route>
-          <Route path="/register" element={<Navigate to="/" replace />} />
+          <Route path="/register" element={<RegisterPage />} />
         </Routes>
       </BrowserRouter>
       <Toaster />

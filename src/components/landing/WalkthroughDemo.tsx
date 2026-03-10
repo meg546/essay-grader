@@ -10,7 +10,12 @@ const ESSAY_LINES = [
   "transportation, and social structures...",
 ]
 
-const RUBRIC_CRITERIA = ["Thesis & Argument", "Evidence", "Organization", "Grammar"]
+const RUBRIC_CRITERIA = [
+  { name: "Thesis & Argument", weight: "30%", description: "Clear, defensible claim with logical reasoning" },
+  { name: "Evidence", weight: "25%", description: "Relevant sources cited and analyzed" },
+  { name: "Organization", weight: "25%", description: "Logical flow with transitions between ideas" },
+  { name: "Grammar", weight: "20%", description: "Proper mechanics and academic tone" },
+]
 
 const SCORES = [
   { label: "Thesis & Argument", score: 92, color: "bg-emerald-500" },
@@ -19,10 +24,10 @@ const SCORES = [
   { label: "Grammar", score: 90, color: "bg-emerald-500" },
 ]
 
-const TOTAL_DURATION = 8000
-const FRAME_1_END = 2000
-const FRAME_2_END = 3500
-const FRAME_3_END = 5000
+const TOTAL_DURATION = 15000
+const FRAME_1_END = 4000
+const FRAME_2_END = 8000
+const FRAME_3_END = 11000
 
 type DemoFrame = 1 | 2 | 3 | 4
 
@@ -149,16 +154,32 @@ function FrameRubric() {
       <p className="mb-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
         Add your rubric
       </p>
-      <div className="flex flex-wrap gap-2">
+      <div className="space-y-2">
         {RUBRIC_CRITERIA.map((criterion, i) => (
           <motion.div
-            key={criterion}
-            className="rounded-full border border-border bg-card px-3 py-1 text-sm text-card-foreground"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3, delay: i * 0.1 }}
+            key={criterion.name}
+            className="flex items-center gap-3 rounded-lg border border-border bg-card p-3"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: i * 0.15 }}
           >
-            {criterion}
+            <motion.div
+              className="flex size-5 items-center justify-center rounded border border-primary bg-primary/10"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.2, delay: i * 0.15 + 0.2 }}
+            >
+              <svg className="size-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </motion.div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-baseline justify-between">
+                <span className="text-sm font-medium text-card-foreground">{criterion.name}</span>
+                <span className="text-xs font-medium text-primary ml-2">{criterion.weight}</span>
+              </div>
+              <p className="text-xs text-muted-foreground truncate">{criterion.description}</p>
+            </div>
           </motion.div>
         ))}
       </div>

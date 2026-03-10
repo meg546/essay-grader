@@ -1,3 +1,4 @@
+import type React from "react"
 import { motion } from "motion/react"
 
 const steps = [
@@ -32,25 +33,28 @@ export function HowItWorks() {
         <h2 className="mb-10 text-center text-3xl font-bold tracking-tight text-foreground">
           How It Works
         </h2>
-        <div className="flex flex-col items-center gap-8 md:flex-row md:gap-0">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-[1fr_auto_1fr_auto_1fr]  md:items-start md:gap-0">
           {steps.map((step, index) => (
-            <div key={step.number} className="flex items-center">
-              <div className="flex flex-col items-center text-center md:px-4">
-                <div className="flex size-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
-                  {step.number}
-                </div>
-                <h3 className="mt-4 font-semibold text-foreground">
-                  {step.title}
-                </h3>
-                <p className="mt-2 max-w-[200px] text-sm text-muted-foreground">
-                  {step.description}
-                </p>
+            <div key={step.number} className="flex flex-col items-center text-center md:px-4">
+              <div className="flex size-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
+                {step.number}
               </div>
-              {index < steps.length - 1 && (
-                <div className="hidden h-px w-12 bg-border md:block" />
-              )}
+              <h3 className="mt-4 font-semibold text-foreground">
+                {step.title}
+              </h3>
+              <p className="mt-2 max-w-[200px] text-sm text-muted-foreground">
+                {step.description}
+              </p>
             </div>
-          ))}
+          )).reduce<React.ReactNode[]>((acc, el, i) => {
+            if (i > 0) {
+              acc.push(
+                <div key={`line-${i}`} className="hidden h-px mt-6 w-full bg-border md:block" />
+              )
+            }
+            acc.push(el)
+            return acc
+          }, [])}
         </div>
       </div>
     </motion.section>
