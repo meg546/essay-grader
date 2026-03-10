@@ -46,3 +46,17 @@ export async function updateProfile(
   const { data } = await apiClient.patch<UserProfile>("/auth/me", updates);
   return data;
 }
+
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string
+): Promise<void> {
+  await apiClient.post("/auth/change-password", {
+    current_password: currentPassword,
+    new_password: newPassword,
+  });
+}
+
+export async function deleteAccount(password: string): Promise<void> {
+  await apiClient.delete("/auth/me", { data: { password } });
+}

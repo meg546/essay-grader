@@ -21,6 +21,15 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
 
 
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=8)
+
+
+class DeleteAccountRequest(BaseModel):
+    password: str
+
+
 class UserUpdateRequest(CamelModel):
     grade_level: str | None = None
     writing_purpose: str | None = None
