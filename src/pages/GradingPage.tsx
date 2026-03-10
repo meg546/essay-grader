@@ -20,7 +20,7 @@ export function GradingPage() {
   const currentResult = useAppStore((s) => s.currentResult);
   const setCurrentResult = useAppStore((s) => s.setCurrentResult);
   const clearCurrentResult = useAppStore((s) => s.clearCurrentResult);
-  const addToHistory = useAppStore((s) => s.addToHistory);
+
   const setEssayText = useAppStore((s) => s.setEssayText);
   const setRubricFile = useAppStore((s) => s.setRubricFile);
   const gradeLevel = useProfileStore((s) => s.gradeLevel);
@@ -52,7 +52,6 @@ export function GradingPage() {
         gradeLevel,
       });
       setCurrentResult(result);
-      addToHistory(result);
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
@@ -69,7 +68,6 @@ export function GradingPage() {
         gradeLevel,
       });
       setCurrentResult(result);
-      addToHistory(result);
     } catch {
       toast.error("Re-grading failed. Please try again.");
     } finally {

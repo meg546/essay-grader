@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+
+
 import { useProfileStore, GRADE_LEVEL_LABELS } from "@/stores/profile-store";
 import type { GradeLevel } from "@/stores/profile-store";
-import { useAppStore } from "@/stores/app-store";
+
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,12 +25,12 @@ import { Loader2 } from "lucide-react";
 export function ProfilePage() {
   const { email, gradeLevel, isSignedIn, isSigningIn, signIn, signOut, setGradeLevel } =
     useProfileStore();
-  const history = useAppStore((s) => s.history);
-  const setCurrentResult = useAppStore((s) => s.setCurrentResult);
+
+
   const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate();
+
 
   return (
     <div className="space-y-6">
@@ -122,36 +124,9 @@ export function ProfilePage() {
               <CardTitle>Grading History</CardTitle>
             </CardHeader>
             <CardContent>
-              {history.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No grading history yet.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {history.map((result) => (
-                    <button
-                      key={result.id}
-                      onClick={() => {
-                        setCurrentResult(result);
-                        navigate("/");
-                      }}
-                      className="flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors hover:bg-muted"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">
-                          {result.essayExcerpt}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(result.gradedAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="ml-4 text-sm font-semibold">
-                        {result.overallScore}/{result.maxScore}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
+              <p className="text-sm text-muted-foreground">
+                History will be loaded from the server.
+              </p>
             </CardContent>
           </Card>
         </>
