@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Onboarding & Layout Redesign
 status: executing
-stopped_at: Completed 17-01-PLAN.md
-last_updated: "2026-03-10T17:08:25.311Z"
-last_activity: 2026-03-10 — Completed 17-01 user preferences data layer
+stopped_at: Completed 17-02-PLAN.md
+last_updated: "2026-03-10T18:12:08.471Z"
+last_activity: 2026-03-10 — Completed 17-02 registration wizard UI
 progress:
   total_phases: 18
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 22
-  completed_plans: 21
-  percent: 95
+  completed_plans: 22
+  percent: 100
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 17 of 18 (Registration Wizard)
-Plan: 1 of 2 in current phase
-Status: Executing
-Last activity: 2026-03-10 — Completed 17-01 user preferences data layer
+Plan: 2 of 2 in current phase (complete)
+Status: Phase 17 Complete
+Last activity: 2026-03-10 — Completed 17-02 registration wizard UI
 
-Progress: [██████████] 95% (v2.1)
+Progress: [██████████] 100% (v2.1)
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Progress: [██████████] 95% (v2.1)
 - [Phase 16-02]: Register button routes to /register placeholder page instead of redirect loop
 - [Phase 16-02]: WalkthroughDemo uses 15s animation cycle with 4 sequential frames
 - [Phase 17]: Use exclude_unset for partial PATCH updates on user preferences
+- [Phase 17]: Optimistic store updates for wizard steps -- set store state before awaiting PATCH to prevent UI delays
 
 ### Pending Todos
 
@@ -74,9 +75,10 @@ None.
 | Phase 16 P01 | 2min | 2 tasks | 6 files |
 | Phase 16 P02 | 12min | 3 tasks | 8 files |
 | Phase 17 P01 | 3min | 2 tasks | 6 files |
+| Phase 17 P02 | 8min | 3 tasks | 9 files |
 
 ## Session Continuity
 
-Last session: 2026-03-10T17:08:25.308Z
-Stopped at: Completed 17-01-PLAN.md
+Last session: 2026-03-10T18:12:08.468Z
+Stopped at: Completed 17-02-PLAN.md
 Resume file: None

@@ -53,7 +53,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Milestone Goal:** Redesign the app layout inspired by Grammarly — dedicated landing page, prominent auth buttons, multi-step registration wizard, and profile settings for changing user preferences.
 
 - [x] **Phase 16: Landing Page & Auth Entry** — Grammarly-style landing page with feature highlights and sign-in/register entry points (completed 2026-03-10)
-- [ ] **Phase 17: Registration Wizard** — Multi-step onboarding slider with writing purpose and grade level questions
+- [x] **Phase 17: Registration Wizard** — Multi-step onboarding slider with writing purpose and grade level questions (completed 2026-03-10)
 - [ ] **Phase 18: Profile Settings & History Management** — Update user preferences from profile and delete submissions from history
 
 ## Phase Details
@@ -234,5 +234,5 @@ v2.1: 16 → 17 → 18
 | 14. Persistence & History | v2.0 | 2/2 | Complete | 2026-03-10 |
 | 15. Frontend Integration | v2.0 | 3/3 | Complete | 2026-03-10 |
 | 16. Landing Page & Auth Entry | v2.1 | 2/2 | Complete | 2026-03-10 |
-| 17. Registration Wizard | 1/2 | In Progress|  | - |
+| 17. Registration Wizard | 2/2 | Complete   | 2026-03-10 | - |
 | 18. Profile Settings & History Management | v2.1 | 0/? | Not started | - |
