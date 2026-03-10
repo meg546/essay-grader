@@ -142,3 +142,27 @@ def test_default_rubric_has_four_categories():
     assert "Evidence" in rubric
     assert "Organization" in rubric
     assert "Language" in rubric or "Mechanics" in rubric
+
+
+def test_compute_highlights_logs_warning_on_empty_quotes(caplog):
+    """compute_highlights logs a warning when a category has zero quotes."""
+    import logging
+
+    essay = "The quick brown fox jumps over the lazy dog."
+    categories = [
+        {
+            "id": "cat-empty",
+            "name": "Grammar",
+            "score": 20,
+            "maxScore": 25,
+            "strengths": ["Good"],
+            "improvements": [],
+            "justification": "Ok",
+            "quotes": [],
+        },
+    ]
+    with caplog.at_level(logging.WARNING, logger="app.llm.highlights"):
+        compute_highlights(essay, categories)
+
+    assert any("cat-empty" in record.message and "no quotes" in record.message.lower() for record in caplog.records), \
+        f"Expected warning about empty quotes for 'cat-empty', got: {[r.message for r in caplog.records]}"

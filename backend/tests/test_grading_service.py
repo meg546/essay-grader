@@ -168,3 +168,99 @@ async def test_grade_populates_id_and_metadata(service: GradingService):
     # graded_at should be an ISO timestamp
     assert "T" in result.graded_at
     assert result.graded_at.endswith("+00:00") or result.graded_at.endswith("Z")
+
+
+# --- Flat-format normalization tests (quotes preservation) ---
+
+FLAT_FORMAT_LLM_RESPONSE = json.dumps(
+    {
+        "thesis": {
+            "score": 20,
+            "maxScore": 25,
+            "name": "Thesis & Argument",
+            "strengths": ["Clear thesis statement"],
+            "improvements": ["Could be more specific"],
+            "justification": "The thesis is clear but could be narrower.",
+            "quotes": [
+                {
+                    "text": "The impact of technology on education has been profound and far-reaching",
+                    "type": "strength",
+                    "feedback": "Strong opening thesis",
+                }
+            ],
+        },
+        "evidence": {
+            "score": 18,
+            "maxScore": 25,
+            "name": "Evidence & Support",
+            "strengths": ["Mentions specific challenges"],
+            "improvements": ["Needs more citations"],
+            "justification": "Some evidence but lacks depth.",
+            "quotes": [
+                {
+                    "text": "the digital divide remains a significant challenge",
+                    "type": "improvement",
+                    "feedback": "Good point but needs supporting data",
+                }
+            ],
+        },
+        "summary": "A well-structured essay on technology in education.",
+    }
+)
+
+
+FLAT_FORMAT_ALT_QUOTES_RESPONSE = json.dumps(
+    {
+        "thesis": {
+            "score": 20,
+            "maxScore": 25,
+            "name": "Thesis & Argument",
+            "strengths": ["Clear thesis statement"],
+            "improvements": ["Could be more specific"],
+            "justification": "The thesis is clear.",
+            "highlighted_passages": [
+                {
+                    "text": "The impact of technology on education has been profound and far-reaching",
+                    "type": "strength",
+                    "feedback": "Strong opening thesis",
+                }
+            ],
+        },
+        "summary": "Good essay.",
+    }
+)
+
+
+async def test_flat_format_with_quotes_produces_highlights():
+    """Flat-format LLM response with quotes -> categories with non-empty highlights."""
+    client = MockLLMClient([FLAT_FORMAT_LLM_RESPONSE])
+    service = GradingService(client)
+    result = await service.grade(SAMPLE_ESSAY, None, "college")
+
+    # Should have 2 categories (thesis, evidence)
+    assert len(result.categories) == 2
+
+    # Thesis category should have highlights
+    thesis_cat = result.categories[0]
+    assert len(thesis_cat.highlights) >= 1, "Thesis category should have at least one highlight"
+    h = thesis_cat.highlights[0]
+    assert h.start == 0
+    assert h.end > h.start
+
+    # Evidence category should have highlights
+    evidence_cat = result.categories[1]
+    assert len(evidence_cat.highlights) >= 1, "Evidence category should have at least one highlight"
+
+
+async def test_flat_format_alt_quotes_key_produces_highlights():
+    """Flat-format response using 'highlighted_passages' instead of 'quotes' -> normalization extracts them."""
+    client = MockLLMClient([FLAT_FORMAT_ALT_QUOTES_RESPONSE])
+    service = GradingService(client)
+    result = await service.grade(SAMPLE_ESSAY, None, "college")
+
+    # Should have 1 category (thesis)
+    assert len(result.categories) == 1
+
+    # Thesis category should have highlights from the alt key
+    thesis_cat = result.categories[0]
+    assert len(thesis_cat.highlights) >= 1, "Alt quotes key 'highlighted_passages' should be normalized to 'quotes'"
