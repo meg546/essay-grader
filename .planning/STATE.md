@@ -75,7 +75,7 @@ None.
 | 5 | Remove grading page hero and enlarge input panels | 2026-03-10 | ac687e3 | [5-remove-grading-page-hero-and-enlarge-inp](./quick/5-remove-grading-page-hero-and-enlarge-inp/) |
 | 6 | Grading page toolbar redesign | 2026-03-10 | 6ca9a45 | [6-grading-page-toolbar-redesign](./quick/6-grading-page-toolbar-redesign/) |
 | 7 | Rework profile page and create essays page | 2026-03-10 | ba222f8 | [7-rework-profile-page-and-create-essays-pa](./quick/7-rework-profile-page-and-create-essays-pa/) |
-| 8 | Essay detail view and active essay navigation | 2026-03-10 | 2daea47 | [8-essay-detail-view-and-active-essay-navig](./quick/8-essay-detail-view-and-active-essay-navig/) |
+| 8 | Essay detail view and active essay navigation | 2026-03-10 | c1a893f | [8-essay-detail-view-and-active-essay-navig](./quick/8-essay-detail-view-and-active-essay-navig/) |
 | Phase 16 P01 | 2min | 2 tasks | 6 files |
 | Phase 16 P02 | 12min | 3 tasks | 8 files |
 | Phase 17 P01 | 3min | 2 tasks | 6 files |
