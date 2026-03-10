@@ -103,10 +103,11 @@ Plans:
   1. After grading completes, the result is stored in PostgreSQL and survives a container restart
   2. GET /api/history returns a list of the authenticated user's past submissions (title, date, score)
   3. GET /api/history/:id returns the full grading result for a past submission, identical to the original response
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 14-01: TBD
+- [ ] 14-01-PLAN.md -- Submission model, Alembic migration, auto-save in grading route
+- [ ] 14-02-PLAN.md -- History endpoints (list, detail, delete), integration tests
 
 ### Phase 15: Frontend Integration
 **Goal**: The React frontend uses the real backend for all operations -- no mock data remains
@@ -145,6 +146,6 @@ v2.0: 11 → 12 → 13 → 14 → 15
 | 10. Mock Auth & Editable Essay | v1.1 | 2/2 | Complete | 2026-03-09 |
 | 11. Backend Foundation | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 12. Authentication | v2.0 | 2/2 | Complete | 2026-03-09 |
-| 13. LLM Inference & Grading | 3/3 | Complete   | 2026-03-09 | - |
-| 14. Persistence & History | v2.0 | 0/? | Not started | - |
+| 13. LLM Inference & Grading | v2.0 | 3/3 | Complete | 2026-03-09 |
+| 14. Persistence & History | v2.0 | 0/2 | Not started | - |
 | 15. Frontend Integration | v2.0 | 0/? | Not started | - |
