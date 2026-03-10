@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Onboarding & Layout Redesign
 status: planning
-stopped_at: null
-last_updated: "2026-03-10T16:00:00.000Z"
-last_activity: 2026-03-10 -- Roadmap created for v2.1 (Phases 16-18)
+stopped_at: Phase 16 context gathered
+last_updated: "2026-03-10T15:58:15.458Z"
+last_activity: 2026-03-10 — Roadmap created for v2.1 Onboarding & Layout Redesign
 progress:
-  total_phases: 3
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_phases: 18
+  completed_phases: 9
+  total_plans: 18
+  completed_plans: 18
   percent: 0
 ---
 
@@ -69,6 +69,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-10
-Stopped at: Roadmap created for v2.1 milestone (Phases 16-18)
-Resume file: None
+Last session: 2026-03-10T15:58:15.455Z
+Stopped at: Phase 16 context gathered
+Resume file: .planning/phases/16-landing-page-auth-entry/16-CONTEXT.md
