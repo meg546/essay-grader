@@ -1,22 +1,22 @@
-import { delay } from "./delay";
-import { mockGradingResult } from "./mock-data";
-import type { GradeEssayRequest, GradingResult } from "./types";
+import { apiClient } from "./client";
+import type { GradingResult } from "./types";
 
 export async function gradeEssay(
-  request: GradeEssayRequest,
+  essayText: string,
+  gradeLevel: string,
+  rubricFile?: File | null,
+  rubricText?: string,
 ): Promise<GradingResult> {
-  await delay(1500);
-  const baseSummary = mockGradingResult.summary;
-  const summary = request.rubricText
-    ? `Graded against uploaded rubric. ${baseSummary}`
-    : baseSummary;
-  return {
-    ...mockGradingResult,
-    id: crypto.randomUUID(),
-    essayText: request.essayText,
-    essayExcerpt: request.essayText.slice(0, 120) + "...",
-    summary,
-    gradedAt: new Date().toISOString(),
-  };
-}
+  const formData = new FormData();
+  formData.append("essay_text", essayText);
+  formData.append("grade_level", gradeLevel);
 
+  if (rubricFile) {
+    formData.append("rubric_file", rubricFile);
+  } else if (rubricText) {
+    formData.append("rubric_text", rubricText);
+  }
+
+  const { data } = await apiClient.post<GradingResult>("/grade", formData);
+  return data;
+}

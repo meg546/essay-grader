@@ -1,13 +1,12 @@
-import { delay } from "./delay";
-import { getMockGradingResultById, mockHistoryItems } from "./mock-data";
+import { apiClient } from "./client";
 import type { GradingResult, HistoryItem } from "./types";
 
 export async function getHistory(): Promise<HistoryItem[]> {
-  await delay(800);
-  return mockHistoryItems;
+  const { data } = await apiClient.get<HistoryItem[]>("/history");
+  return data;
 }
 
 export async function getHistoryItem(id: string): Promise<GradingResult> {
-  await delay(600);
-  return getMockGradingResultById(id);
+  const { data } = await apiClient.get<GradingResult>(`/history/${id}`);
+  return data;
 }
