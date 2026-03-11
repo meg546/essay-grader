@@ -1,6 +1,6 @@
 import { Outlet } from "react-router"
 import { NavLink } from "react-router"
-import { GraduationCapIcon, Sun, Moon, Menu } from "lucide-react"
+import { PenToolIcon, Sun, Moon, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/lib/theme"
 import {
@@ -30,8 +30,8 @@ export function LandingLayout() {
             to="/"
             className="flex items-center gap-2.5 text-xl font-semibold text-primary"
           >
-            <GraduationCapIcon aria-hidden="true" className="size-6" />
-            <span>EssayGrader</span>
+            <PenToolIcon aria-hidden="true" className="size-6" />
+            <span>Redpen</span>
           </NavLink>
 
           <div className="flex items-center gap-2">
