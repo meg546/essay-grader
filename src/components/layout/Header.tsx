@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router"
 import { cn } from "@/lib/utils"
-import { GraduationCapIcon, Sun, Moon, Menu } from "lucide-react"
+import { PenToolIcon, Sun, Moon, Menu } from "lucide-react"
 import { useAppStore } from "@/stores/app-store"
 import { useTheme } from "@/lib/theme"
 import {
@@ -61,8 +61,8 @@ export function Header() {
           to="/grade"
           className="flex items-center gap-2.5 text-xl font-semibold text-primary"
         >
-          <GraduationCapIcon aria-hidden="true" className="size-6" />
-          <span>EssayGrader</span>
+          <PenToolIcon aria-hidden="true" className="size-6" />
+          <span>Redpen</span>
         </NavLink>
 
         {/* Right side: theme toggle + desktop nav + mobile hamburger */}
