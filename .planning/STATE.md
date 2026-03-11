@@ -5,7 +5,7 @@ milestone_name: Onboarding & Layout Redesign
 status: completed
 stopped_at: Completed 17-02-PLAN.md
 last_updated: "2026-03-11T04:53:25Z"
-last_activity: 2026-03-11 — Completed quick task 10: Add ambient animated background to landing page
+last_activity: 2026-03-11 — Completed quick task 11: Fix all web best practices violations from audit
 progress:
   total_phases: 18
   completed_phases: 11
@@ -77,6 +77,7 @@ None.
 | 7 | Rework profile page and create essays page | 2026-03-10 | ba222f8 | [7-rework-profile-page-and-create-essays-pa](./quick/7-rework-profile-page-and-create-essays-pa/) |
 | 8 | Essay detail view and active essay navigation | 2026-03-10 | c1a893f | [8-essay-detail-view-and-active-essay-navig](./quick/8-essay-detail-view-and-active-essay-navig/) |
 | 10 | Add ambient animated background to landing page | 2026-03-11 | abe82a1 | [10-add-ambient-animated-background-to-landi](./quick/10-add-ambient-animated-background-to-landi/) |
+| 11 | Fix all web best practices violations from audit | 2026-03-11 | 85b0f46 | [11-fix-all-web-best-practices-violations-fr](./quick/11-fix-all-web-best-practices-violations-fr/) |
 | Phase 16 P01 | 2min | 2 tasks | 6 files |
 | Phase 16 P02 | 12min | 3 tasks | 8 files |
 | Phase 17 P01 | 3min | 2 tasks | 6 files |
