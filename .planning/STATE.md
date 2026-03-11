@@ -4,8 +4,8 @@ milestone: v2.1
 milestone_name: Onboarding & Layout Redesign
 status: completed
 stopped_at: Completed 17-02-PLAN.md
-last_updated: "2026-03-11T05:30:00Z"
-last_activity: 2026-03-11 — Completed quick task 12: Reading comfort and responsive design (text size, dark mode, mobile)
+last_updated: "2026-03-11T19:48:56Z"
+last_activity: 2026-03-11 — Completed quick task 13: Add dot menu with delete option for each essay card
 progress:
   total_phases: 18
   completed_phases: 11
@@ -59,6 +59,7 @@ Progress: [██████████] 100% (v2.1)
 - [Phase 17]: Optimistic store updates for wizard steps -- set store state before awaiting PATCH to prevent UI delays
 - [quick-12]: Theme state lives outside Zustand — must apply before React mounts for flash prevention
 - [quick-12]: textSize persisted via Zustand app-store v3 partialize (not theme module)
+- [quick-13]: Essay card restructured to div.group.relative so DropdownMenu trigger sits outside the Link's click area; onSelect used (not onClick) on DropdownMenuItem for proper Event stopPropagation
 
 ### Pending Todos
 
@@ -81,6 +82,7 @@ None.
 | 10 | Add ambient animated background to landing page | 2026-03-11 | abe82a1 | [10-add-ambient-animated-background-to-landi](./quick/10-add-ambient-animated-background-to-landi/) |
 | 11 | Fix all web best practices violations from audit | 2026-03-11 | 85b0f46 | [11-fix-all-web-best-practices-violations-fr](./quick/11-fix-all-web-best-practices-violations-fr/) |
 | 12 | Reading comfort and responsive design (text size, dark mode, mobile) | 2026-03-11 | eaa8d4b | [12-reading-comfort-and-responsive-design-im](./quick/12-reading-comfort-and-responsive-design-im/) |
+| 13 | Add dot menu with delete option for each essay card | 2026-03-11 | 69de1be | [13-add-dot-menu-with-delete-option-for-each](./quick/13-add-dot-menu-with-delete-option-for-each/) |
 | Phase 16 P01 | 2min | 2 tasks | 6 files |
 | Phase 16 P02 | 12min | 3 tasks | 8 files |
 | Phase 17 P01 | 3min | 2 tasks | 6 files |
@@ -88,6 +90,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T05:30:00Z
-Stopped at: Completed quick-12
+Last session: 2026-03-11T19:48:56Z
+Stopped at: Completed quick-13
 Resume file: None
