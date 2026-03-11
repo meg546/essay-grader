@@ -140,6 +140,147 @@ def build_system_prompt(grade_level: str, rubric_text: str | None, tone: str = "
 - Include the "type" field as either "strength" or "improvement" for each quote.
 - Include a brief "feedback" explanation for why the passage was highlighted.
 
+## Few-Shot Examples
+
+Below are two calibration examples showing how to score and provide feedback. Study the scoring rationale and output structure carefully.
+
+### Example 1: Strong Essay (College Level)
+
+<example_essay>
+The rise of social media has fundamentally altered the landscape of political discourse in democratic societies. Rather than simply providing a new platform for existing debates, platforms like Twitter and Facebook have restructured how citizens engage with political information, creating echo chambers that reinforce preexisting beliefs while simultaneously enabling grassroots movements that bypass traditional media gatekeepers. This dual nature—both fragmenting and democratizing—demands a nuanced analysis that moves beyond simplistic narratives of technological determinism.
+
+Consider the Arab Spring of 2011, where social media served as a critical organizing tool for protesters in Tunisia and Egypt. Scholars like Zeynep Tufekci have documented how platforms enabled rapid coordination that would have been impossible through traditional channels. However, as Evgeny Morozov argues in "The Net Delusion," the same technologies that empower activists also provide authoritarian regimes with sophisticated surveillance capabilities. This tension illustrates that technology is not inherently liberating—its impact depends on the political context in which it operates.
+
+Furthermore, research by Eli Pariser on "filter bubbles" demonstrates that algorithmic curation systematically narrows users' exposure to diverse viewpoints. A 2019 Pew Research study found that 64% of Americans believe social media has a mostly negative effect on the country, yet 72% of adults continue to use at least one platform. This paradox suggests that the convenience and social connectivity these platforms offer outweigh users' concerns about their democratic implications, creating a collective action problem that individual choices cannot resolve.
+</example_essay>
+
+<example_output>
+{{
+  "summary": "A sophisticated and well-researched essay that demonstrates strong analytical thinking about social media's impact on democracy. The writer effectively balances competing perspectives and supports claims with specific evidence. Organization is clear and purposeful, though the conclusion could be more fully developed.",
+  "categories": [
+    {{
+      "id": "thesis",
+      "name": "Thesis & Argument",
+      "score": 22,
+      "maxScore": 25,
+      "strengths": ["Presents a nuanced, debatable thesis that avoids binary thinking", "Consistently develops the 'dual nature' framework throughout"],
+      "improvements": ["Could more explicitly address counterarguments to the echo chamber thesis"],
+      "justification": "The thesis is sophisticated and clearly stated, framing social media as both 'fragmenting and democratizing.' The argument is logically structured and maintains focus, though it could engage more deeply with opposing views.",
+      "quotes": [
+        {{"text": "This dual nature—both fragmenting and democratizing—demands a nuanced analysis that moves beyond simplistic narratives of technological determinism.", "type": "strength", "feedback": "Strong thesis that establishes a clear analytical framework and signals intellectual rigor"}},
+        {{"text": "This tension illustrates that technology is not inherently liberating—its impact depends on the political context in which it operates.", "type": "strength", "feedback": "Effective synthesis that advances the argument beyond mere summary of sources"}}
+      ]
+    }},
+    {{
+      "id": "evidence",
+      "name": "Evidence & Support",
+      "score": 23,
+      "maxScore": 25,
+      "strengths": ["Integrates multiple scholarly sources effectively", "Uses specific data from Pew Research to support claims"],
+      "improvements": ["Could include more recent examples beyond the Arab Spring"],
+      "justification": "Evidence is varied, specific, and well-integrated. The writer cites scholars (Tufekci, Morozov, Pariser) and empirical data (Pew Research) to build a compelling case. Sources are analyzed rather than merely cited.",
+      "quotes": [
+        {{"text": "A 2019 Pew Research study found that 64% of Americans believe social media has a mostly negative effect on the country, yet 72% of adults continue to use at least one platform.", "type": "strength", "feedback": "Specific statistical evidence that powerfully illustrates the paradox central to the argument"}},
+        {{"text": "Scholars like Zeynep Tufekci have documented how platforms enabled rapid coordination that would have been impossible through traditional channels.", "type": "strength", "feedback": "Effective integration of scholarly authority to support a specific claim"}}
+      ]
+    }},
+    {{
+      "id": "organization",
+      "name": "Organization & Structure",
+      "score": 21,
+      "maxScore": 25,
+      "strengths": ["Clear progression from thesis to evidence to implications", "Each paragraph has a distinct purpose"],
+      "improvements": ["The essay ends somewhat abruptly without a formal conclusion", "Transitions between paragraphs could be smoother"],
+      "justification": "The essay follows a logical structure: introduction with thesis, historical example, then contemporary research. However, it lacks a concluding paragraph that synthesizes the analysis, and the transition from paragraph 2 to 3 is somewhat abrupt.",
+      "quotes": [
+        {{"text": "Furthermore, research by Eli Pariser on "filter bubbles" demonstrates that algorithmic curation systematically narrows users' exposure to diverse viewpoints.", "type": "improvement", "feedback": "'Furthermore' is a weak transition that doesn't clearly connect the surveillance discussion to the filter bubble argument"}}
+      ]
+    }},
+    {{
+      "id": "language",
+      "name": "Language & Mechanics",
+      "score": 23,
+      "maxScore": 25,
+      "strengths": ["Precise academic vocabulary used naturally", "Varied sentence structures maintain reader engagement"],
+      "improvements": ["A few sentences are overly long and could be broken up for clarity"],
+      "justification": "The writing is polished and sophisticated. Vocabulary choices like 'technological determinism,' 'algorithmic curation,' and 'collective action problem' demonstrate command of the subject. Sentence variety is strong, though some complex sentences could be simplified.",
+      "quotes": [
+        {{"text": "creating a collective action problem that individual choices cannot resolve", "type": "strength", "feedback": "Precise use of political science terminology that elevates the analysis"}}
+      ]
+    }}
+  ]
+}}
+</example_output>
+
+### Example 2: Developing Essay (High School Level)
+
+<example_essay>
+Social media is bad for society. Everyone knows that spending too much time on your phone is unhealthy. Studies show that teens who use social media alot are more likely to be depressed.
+
+My friend spends like 5 hours a day on TikTok and she always feels bad about herself after. This proves that social media causes depression. Also cyberbullying is a huge problem. People say mean things online that they would never say in person.
+
+In conclusion social media companies should do more to protect users especially young people. The government should also make laws about social media use for kids. If we dont do something soon things will only get worse.
+</example_essay>
+
+<example_output>
+{{
+  "summary": "The essay addresses an important topic but relies heavily on personal anecdote and generalizations rather than substantive evidence. The argument would benefit from a more specific thesis, credible sources, and deeper analysis. Basic organizational structure is present but underdeveloped.",
+  "categories": [
+    {{
+      "id": "thesis",
+      "name": "Thesis & Argument",
+      "score": 10,
+      "maxScore": 25,
+      "strengths": ["Takes a clear position on the topic"],
+      "improvements": ["Thesis is too broad and not debatable—needs to be more specific", "Argument relies on generalizations rather than logical reasoning"],
+      "justification": "The opening statement 'Social media is bad for society' is a position but not a nuanced thesis. It lacks specificity about which aspects of social media, for whom, and why. The argument doesn't develop beyond the initial claim.",
+      "quotes": [
+        {{"text": "Social media is bad for society.", "type": "improvement", "feedback": "This is too broad to be an effective thesis. What specific aspect of social media? Bad in what way? A stronger thesis would narrow the focus."}},
+        {{"text": "Everyone knows that spending too much time on your phone is unhealthy.", "type": "improvement", "feedback": "'Everyone knows' is an appeal to common knowledge that weakens the argument. Claims need evidence, not assumed agreement."}}
+      ]
+    }},
+    {{
+      "id": "evidence",
+      "name": "Evidence & Support",
+      "score": 8,
+      "maxScore": 25,
+      "strengths": ["Attempts to use both personal experience and research"],
+      "improvements": ["'Studies show' is vague—cite specific studies", "Personal anecdote about a friend is not sufficient evidence for a causal claim", "No sources are cited or referenced"],
+      "justification": "The essay mentions 'studies' without citing any specific research. The primary evidence is a personal anecdote about a friend, which is presented as proof of causation. No scholarly or journalistic sources are referenced.",
+      "quotes": [
+        {{"text": "Studies show that teens who use social media alot are more likely to be depressed.", "type": "improvement", "feedback": "Which studies? By whom? 'Studies show' without citation is not credible evidence in academic writing."}},
+        {{"text": "This proves that social media causes depression.", "type": "improvement", "feedback": "A single personal anecdote does not 'prove' causation. This is a logical fallacy—correlation from one example does not establish a causal relationship."}}
+      ]
+    }},
+    {{
+      "id": "organization",
+      "name": "Organization & Structure",
+      "score": 13,
+      "maxScore": 25,
+      "strengths": ["Has a basic introduction-body-conclusion structure", "Conclusion attempts to offer solutions"],
+      "improvements": ["Body paragraph mixes multiple topics without developing any fully", "Transitions between ideas are absent"],
+      "justification": "The essay shows awareness of basic essay structure with an introduction, body, and conclusion. However, the single body paragraph jumps between depression, personal anecdote, and cyberbullying without developing any point fully or transitioning between them.",
+      "quotes": [
+        {{"text": "Also cyberbullying is a huge problem.", "type": "improvement", "feedback": "This introduces a new topic mid-paragraph without any transition. It deserves its own paragraph with supporting evidence."}}
+      ]
+    }},
+    {{
+      "id": "language",
+      "name": "Language & Mechanics",
+      "score": 11,
+      "maxScore": 25,
+      "strengths": ["Writing is generally understandable and direct"],
+      "improvements": ["Spelling errors: 'alot' should be 'a lot'", "Missing commas: 'In conclusion social media' needs a comma after 'conclusion'", "Informal language ('like 5 hours') is inappropriate for academic writing"],
+      "justification": "The writing is readable but contains several mechanical errors and relies on informal language that undermines academic credibility. Sentence structures are simple and repetitive.",
+      "quotes": [
+        {{"text": "My friend spends like 5 hours a day on TikTok and she always feels bad about herself after.", "type": "improvement", "feedback": "Informal language ('like 5 hours,' 'feels bad') weakens academic tone. Use precise language: 'approximately five hours' and describe the emotional impact specifically."}},
+        {{"text": "If we dont do something soon things will only get worse.", "type": "improvement", "feedback": "Missing apostrophe in 'dont' and missing comma. Vague language ('do something,' 'get worse') weakens the conclusion."}}
+      ]
+    }}
+  ]
+}}
+</example_output>
+
 ## Response Format
 
 Respond with a JSON object matching the required schema. Use the category IDs: "thesis", "evidence", "organization", "language" (or IDs matching the provided rubric categories).
