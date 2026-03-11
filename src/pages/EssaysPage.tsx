@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { getHistory, deleteHistoryItem } from "@/api/history";
 import { useFoxStore } from "@/stores/fox-store";
+import { useFoxCoach } from "@/components/mascot/use-fox-coach";
 import type { HistoryItem } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,11 +16,13 @@ export function EssaysPage() {
   const [items, setItems] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const setFoxState = useFoxStore((s) => s.setFoxState);
+  const { requestTip } = useFoxCoach();
 
   useEffect(() => {
     setFoxState("browsing");
+    requestTip("history_visit");
     return () => setFoxState("idle");
-  }, [setFoxState]);
+  }, [setFoxState, requestTip]);
 
   useEffect(() => {
     getHistory()
