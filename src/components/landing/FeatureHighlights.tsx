@@ -52,7 +52,7 @@ export function FeatureHighlights() {
     <section className="py-16">
       <div className="mx-auto max-w-6xl px-4">
         <h2 className="mb-10 text-center text-3xl font-bold tracking-tight text-foreground text-balance">
-          Why EssayGrader?
+          Why Redpen?
         </h2>
         <motion.div
           className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"

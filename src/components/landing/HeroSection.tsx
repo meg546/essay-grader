@@ -1,5 +1,5 @@
 import { motion } from "motion/react"
-import { GraduationCap } from "lucide-react"
+import { PenTool } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface HeroSectionProps {
@@ -17,7 +17,7 @@ export function HeroSection({ onSignIn, onRegister }: HeroSectionProps) {
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
         <div className="mb-6 flex justify-center">
-          <GraduationCap aria-hidden="true" className="size-16 text-primary" />
+          <PenTool aria-hidden="true" className="size-16 text-primary" />
         </div>
         <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl text-balance">
           Get Instant, Rubric-Aligned Essay Feedback
