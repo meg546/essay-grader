@@ -31,12 +31,12 @@ export interface CategoryColor {
  * 6 palette entries cycled via modulo.
  */
 export const CATEGORY_COLORS: CategoryColor[] = [
-  { bg: "bg-blue-100", bgActive: "bg-blue-200", text: "text-blue-700" },
-  { bg: "bg-purple-100", bgActive: "bg-purple-200", text: "text-purple-700" },
-  { bg: "bg-orange-100", bgActive: "bg-orange-200", text: "text-orange-700" },
-  { bg: "bg-teal-100", bgActive: "bg-teal-200", text: "text-teal-700" },
-  { bg: "bg-pink-100", bgActive: "bg-pink-200", text: "text-pink-700" },
-  { bg: "bg-yellow-100", bgActive: "bg-yellow-200", text: "text-yellow-700" },
+  { bg: "bg-blue-100 dark:bg-blue-900/40", bgActive: "bg-blue-200 dark:bg-blue-800/60", text: "text-blue-700 dark:text-blue-300" },
+  { bg: "bg-purple-100 dark:bg-purple-900/40", bgActive: "bg-purple-200 dark:bg-purple-800/60", text: "text-purple-700 dark:text-purple-300" },
+  { bg: "bg-orange-100 dark:bg-orange-900/40", bgActive: "bg-orange-200 dark:bg-orange-800/60", text: "text-orange-700 dark:text-orange-300" },
+  { bg: "bg-teal-100 dark:bg-teal-900/40", bgActive: "bg-teal-200 dark:bg-teal-800/60", text: "text-teal-700 dark:text-teal-300" },
+  { bg: "bg-pink-100 dark:bg-pink-900/40", bgActive: "bg-pink-200 dark:bg-pink-800/60", text: "text-pink-700 dark:text-pink-300" },
+  { bg: "bg-yellow-100 dark:bg-yellow-900/40", bgActive: "bg-yellow-200 dark:bg-yellow-800/60", text: "text-yellow-700 dark:text-yellow-300" },
 ];
 
 /**

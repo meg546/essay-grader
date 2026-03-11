@@ -22,10 +22,10 @@ export function getScoreBarColor(level: ScoreLevel): string {
 export function getScoreTextColor(level: ScoreLevel): string {
   switch (level) {
     case "high":
-      return "text-emerald-700";
+      return "text-emerald-700 dark:text-emerald-400";
     case "medium":
-      return "text-amber-600";
+      return "text-amber-600 dark:text-amber-400";
     case "low":
-      return "text-rose-600";
+      return "text-rose-600 dark:text-rose-400";
   }
 }

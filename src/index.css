@@ -48,6 +48,8 @@
     --sidebar-accent-foreground: oklch(0.25 0.05 145);
     --sidebar-border: oklch(0.88 0.01 80);
     --sidebar-ring: oklch(0.55 0.10 145);
+    --highlight-strength: 142 76% 90%;
+    --highlight-improvement: 38 92% 90%;
 }
 
 .dark {
@@ -82,6 +84,8 @@
     --sidebar-accent-foreground: oklch(0.85 0.05 145);
     --sidebar-border: oklch(0.30 0.01 60);
     --sidebar-ring: oklch(0.60 0.10 145);
+    --highlight-strength: 142 40% 25%;
+    --highlight-improvement: 38 50% 25%;
 }
 
 @theme inline {
@@ -134,7 +138,7 @@
     @apply bg-background text-foreground;
     }
   html {
-    @apply font-sans;
+    @apply font-sans transition-colors duration-200;
     }
 }
 
