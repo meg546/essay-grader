@@ -15,9 +15,18 @@ class AnthropicClient:
         self._client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
 
     async def complete(
-        self, system_prompt: str, user_prompt: str, json_schema: dict
+        self, system_prompt: str, user_prompt: str, json_schema: dict | None
     ) -> str:
-        """Use tool_use pattern to get structured JSON from Claude."""
+        """Use tool_use pattern to get structured JSON from Claude, or plain text if no schema."""
+        if json_schema is None:
+            response = await self._client.messages.create(
+                model=self.model,
+                max_tokens=60,
+                system=system_prompt,
+                messages=[{"role": "user", "content": user_prompt}],
+            )
+            return response.content[0].text
+
         kwargs = {
             "model": self.model,
             "max_tokens": 4096,

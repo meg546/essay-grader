@@ -16,9 +16,23 @@ class OllamaClient:
         )
 
     async def complete(
-        self, system_prompt: str, user_prompt: str, json_schema: dict
+        self, system_prompt: str, user_prompt: str, json_schema: dict | None
     ) -> str:
         """POST to /v1/chat/completions and return the content string."""
+        if json_schema is None:
+            plain_payload = {
+                "model": self.model,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                "temperature": 0.7,
+            }
+            try:
+                return await self._post(plain_payload)
+            except (httpx.ConnectError, httpx.TimeoutException):
+                return await self._post(plain_payload)
+
         payload = {
             "model": self.model,
             "messages": [

@@ -9,9 +9,9 @@ class LLMClient(Protocol):
     """Protocol for LLM provider adapters."""
 
     async def complete(
-        self, system_prompt: str, user_prompt: str, json_schema: dict
+        self, system_prompt: str, user_prompt: str, json_schema: dict | None
     ) -> str:
-        """Send a prompt to the LLM and return raw JSON string."""
+        """Send a prompt to the LLM and return raw JSON string or plain text."""
         ...
 
 

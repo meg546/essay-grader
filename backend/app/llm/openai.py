@@ -13,9 +13,26 @@ class OpenAIClient:
         self._client = openai.AsyncOpenAI(api_key=settings.openai_api_key)
 
     async def complete(
-        self, system_prompt: str, user_prompt: str, json_schema: dict
+        self, system_prompt: str, user_prompt: str, json_schema: dict | None
     ) -> str:
-        """Use chat completions with JSON response format."""
+        """Use chat completions with JSON response format, or plain text if no schema."""
+        if json_schema is None:
+            plain_kwargs = {
+                "model": self.model,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                "max_tokens": 60,
+                "temperature": 0.7,
+            }
+            try:
+                response = await self._client.chat.completions.create(**plain_kwargs)
+                return response.choices[0].message.content
+            except (openai.APIConnectionError, openai.APITimeoutError):
+                response = await self._client.chat.completions.create(**plain_kwargs)
+                return response.choices[0].message.content
+
         kwargs = {
             "model": self.model,
             "messages": [
