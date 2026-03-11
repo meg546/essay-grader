@@ -1,10 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
 import { useProfileStore } from "@/stores/profile-store";
 import { gradeEssay } from "@/api/grading";
+import { useFoxStore } from "@/stores/fox-store";
 import { getErrorMessage } from "@/api/errors";
 import { Button } from "@/components/ui/button";
 import { SignInDialog } from "@/components/auth/SignInDialog";
@@ -39,6 +40,25 @@ export function GradingPage() {
   const [resultTab, setResultTab] = useState<"essay" | "feedback">("essay");
 
   const essayInputRef = useRef<EssayInputHandle>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const setFoxState = useFoxStore((s) => s.setFoxState);
+
+  // Fox reacts to typing
+  useEffect(() => {
+    if (essayText.trim() === "") return;
+    setFoxState("attentive");
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      setFoxState("idle");
+    }, 30_000);
+  }, [essayText, setFoxState]);
+
+  // Cleanup typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, []);
 
   const isSubmitDisabled = essayText.trim() === "" || isGrading;
 
@@ -48,11 +68,21 @@ export function GradingPage() {
       return;
     }
     setIsGrading(true);
+    setFoxState("thinking");
     try {
       const rubricFile = useAppStore.getState().rubricFile;
       const effectiveGradeLevel = gradeLevelOverride || gradeLevel || "college";
       const result = await gradeEssay(essayText, effectiveGradeLevel, rubricFile, undefined, tone);
       setCurrentResult(result);
+      // Fox reacts to results
+      const percentage = (result.overallScore / result.maxScore) * 100;
+      if (percentage > 80) {
+        setFoxState("celebrating");
+      } else if (percentage < 60) {
+        setFoxState("encouraging");
+      } else {
+        setFoxState("attentive");
+      }
       // Reset per-submission state
       setTone("academic");
       setGradeLevelOverride(null);
