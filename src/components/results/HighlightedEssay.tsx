@@ -145,7 +145,7 @@ export function HighlightedEssay({ result }: HighlightedEssayProps) {
             id={`hl-${seg.id}`}
             data-category-id={seg.categoryId}
             className={cn(
-              "rounded-sm px-0.5 transition-all duration-200 cursor-pointer",
+              "rounded-sm px-0.5 transition-[background-color,opacity] duration-200 cursor-pointer",
               isActive ? color.bgActive : color.bg,
               color.text,
               isDimmed && "opacity-30",

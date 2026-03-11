@@ -38,7 +38,7 @@ export function CategoryFeedback({
     <Collapsible open={open} onOpenChange={setOpen}>
       <Card
         className={cn(
-          "transition-all duration-200 cursor-pointer",
+          "transition-[colors,shadow] duration-200 cursor-pointer",
           isActive && "ring-2 ring-offset-1 scale-[1.01]",
         )}
         style={{

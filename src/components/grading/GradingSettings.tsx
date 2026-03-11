@@ -43,11 +43,11 @@ export function GradingSettings({
         <PopoverTrigger
           render={
             <TooltipTrigger
-              className="group relative flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-150 hover:bg-primary/10 hover:scale-110 text-muted-foreground hover:text-primary cursor-pointer"
+              className="group relative flex items-center justify-center w-10 h-10 rounded-lg transition-colors duration-150 hover:bg-primary/10 hover:scale-110 text-muted-foreground hover:text-primary cursor-pointer"
             />
           }
         >
-          <Settings className="h-5 w-5 transition-all group-hover:h-[22px] group-hover:w-[22px]" />
+          <Settings className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]" />
           {isOverridden && (
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500" />
           )}

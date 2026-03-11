@@ -14,7 +14,7 @@ export function SelectableCard({ icon: Icon, label, selected, onClick }: Selecta
       type="button"
       onClick={onClick}
       className={cn(
-        "flex cursor-pointer flex-col items-center gap-3 rounded-xl p-6 transition-all",
+        "flex cursor-pointer flex-col items-center gap-3 rounded-xl p-6 transition-[colors,shadow]",
         selected
           ? "border-2 border-primary bg-primary/5"
           : "border border-border hover:border-primary/50"

@@ -17,7 +17,7 @@ export function ScoreBar({ name, score, maxScore }: ScoreBarProps) {
       <span className="w-40 shrink-0 truncate text-sm font-medium">{name}</span>
       <div className="relative h-6 flex-1 overflow-hidden rounded-lg bg-muted">
         <div
-          className={cn("h-full rounded-lg transition-all duration-700 ease-out", barColor)}
+          className={cn("h-full rounded-lg transition-[width] duration-700 ease-out", barColor)}
           style={{ width: `${pct}%` }}
         />
       </div>

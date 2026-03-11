@@ -28,11 +28,11 @@ export function ToneSelector({ tone, onToneChange }: ToneSelectorProps) {
         <PopoverTrigger
           render={
             <TooltipTrigger
-              className="group relative flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-150 hover:bg-primary/10 hover:scale-110 text-muted-foreground hover:text-primary cursor-pointer"
+              className="group relative flex items-center justify-center w-10 h-10 rounded-lg transition-colors duration-150 hover:bg-primary/10 hover:scale-110 text-muted-foreground hover:text-primary cursor-pointer"
             />
           }
         >
-          <MessageSquare className="h-5 w-5 transition-all group-hover:h-[22px] group-hover:w-[22px]" />
+          <MessageSquare className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]" />
           <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 rounded-full bg-primary/10 text-[8px] font-bold text-primary uppercase">
             {tone[0]}
           </span>

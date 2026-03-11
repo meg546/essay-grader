@@ -55,7 +55,7 @@ function ToolbarButton({
       <TooltipTrigger
         onClick={onClick}
         className={cn(
-          "group relative flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-150 hover:bg-primary/10 hover:scale-110 cursor-pointer",
+          "group relative flex items-center justify-center w-10 h-10 rounded-lg transition-colors duration-150 hover:bg-primary/10 hover:scale-110 cursor-pointer",
           active
             ? "bg-primary/10 text-primary"
             : destructive
@@ -109,14 +109,14 @@ export function GradingToolbar({
           onClick={() => setRubricModalOpen(true)}
           label="Upload Rubric"
         >
-          <BookOpen className="h-5 w-5 transition-all group-hover:h-[22px] group-hover:w-[22px]" />
+          <BookOpen aria-hidden="true" className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]" />
           {rubricFile && (
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-green-500" />
           )}
         </ToolbarButton>
 
         <ToolbarButton onClick={() => setEssayModalOpen(true)} label="Upload Essay">
-          <FileUp className="h-5 w-5 transition-all group-hover:h-[22px] group-hover:w-[22px]" />
+          <FileUp className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]" />
         </ToolbarButton>
 
         {/* Divider */}
@@ -128,24 +128,24 @@ export function GradingToolbar({
           label="Word Stats"
           active={showStats}
         >
-          <BarChart3 className="h-5 w-5 transition-all group-hover:h-[22px] group-hover:w-[22px]" />
+          <BarChart3 className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]" />
         </ToolbarButton>
 
         <ToolbarButton
           onClick={() => navigate("/history")}
           label="History"
         >
-          <Clock className="h-5 w-5 transition-all group-hover:h-[22px] group-hover:w-[22px]" />
+          <Clock className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]" />
         </ToolbarButton>
 
         <Popover open={clearOpen} onOpenChange={setClearOpen}>
           <Tooltip>
             <PopoverTrigger
               render={
-                <TooltipTrigger className="group relative flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-150 hover:bg-primary/10 hover:scale-110 text-muted-foreground hover:text-primary cursor-pointer" />
+                <TooltipTrigger className="group relative flex items-center justify-center w-10 h-10 rounded-lg transition-colors duration-150 hover:bg-primary/10 hover:scale-110 text-muted-foreground hover:text-primary cursor-pointer" />
               }
             >
-              <Eraser className="h-5 w-5 transition-all group-hover:h-[22px] group-hover:w-[22px]" />
+              <Eraser className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]" />
             </PopoverTrigger>
             <TooltipContent>Clear</TooltipContent>
           </Tooltip>
