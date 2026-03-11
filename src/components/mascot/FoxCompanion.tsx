@@ -1,16 +1,20 @@
 import { memo, useEffect, useRef } from "react";
 import { useFoxStore } from "@/stores/fox-store";
+import { useFoxCoach } from "./use-fox-coach";
 import { FoxAnimation } from "./FoxAnimation";
 import { SpeechBubble } from "./SpeechBubble";
+
+const LAST_VISIT_KEY = "redpen-last-visit";
 
 export const FoxCompanion = memo(function FoxCompanion() {
   const isHidden = useFoxStore((s) => s.isHidden);
   const isBubbleVisible = useFoxStore((s) => s.isBubbleVisible);
   const dismissBubble = useFoxStore((s) => s.dismissBubble);
-  const showCoachingTip = useFoxStore((s) => s.showCoachingTip);
   const currentState = useFoxStore((s) => s.currentState);
   const setFoxState = useFoxStore((s) => s.setFoxState);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+  const { requestTip } = useFoxCoach();
 
   useEffect(() => {
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
@@ -19,17 +23,29 @@ export const FoxCompanion = memo(function FoxCompanion() {
       idleTimerRef.current = setTimeout(() => {
         setFoxState("sleepy");
         // Nudge with a coaching tip after going sleepy (per spec)
-        setTimeout(() => {
-          // requestTip("idle_nudge") — will be wired in Task 26
-          showCoachingTip("Looks like you've been away. Ready to grade an essay?");
-        }, 2000);
+        setTimeout(() => requestTip("idle_nudge"), 2000);
       }, 120_000); // 2 minutes
     }
 
     return () => {
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     };
-  }, [currentState, setFoxState, showCoachingTip]);
+  }, [currentState, setFoxState, requestTip]);
+
+  // Daily greeting — show on first visit of the day
+  useEffect(() => {
+    const lastVisit = localStorage.getItem(LAST_VISIT_KEY);
+    const today = new Date().toDateString();
+
+    if (lastVisit !== today) {
+      localStorage.setItem(LAST_VISIT_KEY, today);
+      // Delay greeting slightly so the page settles
+      const timer = setTimeout(() => {
+        requestTip("greeting");
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [requestTip]);
 
   if (isHidden) return null;
 
@@ -37,9 +53,7 @@ export const FoxCompanion = memo(function FoxCompanion() {
     if (isBubbleVisible) {
       dismissBubble();
     } else {
-      // On-demand coaching will be wired up in the coaching task
-      // For now, clicking toggles a placeholder message
-      showCoachingTip("Click me after grading for personalized tips!");
+      requestTip("on_demand");
     }
   };
 
