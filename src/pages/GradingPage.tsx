@@ -6,6 +6,7 @@ import { useAppStore } from "@/stores/app-store";
 import { useProfileStore } from "@/stores/profile-store";
 import { gradeEssay } from "@/api/grading";
 import { useFoxStore } from "@/stores/fox-store";
+import { useFoxCoach } from "@/components/mascot/use-fox-coach";
 import { getErrorMessage } from "@/api/errors";
 import { Button } from "@/components/ui/button";
 import { SignInDialog } from "@/components/auth/SignInDialog";
@@ -42,6 +43,7 @@ export function GradingPage() {
   const essayInputRef = useRef<EssayInputHandle>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
   const setFoxState = useFoxStore((s) => s.setFoxState);
+  const { requestTip } = useFoxCoach();
 
   // Fox reacts to typing
   useEffect(() => {
@@ -83,6 +85,8 @@ export function GradingPage() {
       } else {
         setFoxState("attentive");
       }
+      // Request coaching tip after grading results
+      requestTip("results_received", result.id);
       // Reset per-submission state
       setTone("academic");
       setGradeLevelOverride(null);
