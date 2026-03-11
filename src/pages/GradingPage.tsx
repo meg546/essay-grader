@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
 import { useProfileStore } from "@/stores/profile-store";
 import { gradeEssay } from "@/api/grading";
@@ -33,6 +34,9 @@ export function GradingPage() {
   const [tone, setTone] = useState("academic");
   const [gradeLevelOverride, setGradeLevelOverride] = useState<string | null>(null);
   const [showStats, setShowStats] = useState(false);
+
+  // Mobile results tab state
+  const [resultTab, setResultTab] = useState<"essay" | "feedback">("essay");
 
   const essayInputRef = useRef<EssayInputHandle>(null);
 
@@ -101,9 +105,40 @@ export function GradingPage() {
               </Button>
             </div>
             <ColorLegend categories={currentResult.categories} />
+
+            {/* Mobile tab bar */}
+            <div className="flex md:hidden border-b">
+              <button
+                onClick={() => setResultTab("essay")}
+                className={cn(
+                  "flex-1 py-2.5 text-sm text-center transition-colors min-h-[44px]",
+                  resultTab === "essay"
+                    ? "border-b-2 border-primary text-primary font-medium"
+                    : "text-muted-foreground"
+                )}
+              >
+                Essay
+              </button>
+              <button
+                onClick={() => setResultTab("feedback")}
+                className={cn(
+                  "flex-1 py-2.5 text-sm text-center transition-colors min-h-[44px]",
+                  resultTab === "feedback"
+                    ? "border-b-2 border-primary text-primary font-medium"
+                    : "text-muted-foreground"
+                )}
+              >
+                Feedback
+              </button>
+            </div>
+
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <EssayPanel result={currentResult} onRegrade={handleRegrade} isRegrading={isRegrading} />
-              <FeedbackPanel result={currentResult} isLoading={isRegrading} />
+              <div className={cn("md:block", resultTab !== "essay" && "hidden")}>
+                <EssayPanel result={currentResult} onRegrade={handleRegrade} isRegrading={isRegrading} />
+              </div>
+              <div className={cn("md:block", resultTab !== "feedback" && "hidden")}>
+                <FeedbackPanel result={currentResult} isLoading={isRegrading} />
+              </div>
             </div>
           </div>
         </HighlightProvider>
@@ -113,8 +148,8 @@ export function GradingPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1400px] flex flex-col h-[calc(100vh-7rem)]">
-      <div className="flex flex-1 min-h-0 border rounded-lg overflow-hidden">
+    <div className="mx-auto max-w-[1400px] flex flex-col min-h-[calc(100vh-7rem)] md:h-[calc(100vh-7rem)]">
+      <div className="flex flex-col md:flex-row flex-1 min-h-0 border rounded-lg overflow-hidden">
         <div className="flex-1 flex flex-col min-h-0">
           <EssayInput ref={essayInputRef} disabled={isGrading} />
           <WordStats essayText={essayText} visible={showStats} />
@@ -133,8 +168,8 @@ export function GradingPage() {
         />
       </div>
 
-      <div className="pt-4 shrink-0">
-        <Button disabled={isSubmitDisabled} size="lg" onClick={handleSubmit}>
+      <div className="pt-4 shrink-0 sticky bottom-0 bg-background pb-4 md:pb-0 md:relative md:bg-transparent">
+        <Button disabled={isSubmitDisabled} size="lg" onClick={handleSubmit} className="w-full md:w-auto">
           {isGrading ? (
             <>
               <Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" />

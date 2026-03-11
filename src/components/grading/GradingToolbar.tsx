@@ -99,7 +99,7 @@ export function GradingToolbar({
     <>
       <div
         className={cn(
-          "flex flex-col items-center w-12 bg-muted/30 border-l py-2 gap-1 shrink-0",
+          "flex flex-row md:flex-col items-center w-full md:w-12 bg-muted/30 border-t md:border-t-0 md:border-l py-2 gap-1 shrink-0 justify-center md:justify-start overflow-x-auto",
           disabled && "opacity-60 pointer-events-none"
         )}
       >
@@ -119,7 +119,7 @@ export function GradingToolbar({
         </ToolbarButton>
 
         {/* Divider */}
-        <div className="w-6 border-b my-1" />
+        <div className="hidden md:block w-6 border-b my-1" />
 
         {/* Main tools */}
         <ToolbarButton
@@ -172,7 +172,7 @@ export function GradingToolbar({
         </Popover>
 
         {/* Divider */}
-        <div className="w-6 border-b my-1" />
+        <div className="hidden md:block w-6 border-b my-1" />
 
         {/* Tone & Settings (these render their own Popover+Tooltip) */}
         <ToneSelector tone={tone} onToneChange={onToneChange} />
