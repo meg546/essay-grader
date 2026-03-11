@@ -46,9 +46,9 @@ Rebrand the essay grading app from "EssayGrader" to **Redpen** and introduce a r
 - Z-index above page content but below modals/dialogs
 
 ### Animation Technology
-- **Lottie** (lottie-react) for smooth vector animations
-- Each fox state is a separate Lottie animation file
-- Transitions between states use crossfade or morph
+- **motion** library (already in the project) for state transitions and SVG animations during development
+- Each fox state is a separate SVG component with motion-based transitions (crossfade/morph between states)
+- **Lottie** (`lottie-react`) can be introduced later when designer-created animation assets are available — not needed for initial implementation
 - Animations respect `prefers-reduced-motion` — falls back to static poses
 
 ### Fox States & Animations
@@ -83,13 +83,14 @@ Rebrand the essay grading app from "EssayGrader" to **Redpen** and introduce a r
 | Navigate to history page | Browsing animation |
 | Navigate to profile/settings | Relaxed idle |
 | User clicks the fox | Opens coaching bubble (or dismisses if already open) |
+| First visit of the day (localStorage timestamp check) | Waving + greeting coaching bubble |
 
 ### Speech Bubble
 - Appears above the fox, pointing down to it
 - Max width ~250px, rounded corners, subtle shadow
 - Text is 1-2 short sentences, casual tone
 - Dismiss button (small X) or click-away to close
-- Auto-dismisses after 10 seconds if not interacted with
+- Auto-dismisses after 10 seconds if not interacted with (pauses auto-dismiss timer when bubble receives focus, for accessibility)
 - Only one bubble at a time
 
 ## LLM-Powered Coaching
@@ -110,28 +111,19 @@ The fox gives short, personalized writing tips and encouragement based on the us
 
 ### Backend Endpoint
 
-**`POST /api/coach`**
+**`POST /api/coach`** (requires authentication via `Depends(get_current_user)`)
+
+The server looks up all relevant data from the database using the authenticated user's submissions. The client only sends the trigger context and an optional submission ID — no scores or history data.
 
 Request:
 ```json
 {
   "context": "results_received",
-  "recent_scores": [
-    {"category": "thesis", "score": 18, "max": 25},
-    {"category": "evidence", "score": 22, "max": 25}
-  ],
-  "overall_score": 72,
-  "max_score": 100,
-  "essay_excerpt": "first 200 chars of essay...",
-  "history_summary": {
-    "total_essays": 12,
-    "avg_score": 68,
-    "weakest_category": "thesis",
-    "strongest_category": "evidence",
-    "trend": "improving"
-  }
+  "submission_id": "uuid-of-latest-submission"
 }
 ```
+
+Valid `context` values: `"results_received"`, `"idle_nudge"`, `"history_visit"`, `"on_demand"`, `"greeting"`
 
 Response:
 ```json
@@ -140,6 +132,8 @@ Response:
   "fox_state": "coaching"
 }
 ```
+
+The server computes history summary internally (total essays, avg score, weakest/strongest category, trend) from the user's submission records.
 
 ### Implementation Details
 - Uses Claude API with a short system prompt defining the fox personality
@@ -154,7 +148,7 @@ Response:
 2. **Idle nudge** — offer a writing tip based on weakest category from history
 3. **History page visit** — comment on progress trend
 4. **User clicks fox** — on-demand tip based on current context
-5. **First visit of the day** — greeting + encouragement
+5. **First visit of the day** — greeting + encouragement (detected via localStorage timestamp of last visit, compared on app mount)
 
 ## Frontend Architecture
 
@@ -163,31 +157,46 @@ Response:
 ```
 src/components/mascot/
 ├── FoxCompanion.tsx       # Main container, positioned fixed bottom-right
-├── FoxAnimation.tsx       # Lottie player, handles state transitions
+├── FoxAnimation.tsx       # SVG renderer with motion transitions between states
 ├── SpeechBubble.tsx       # Coaching tip bubble UI
+├── sprites/               # SVG components for each fox state
+│   ├── FoxIdle.tsx
+│   ├── FoxAttentive.tsx
+│   ├── FoxThinking.tsx
+│   ├── FoxCelebrating.tsx
+│   ├── FoxEncouraging.tsx
+│   ├── FoxCoaching.tsx
+│   ├── FoxSleepy.tsx
+│   ├── FoxBrowsing.tsx
+│   └── FoxWaving.tsx
 ├── fox-states.ts          # State enum, transition logic
 └── use-fox-coach.ts       # Hook: calls /api/coach, caches responses
+
+src/stores/
+└── fox-store.ts           # Zustand store for fox state management
 ```
 
-### FoxStateProvider Context
-- Wraps the app at root layout level
-- Tracks: `currentState`, `speechBubbleText`, `isBubbleVisible`
-- Exposes: `setFoxState()`, `showCoachingTip()`, `dismissBubble()`
+### Fox Store (Zustand)
+- New Zustand store at `src/stores/fox-store.ts` (consistent with existing app-store and profile-store)
+- Tracks: `currentState`, `speechBubbleText`, `isBubbleVisible`, `isHidden` (user preference)
+- Exposes: `setFoxState()`, `showCoachingTip()`, `dismissBubble()`, `toggleHidden()`
 - Pages and components call `setFoxState()` to trigger reactions
 - Grading flow calls `showCoachingTip()` after results arrive
+- Persists `isHidden` preference to localStorage
 
 ### Integration Points
-- `Layout.tsx` — render `<FoxCompanion />` as last child (above content, below modals)
+- `App.tsx` — render `<FoxCompanion />` at the app root level (outside both `Layout.tsx` and `LandingLayout.tsx`) so the fox is visible on all pages including the landing page
 - `GradingPage.tsx` — set fox to attentive on typing, thinking on submit
-- `EssayInput.tsx` — notify fox context on typing start/stop
+- `GradingPage.tsx` (essay input area) — notify fox store on typing start/stop
 - `ResultsSummary.tsx` — trigger celebrating/encouraging + coaching after results
 - `EssaysPage.tsx` — set fox to browsing state
 - `LandingPage.tsx` — set fox to waving state
 
 ### Animation Assets
-- Lottie JSON files stored in `public/animations/fox/`
-- One file per state: `idle.json`, `attentive.json`, `thinking.json`, `celebrating.json`, `encouraging.json`, `coaching.json`, `sleepy.json`, `browsing.json`, `waving.json`
-- Assets need to be created by a designer or generated (out of scope for this spec, placeholder SVGs used during development)
+- SVG components stored in `src/components/mascot/sprites/` — one per fox state
+- Animated using `motion` library (already in project) for transitions between states
+- When designer-created Lottie assets are available, swap SVG components for Lottie player without changing the rest of the architecture
+- Placeholder SVGs used during initial development (out of scope to create final art)
 
 ## Backend Architecture
 
@@ -199,17 +208,15 @@ backend/app/schemas/coach.py     # Request/response Pydantic models
 ```
 
 ### Coach Service
-- Accepts context (scores, history summary, current page)
+- Accepts context trigger type + optional submission_id
+- Looks up relevant data server-side from the authenticated user's submissions
+- Computes history summary (total essays, avg score, weakest/strongest category, trend) from the database
 - Builds a short system prompt with fox personality definition
-- Builds user prompt with the context data
+- Builds user prompt with the computed context data
 - Calls Claude Haiku with max_tokens=50
 - Returns message string + suggested fox state
 - Error handling: returns fallback message on any failure
-
-### History Summary Helper
-- New utility to compute aggregate stats from a user's submissions
-- Total essays, average score, weakest/strongest category, trend (improving/declining/stable)
-- Called by the coach endpoint, cached per user per session
+- History summary cached in-memory per user (invalidated when new submissions are created)
 
 ## Accessibility
 - Fox animations respect `prefers-reduced-motion` (static poses)
@@ -218,9 +225,18 @@ backend/app/schemas/coach.py     # Request/response Pydantic models
 - Speech bubble dismissable via Escape key
 - Option in profile settings to hide the fox entirely
 
+## Implementation Phasing
+
+This spec covers two distinct efforts that should be implemented as separate phases:
+
+1. **Phase A: Rebrand** — Rename from EssayGrader to Redpen (name, colors, logo, meta tags, landing page copy, header). Standalone, touches many existing files.
+2. **Phase B: Fox Mascot** — Add the fox companion with reactive behaviors and LLM coaching. Additive feature, mostly new files.
+
+Phase A should land first so Phase B builds on the new brand identity.
+
 ## Performance
-- Lottie files are lightweight (~10-50KB each)
-- Lazy-loaded after initial page render
+- SVG sprite components are lightweight and inline (no network requests)
+- Fox component lazy-loaded after initial page render
 - Coaching API calls are debounced and cached
 - Fox component uses `React.memo` to prevent unnecessary re-renders
 - No impact on grading flow — coaching is async and non-blocking
