@@ -31,3 +31,7 @@ backend/.venv/
 backend/__pycache__/
 __pycache__/
 *.pyc
+
+# Generated demo reel video
+public/demo-reel.mp4
+public/demo-reel-poster.webp
