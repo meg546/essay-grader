@@ -131,13 +131,15 @@ export function GradingToolbar({
         </ToolbarButton>
 
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Link
-              to="/history"
-              className="group relative flex items-center justify-center w-10 h-10 rounded-lg transition-colors duration-150 hover:bg-primary/10 hover:scale-110 text-muted-foreground hover:text-primary cursor-pointer"
-            >
-              <Clock aria-hidden="true" className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]" />
-            </Link>
+          <TooltipTrigger
+            render={
+              <Link
+                to="/history"
+                className="group relative flex items-center justify-center w-10 h-10 rounded-lg transition-colors duration-150 hover:bg-primary/10 hover:scale-110 text-muted-foreground hover:text-primary cursor-pointer"
+              />
+            }
+          >
+            <Clock aria-hidden="true" className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]" />
           </TooltipTrigger>
           <TooltipContent>History</TooltipContent>
         </Tooltip>

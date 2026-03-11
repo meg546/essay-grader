@@ -14,7 +14,7 @@ export function WordStats({ essayText, visible }: WordStatsProps) {
   const readingTime = Math.max(1, Math.ceil(words / 200));
 
   return (
-    <div className="flex items-center gap-6 h-8 bg-muted/50 rounded-b-lg px-4 text-xs text-muted-foreground transition-all duration-200 border-t shrink-0">
+    <div className="flex items-center gap-6 h-8 bg-muted/50 rounded-b-lg px-4 text-xs text-muted-foreground transition-colors duration-200 border-t shrink-0">
       <span>{words.toLocaleString()} words</span>
       <span>{characters.toLocaleString()} characters</span>
       <span>{paragraphs} {paragraphs === 1 ? "paragraph" : "paragraphs"}</span>
