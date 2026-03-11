@@ -1,6 +1,7 @@
 import { motion } from "motion/react"
 import { GraduationCap } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { DemoReelVideo } from "./DemoReelVideo"
 
 interface HeroSectionProps {
   onSignIn: () => void
@@ -36,6 +37,8 @@ export function HeroSection({ onSignIn, onRegister }: HeroSectionProps) {
           </Button>
         </div>
       </motion.div>
+
+      <DemoReelVideo />
     </section>
   )
 }

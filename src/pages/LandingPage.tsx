@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react"
 import { useNavigate } from "react-router"
 import { useProfileStore } from "@/stores/profile-store"
 import { SignInDialog } from "@/components/auth/SignInDialog"
+import { AmbientBackground } from "@/components/landing/AmbientBackground"
 import { HeroSection } from "@/components/landing/HeroSection"
 import { FeatureHighlights } from "@/components/landing/FeatureHighlights"
 import { HowItWorks } from "@/components/landing/HowItWorks"
@@ -41,6 +42,7 @@ export function LandingPage() {
 
   return (
     <>
+      <AmbientBackground />
       <HeroSection
         onSignIn={() => setShowSignIn(true)}
         onRegister={() => navigate("/register")}
