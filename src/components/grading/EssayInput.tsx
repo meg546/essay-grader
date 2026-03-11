@@ -5,6 +5,12 @@ import { extractTextFromPdf } from "@/lib/pdf-extract";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 
+const TEXT_SIZE_CLASS = {
+  small: "text-sm",
+  normal: "text-base",
+  large: "text-lg",
+} as const;
+
 export interface EssayInputHandle {
   triggerFileUpload: () => void;
 }
@@ -52,6 +58,7 @@ export const EssayInput = forwardRef<EssayInputHandle, EssayInputProps>(
   function EssayInput({ disabled, onFocus }, ref) {
     const essayText = useAppStore((s) => s.essayText);
     const setEssayText = useAppStore((s) => s.setEssayText);
+    const textSize = useAppStore((s) => s.textSize);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDragOver, setIsDragOver] = useState(false);
     const dragCounterRef = useRef(0);
@@ -142,7 +149,7 @@ export const EssayInput = forwardRef<EssayInputHandle, EssayInputProps>(
           onFocus={onFocus}
           aria-label="Essay text"
           placeholder="Paste your essay here or drag and drop a file…"
-          className="flex-1 resize-none overflow-y-auto min-h-[200px] border-0 focus-visible:ring-2 rounded-none text-base leading-relaxed p-4"
+          className={cn("flex-1 resize-none overflow-y-auto min-h-[250px] md:min-h-[200px] border-0 focus-visible:ring-2 rounded-none leading-relaxed p-4", TEXT_SIZE_CLASS[textSize])}
         />
         <input
           ref={fileInputRef}

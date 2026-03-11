@@ -4,7 +4,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { HighlightedEssay } from "@/components/results/HighlightedEssay";
 import { useAppStore } from "@/stores/app-store";
+import { cn } from "@/lib/utils";
 import type { GradingResult } from "@/api/types";
+
+const TEXT_SIZE_CLASS = {
+  small: "text-sm",
+  normal: "text-base",
+  large: "text-lg",
+} as const;
 
 interface EssayPanelProps {
   result: GradingResult;
@@ -17,6 +24,7 @@ export function EssayPanel({ result, onRegrade, isRegrading, readOnly }: EssayPa
   const [isEditing, setIsEditing] = useState(false);
   const essayText = useAppStore((s) => s.essayText);
   const setEssayText = useAppStore((s) => s.setEssayText);
+  const textSize = useAppStore((s) => s.textSize);
 
   useEffect(() => {
     if (!readOnly) {
@@ -70,12 +78,14 @@ export function EssayPanel({ result, onRegrade, isRegrading, readOnly }: EssayPa
         </div>
         {isEditing ? (
           <textarea
-            className="w-full min-h-[400px] resize-none rounded-md border border-input bg-background p-3 text-sm leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className={cn("w-full min-h-[400px] resize-none rounded-md border border-input bg-background p-3 leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring", TEXT_SIZE_CLASS[textSize])}
             value={essayText}
             onChange={(e) => setEssayText(e.target.value)}
           />
         ) : (
-          <HighlightedEssay result={result} />
+          <div className={TEXT_SIZE_CLASS[textSize]}>
+            <HighlightedEssay result={result} />
+          </div>
         )}
       </CardContent>
     </Card>
