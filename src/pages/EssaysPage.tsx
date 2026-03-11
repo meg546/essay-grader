@@ -4,6 +4,7 @@ import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { getHistory, deleteHistoryItem } from "@/api/history";
+import { useFoxStore } from "@/stores/fox-store";
 import type { HistoryItem } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +14,12 @@ export function EssaysPage() {
 
   const [items, setItems] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const setFoxState = useFoxStore((s) => s.setFoxState);
+
+  useEffect(() => {
+    setFoxState("browsing");
+    return () => setFoxState("idle");
+  }, [setFoxState]);
 
   useEffect(() => {
     getHistory()
