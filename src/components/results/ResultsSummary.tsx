@@ -18,11 +18,11 @@ export function ResultsSummary({ result }: ResultsSummaryProps) {
     <Card>
       <CardContent className="pt-6">
         <div className="mb-4 flex items-baseline gap-1">
-          <span className={`text-4xl font-bold ${scoreColor}`}>
+          <span className={`text-4xl font-bold tabular-nums ${scoreColor}`}>
             {result.overallScore}
           </span>
-          <span className="text-xl text-muted-foreground">/ {result.maxScore}</span>
-          <span className={`ml-2 text-lg font-medium ${scoreColor}`}>
+          <span className="text-xl text-muted-foreground tabular-nums">/ {result.maxScore}</span>
+          <span className={`ml-2 text-lg font-medium tabular-nums ${scoreColor}`}>
             ({pct}%)
           </span>
         </div>

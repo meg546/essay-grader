@@ -34,7 +34,7 @@ export function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Profile</h1>
+      <h1 className="text-2xl font-bold text-balance">Profile</h1>
 
       {/* Account */}
       <Card>

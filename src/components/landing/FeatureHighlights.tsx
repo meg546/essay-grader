@@ -51,7 +51,7 @@ export function FeatureHighlights() {
   return (
     <section className="py-16">
       <div className="mx-auto max-w-6xl px-4">
-        <h2 className="mb-10 text-center text-3xl font-bold tracking-tight text-foreground">
+        <h2 className="mb-10 text-center text-3xl font-bold tracking-tight text-foreground text-balance">
           Why EssayGrader?
         </h2>
         <motion.div
@@ -65,7 +65,7 @@ export function FeatureHighlights() {
             <motion.div key={feature.title} variants={cardVariants}>
               <Card className="h-full">
                 <CardContent className="pt-2">
-                  <feature.icon className="mb-3 size-8 text-primary" />
+                  <feature.icon aria-hidden="true" className="mb-3 size-8 text-primary" />
                   <h3 className="font-semibold text-card-foreground">
                     {feature.title}
                   </h3>

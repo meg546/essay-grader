@@ -7,7 +7,7 @@ const ESSAY_LINES = [
   "society in ways that continue to shape our world",
   "today. Beginning in the late 18th century, this",
   "period saw unprecedented changes in manufacturing,",
-  "transportation, and social structures...",
+  "transportation, and social structures…",
 ]
 
 const RUBRIC_CRITERIA = [
@@ -76,7 +76,7 @@ export function WalkthroughDemo() {
       viewport={{ margin: "-100px" }}
     >
       <div className="mx-auto max-w-4xl px-4">
-        <h2 className="mb-10 text-center text-3xl font-bold tracking-tight text-foreground">
+        <h2 className="mb-10 text-center text-3xl font-bold tracking-tight text-foreground text-balance">
           See It In Action
         </h2>
         <Card className="overflow-hidden">
@@ -169,7 +169,7 @@ function FrameRubric() {
               animate={{ scale: 1 }}
               transition={{ duration: 0.2, delay: i * 0.15 + 0.2 }}
             >
-              <svg className="size-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <svg aria-hidden="true" className="size-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </motion.div>
@@ -242,7 +242,7 @@ function FrameResults() {
                 transition={{ duration: 0.6, delay: i * 0.1, ease: "easeOut" }}
               />
             </div>
-            <span className="w-8 text-right text-sm font-medium text-foreground">
+            <span className="w-8 text-right text-sm font-medium text-foreground tabular-nums">
               {item.score}
             </span>
           </motion.div>

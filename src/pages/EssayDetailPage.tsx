@@ -52,7 +52,7 @@ export function EssayDetailPage() {
     <HighlightProvider key={result.id}>
       <div className="mx-auto max-w-[1400px] space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Essay Results</h1>
+          <h1 className="text-2xl font-bold text-balance">Essay Results</h1>
           <Button variant="outline" onClick={() => navigate("/history")}>
             Back to Essays
           </Button>

@@ -62,7 +62,7 @@ function RegistrationForm() {
     <div className="mx-auto w-[75vw] max-w-3xl rounded-xl bg-card p-8 ring-1 ring-foreground/10 max-sm:w-full">
       <div className="mx-auto max-w-sm space-y-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold">Create your account</h1>
+          <h1 className="text-2xl font-bold text-balance">Create your account</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">

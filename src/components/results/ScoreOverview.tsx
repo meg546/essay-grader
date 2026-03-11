@@ -8,7 +8,7 @@ interface ScoreOverviewProps {
 export function ScoreOverview({ categories }: ScoreOverviewProps) {
   return (
     <div>
-      <h2 className="mb-3 text-lg font-semibold">Score Breakdown</h2>
+      <h2 className="mb-3 text-lg font-semibold text-balance">Score Breakdown</h2>
       <div className="space-y-3">
         {categories.map((cat) => (
           <ScoreBar

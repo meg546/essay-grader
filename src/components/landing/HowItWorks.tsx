@@ -30,7 +30,7 @@ export function HowItWorks() {
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       <div className="mx-auto max-w-4xl px-4">
-        <h2 className="mb-10 text-center text-3xl font-bold tracking-tight text-foreground">
+        <h2 className="mb-10 text-center text-3xl font-bold tracking-tight text-foreground text-balance">
           How It Works
         </h2>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-[1fr_auto_1fr_auto_1fr]  md:items-start md:gap-0">

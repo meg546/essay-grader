@@ -24,7 +24,7 @@ export function CompletionStep() {
         <Check className="h-10 w-10 text-primary-foreground" />
       </motion.div>
       <h2 className="text-2xl font-bold">You're all set!</h2>
-      <p className="text-muted-foreground">Redirecting you to start grading...</p>
+      <p className="text-muted-foreground">Redirecting you to start grading…</p>
     </div>
   )
 }

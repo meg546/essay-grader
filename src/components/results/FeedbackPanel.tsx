@@ -25,7 +25,7 @@ export function FeedbackPanel({ result, isLoading }: FeedbackPanelProps) {
         <ResultsSummary result={result} />
         <ScoreOverview categories={result.categories} />
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Detailed Feedback</h2>
+          <h2 className="text-lg font-semibold text-balance">Detailed Feedback</h2>
           {result.categories.map((cat, i) => (
             <CategoryFeedback key={cat.id} category={cat} colorIndex={i} />
           ))}

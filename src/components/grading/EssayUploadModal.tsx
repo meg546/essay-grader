@@ -124,19 +124,20 @@ export function EssayUploadModal({ open, onOpenChange }: EssayUploadModalProps) 
         {selectedFile ? (
           <div className="mt-4">
             <div className="flex items-center gap-3 rounded-lg border p-3">
-              <FileText className="h-5 w-5 text-muted-foreground" />
+              <FileText aria-hidden="true" className="h-5 w-5 text-muted-foreground" />
               <span className="flex-1 truncate text-sm">{selectedFile.name}</span>
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-6 w-6"
+                aria-label="Remove file"
                 onClick={() => setSelectedFile(null)}
               >
-                <X className="h-4 w-4" />
+                <X aria-hidden="true" className="h-4 w-4" />
               </Button>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              Extracting text...
+              Extracting text…
             </p>
           </div>
         ) : (
@@ -152,7 +153,7 @@ export function EssayUploadModal({ open, onOpenChange }: EssayUploadModalProps) 
                 : "border-muted-foreground/25"
             )}
           >
-            <Upload className="h-8 w-8 text-muted-foreground" />
+            <Upload aria-hidden="true" className="h-8 w-8 text-muted-foreground" />
             <div>
               <p className="text-sm font-medium">
                 Drag and drop your essay here
@@ -175,6 +176,7 @@ export function EssayUploadModal({ open, onOpenChange }: EssayUploadModalProps) 
           ref={fileInputRef}
           type="file"
           accept=".txt,.pdf"
+          aria-label="Upload essay file"
           onChange={handleFileInputChange}
           className="hidden"
         />

@@ -95,7 +95,7 @@ export function GradingPage() {
         <HighlightProvider key={currentResult.id}>
           <div className="mx-auto max-w-[1400px] space-y-4">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold">Grading Results</h1>
+              <h1 className="text-2xl font-bold text-balance">Grading Results</h1>
               <Button variant="outline" onClick={handleReset}>
                 Grade Another
               </Button>

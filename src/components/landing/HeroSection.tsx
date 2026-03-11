@@ -17,9 +17,9 @@ export function HeroSection({ onSignIn, onRegister }: HeroSectionProps) {
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
         <div className="mb-6 flex justify-center">
-          <GraduationCap className="size-16 text-primary" />
+          <GraduationCap aria-hidden="true" className="size-16 text-primary" />
         </div>
-        <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+        <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl text-balance">
           Get Instant, Rubric-Aligned Essay Feedback
         </h1>
         <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">

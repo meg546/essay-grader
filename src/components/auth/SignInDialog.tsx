@@ -78,7 +78,7 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
           <div className="flex gap-4 border-b">
             <button
               type="button"
-              className={`pb-2 text-sm font-medium transition-colors ${
+              className={`pb-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                 mode === "login"
                   ? "border-b-2 border-primary text-primary"
                   : "text-muted-foreground hover:text-foreground"
@@ -89,7 +89,7 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
             </button>
             <button
               type="button"
-              className={`pb-2 text-sm font-medium transition-colors ${
+              className={`pb-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                 mode === "register"
                   ? "border-b-2 border-primary text-primary"
                   : "text-muted-foreground hover:text-foreground"
@@ -124,7 +124,7 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
                 {isSigningIn ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
+                    Signing in…
                   </>
                 ) : (
                   "Sign In"
@@ -163,7 +163,7 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
                 {isSigningIn ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
+                    Creating account…
                   </>
                 ) : (
                   "Create Account"

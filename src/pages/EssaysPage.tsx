@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router";
 import { Loader2 } from "lucide-react";
 
 import { getHistory } from "@/api/history";
@@ -28,10 +28,6 @@ export function EssaysPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  function handleCardClick(item: HistoryItem) {
-    navigate(`/history/${item.id}`);
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -53,29 +49,27 @@ export function EssaysPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">My Essays</h1>
+      <h1 className="text-2xl font-bold text-balance">My Essays</h1>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (
-          <Card
-            key={item.id}
-            className="cursor-pointer transition-colors hover:bg-muted/50"
-            onClick={() => handleCardClick(item)}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-lg font-semibold">
-                  {item.overallScore}/{item.maxScore}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {new Date(item.gradedAt).toLocaleDateString()}
-                </span>
-              </div>
-              <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-                {item.essayExcerpt}
-              </p>
-            </CardContent>
-          </Card>
+          <Link key={item.id} to={`/history/${item.id}`} className="block cursor-pointer">
+            <Card className="transition-colors hover:bg-muted/50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-lg font-semibold tabular-nums">
+                    {item.overallScore}/{item.maxScore}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(item.gradedAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                  {item.essayExcerpt}
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>
