@@ -9,6 +9,7 @@ import { EssayDetailPage } from "@/pages/EssayDetailPage"
 import { ProfilePage } from "@/pages/ProfilePage"
 import { RegisterPage } from "@/pages/RegisterPage"
 import { Toaster } from "@/components/ui/sonner"
+import { FoxCompanion } from "@/components/mascot/FoxCompanion"
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
           </Route>
           <Route path="/register" element={<RegisterPage />} />
         </Routes>
+        <FoxCompanion />
       </BrowserRouter>
       <Toaster />
     </>
