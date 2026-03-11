@@ -104,6 +104,9 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
             <form onSubmit={handleLogin} className="space-y-3">
               <Input
                 type="email"
+                name="email"
+                autoComplete="email"
+                spellCheck={false}
                 placeholder="you@example.com"
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
@@ -111,6 +114,8 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
               />
               <Input
                 type="password"
+                name="password"
+                autoComplete="current-password"
                 placeholder="Password"
                 minLength={8}
                 value={passwordInput}
@@ -123,7 +128,7 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
               <Button type="submit" disabled={isSigningIn} className="w-full">
                 {isSigningIn ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" />
                     Signing in…
                   </>
                 ) : (
@@ -135,6 +140,9 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
             <form onSubmit={handleRegister} className="space-y-3">
               <Input
                 type="email"
+                name="email"
+                autoComplete="email"
+                spellCheck={false}
                 placeholder="you@example.com"
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
@@ -142,6 +150,8 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
               />
               <Input
                 type="password"
+                name="password"
+                autoComplete="new-password"
                 placeholder="Password"
                 minLength={8}
                 value={passwordInput}
@@ -150,6 +160,8 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
               />
               <Input
                 type="password"
+                name="confirmPassword"
+                autoComplete="new-password"
                 placeholder="Confirm password"
                 minLength={8}
                 value={confirmPasswordInput}
@@ -162,7 +174,7 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
               <Button type="submit" disabled={isSigningIn} className="w-full">
                 {isSigningIn ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" />
                     Creating account…
                   </>
                 ) : (

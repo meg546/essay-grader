@@ -70,6 +70,8 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <Input
             type="password"
+            name="currentPassword"
+            autoComplete="current-password"
             placeholder="Current password"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
@@ -77,6 +79,8 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
           />
           <Input
             type="password"
+            name="newPassword"
+            autoComplete="new-password"
             placeholder="New password"
             minLength={8}
             value={newPassword}
@@ -85,6 +89,8 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
           />
           <Input
             type="password"
+            name="confirmPassword"
+            autoComplete="new-password"
             placeholder="Confirm new password"
             minLength={8}
             value={confirmPassword}
@@ -97,7 +103,7 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
           <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" />
                 Changing password...
               </>
             ) : (

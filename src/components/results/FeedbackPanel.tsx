@@ -17,7 +17,7 @@ export function FeedbackPanel({ result, isLoading }: FeedbackPanelProps) {
         {isLoading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/80">
             <div className="flex flex-col items-center gap-2">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <Loader2 aria-hidden="true" className="h-8 w-8 animate-spin text-muted-foreground" />
               <p className="text-sm text-muted-foreground">Re-grading...</p>
             </div>
           </div>

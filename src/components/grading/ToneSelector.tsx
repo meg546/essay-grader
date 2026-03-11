@@ -32,7 +32,7 @@ export function ToneSelector({ tone, onToneChange }: ToneSelectorProps) {
             />
           }
         >
-          <MessageSquare className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]" />
+          <MessageSquare aria-hidden="true" className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]" />
           <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 rounded-full bg-primary/10 text-[8px] font-bold text-primary uppercase">
             {tone[0]}
           </span>

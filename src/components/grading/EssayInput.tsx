@@ -140,6 +140,7 @@ export const EssayInput = forwardRef<EssayInputHandle, EssayInputProps>(
           value={essayText}
           onChange={(e) => setEssayText(e.target.value)}
           onFocus={onFocus}
+          aria-label="Essay text"
           placeholder="Paste your essay here or drag and drop a file…"
           className="flex-1 resize-none overflow-y-auto min-h-[200px] border-0 focus-visible:ring-2 rounded-none text-base leading-relaxed p-4"
         />

@@ -39,17 +39,18 @@ export function EssayPanel({ result, onRegrade, isRegrading, readOnly }: EssayPa
               <Button
                 variant="ghost"
                 size="sm"
+                aria-label={isEditing ? "Save edit" : "Edit essay"}
                 onClick={() => setIsEditing(!isEditing)}
               >
                 {isEditing ? (
-                  <Check className="h-4 w-4" />
+                  <Check aria-hidden="true" className="h-4 w-4" />
                 ) : (
-                  <Pencil className="h-4 w-4" />
+                  <Pencil aria-hidden="true" className="h-4 w-4" />
                 )}
               </Button>
               {isRegrading ? (
                 <Button variant="default" size="sm" disabled>
-                  <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                  <Loader2 aria-hidden="true" className="mr-1 h-3 w-3 animate-spin" />
                   Re-grading...
                 </Button>
               ) : (

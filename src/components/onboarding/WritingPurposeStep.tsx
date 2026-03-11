@@ -51,7 +51,7 @@ export function WritingPurposeStep({ onNext, onSkip }: WritingPurposeStepProps) 
           />
         ))}
       </div>
-      {saving && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
+      {saving && <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin text-muted-foreground" />}
       <Button variant="ghost" onClick={onSkip} disabled={saving}>
         Skip for now
       </Button>

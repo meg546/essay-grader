@@ -37,7 +37,7 @@ export function ColorLegend({ categories }: ColorLegendProps) {
               isDisabled && "opacity-40 line-through",
             )}
           >
-            <Icon className="h-3 w-3" />
+            <Icon aria-hidden="true" className="h-3 w-3" />
             {cat.name}
           </button>
         );

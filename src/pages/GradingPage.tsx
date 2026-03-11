@@ -137,7 +137,7 @@ export function GradingPage() {
         <Button disabled={isSubmitDisabled} size="lg" onClick={handleSubmit}>
           {isGrading ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" />
               Reviewing your work...
             </>
           ) : (

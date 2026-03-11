@@ -68,6 +68,9 @@ function RegistrationForm() {
         <form onSubmit={handleSubmit} className="space-y-3">
           <Input
             type="email"
+            name="email"
+            autoComplete="email"
+            spellCheck={false}
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -75,6 +78,8 @@ function RegistrationForm() {
           />
           <Input
             type="password"
+            name="password"
+            autoComplete="new-password"
             placeholder="Password"
             minLength={8}
             value={password}
@@ -83,6 +88,8 @@ function RegistrationForm() {
           />
           <Input
             type="password"
+            name="confirmPassword"
+            autoComplete="new-password"
             placeholder="Confirm password"
             minLength={8}
             value={confirmPassword}
@@ -93,7 +100,7 @@ function RegistrationForm() {
           <Button type="submit" disabled={isSigningIn} className="w-full">
             {isSigningIn ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" />
                 Creating account...
               </>
             ) : (

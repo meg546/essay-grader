@@ -20,7 +20,7 @@ export function SelectableCard({ icon: Icon, label, selected, onClick }: Selecta
           : "border border-border hover:border-primary/50"
       )}
     >
-      <Icon className="h-8 w-8 text-primary" />
+      <Icon aria-hidden="true" className="h-8 w-8 text-primary" />
       <span className="font-medium">{label}</span>
     </button>
   )

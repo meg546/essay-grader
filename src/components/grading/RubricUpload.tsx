@@ -84,15 +84,16 @@ export function RubricUpload({ disabled }: RubricUploadProps) {
         {rubricFile ? (
           <div className="flex-1 flex flex-col justify-center">
             <div className="flex items-center gap-3 rounded-lg border p-3">
-              <FileText className="h-5 w-5 text-muted-foreground" />
+              <FileText aria-hidden="true" className="h-5 w-5 text-muted-foreground" />
               <span className="flex-1 truncate text-sm">{rubricFile.name}</span>
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-6 w-6"
+                aria-label="Remove rubric"
                 onClick={() => setRubricFile(null)}
               >
-                <X className="h-4 w-4" />
+                <X aria-hidden="true" className="h-4 w-4" />
               </Button>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
@@ -112,7 +113,7 @@ export function RubricUpload({ disabled }: RubricUploadProps) {
                 : "border-muted-foreground/25"
             )}
           >
-            <Upload className="h-8 w-8 text-muted-foreground" />
+            <Upload aria-hidden="true" className="h-8 w-8 text-muted-foreground" />
             <div>
               <p className="text-sm font-medium">
                 Upload your assignment rubric
@@ -134,6 +135,7 @@ export function RubricUpload({ disabled }: RubricUploadProps) {
           ref={fileInputRef}
           type="file"
           accept=".pdf"
+          aria-label="Upload rubric file"
           onChange={handleFileInputChange}
           className="hidden"
         />

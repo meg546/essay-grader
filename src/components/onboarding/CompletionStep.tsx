@@ -21,7 +21,7 @@ export function CompletionStep() {
         transition={{ type: "spring", stiffness: 200, damping: 15 }}
         className="flex h-20 w-20 items-center justify-center rounded-full bg-primary"
       >
-        <Check className="h-10 w-10 text-primary-foreground" />
+        <Check aria-hidden="true" className="h-10 w-10 text-primary-foreground" />
       </motion.div>
       <h2 className="text-2xl font-bold">You're all set!</h2>
       <p className="text-muted-foreground">Redirecting you to start grading…</p>

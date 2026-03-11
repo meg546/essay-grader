@@ -47,7 +47,7 @@ export function GradingSettings({
             />
           }
         >
-          <Settings className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]" />
+          <Settings aria-hidden="true" className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]" />
           {isOverridden && (
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500" />
           )}
@@ -63,7 +63,7 @@ export function GradingSettings({
           value={effectiveLevel}
           onValueChange={(val) => onGradeLevelChange(val as string)}
         >
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-full" aria-label="Grading settings">
             <SelectValue>
               {GRADE_LEVEL_LABELS[effectiveLevel as GradeLevel] || effectiveLevel}
             </SelectValue>

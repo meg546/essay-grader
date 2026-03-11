@@ -31,7 +31,7 @@ function NavLinkItem({
       to={to}
       onClick={onClick}
       className={cn(
-        "rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+        "rounded-lg px-4 py-2.5 text-base font-medium transition-colors",
         isActive
           ? "bg-accent text-accent-foreground"
           : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -48,13 +48,13 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur-sm">
-      <div className="flex h-14 items-center justify-between px-4">
+      <div className="flex h-16 items-center justify-between px-5">
         {/* Branding */}
         <NavLink
           to="/grade"
-          className="flex items-center gap-2 text-lg font-semibold text-primary"
+          className="flex items-center gap-2.5 text-xl font-semibold text-primary"
         >
-          <GraduationCapIcon className="size-5" />
+          <GraduationCapIcon aria-hidden="true" className="size-6" />
           <span>EssayGrader</span>
         </NavLink>
 

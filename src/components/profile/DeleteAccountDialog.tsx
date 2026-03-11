@@ -66,6 +66,8 @@ export function DeleteAccountDialog({ open, onOpenChange }: DeleteAccountDialogP
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <Input
             type="password"
+            name="password"
+            autoComplete="current-password"
             placeholder="Enter your password to confirm"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -91,7 +93,7 @@ export function DeleteAccountDialog({ open, onOpenChange }: DeleteAccountDialogP
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" />
                   Deleting...
                 </>
               ) : (

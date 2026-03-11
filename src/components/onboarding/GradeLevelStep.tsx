@@ -64,7 +64,7 @@ export function GradeLevelStep({ onNext, onBack }: GradeLevelStepProps) {
         <Button onClick={handleNext} disabled={!selected || saving}>
           {saving ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" />
               Saving…
             </>
           ) : (
