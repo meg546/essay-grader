@@ -4,8 +4,8 @@ milestone: v2.1
 milestone_name: Onboarding & Layout Redesign
 status: completed
 stopped_at: Completed 17-02-PLAN.md
-last_updated: "2026-03-11T04:53:25Z"
-last_activity: 2026-03-11 — Completed quick task 11: Fix all web best practices violations from audit
+last_updated: "2026-03-11T05:30:00Z"
+last_activity: 2026-03-11 — Completed quick task 12: Reading comfort and responsive design (text size, dark mode, mobile)
 progress:
   total_phases: 18
   completed_phases: 11
@@ -57,6 +57,8 @@ Progress: [██████████] 100% (v2.1)
 - [Phase 16-02]: WalkthroughDemo uses 15s animation cycle with 4 sequential frames
 - [Phase 17]: Use exclude_unset for partial PATCH updates on user preferences
 - [Phase 17]: Optimistic store updates for wizard steps -- set store state before awaiting PATCH to prevent UI delays
+- [quick-12]: Theme state lives outside Zustand — must apply before React mounts for flash prevention
+- [quick-12]: textSize persisted via Zustand app-store v3 partialize (not theme module)
 
 ### Pending Todos
 
@@ -78,6 +80,7 @@ None.
 | 8 | Essay detail view and active essay navigation | 2026-03-10 | c1a893f | [8-essay-detail-view-and-active-essay-navig](./quick/8-essay-detail-view-and-active-essay-navig/) |
 | 10 | Add ambient animated background to landing page | 2026-03-11 | abe82a1 | [10-add-ambient-animated-background-to-landi](./quick/10-add-ambient-animated-background-to-landi/) |
 | 11 | Fix all web best practices violations from audit | 2026-03-11 | 85b0f46 | [11-fix-all-web-best-practices-violations-fr](./quick/11-fix-all-web-best-practices-violations-fr/) |
+| 12 | Reading comfort and responsive design (text size, dark mode, mobile) | 2026-03-11 | eaa8d4b | [12-reading-comfort-and-responsive-design-im](./quick/12-reading-comfort-and-responsive-design-im/) |
 | Phase 16 P01 | 2min | 2 tasks | 6 files |
 | Phase 16 P02 | 12min | 3 tasks | 8 files |
 | Phase 17 P01 | 3min | 2 tasks | 6 files |
@@ -85,6 +88,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T04:53:25Z
-Stopped at: Completed quick-10
+Last session: 2026-03-11T05:30:00Z
+Stopped at: Completed quick-12
 Resume file: None
