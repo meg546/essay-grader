@@ -1,18 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
-import { Loader2, MoreHorizontal, Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { getHistory, deleteHistoryItem } from "@/api/history";
 import type { HistoryItem } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 
 export function EssaysPage() {
   const navigate = useNavigate();
@@ -35,7 +29,8 @@ export function EssaysPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  async function handleDelete(e: Event, item: HistoryItem) {
+  async function handleDelete(e: React.MouseEvent, item: HistoryItem) {
+    e.preventDefault();
     e.stopPropagation();
     // Optimistically remove the item
     setItems((prev) => prev.filter((i) => i.id !== item.id));
@@ -99,29 +94,13 @@ export function EssaysPage() {
               </Card>
             </Link>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  aria-label="Essay options"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
-                  className="absolute top-2 right-2 h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity focus-visible:opacity-100 z-10"
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onSelect={(e) => handleDelete(e, item)}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <button
+              aria-label="Delete essay"
+              onClick={(e) => handleDelete(e, item)}
+              className="absolute top-2 right-2 h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity focus-visible:opacity-100 z-10"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
           </div>
         ))}
       </div>

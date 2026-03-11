@@ -26,8 +26,18 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    profiles:
-      - full
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./src:/app/src
+      - ./index.html:/app/index.html
+    depends_on:
+      - backend
 
 volumes:
   pgdata:
