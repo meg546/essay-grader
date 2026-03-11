@@ -7,7 +7,6 @@ import { FeatureHighlights } from "@/components/landing/FeatureHighlights"
 import { HowItWorks } from "@/components/landing/HowItWorks"
 import { WalkthroughDemo } from "@/components/landing/WalkthroughDemo"
 import { Footer } from "@/components/landing/Footer"
-import { AmbientBackground } from "@/components/landing/AmbientBackground"
 
 export function LandingPage() {
   const isSignedIn = useProfileStore((s) => s.isSignedIn)
@@ -41,8 +40,7 @@ export function LandingPage() {
   }
 
   return (
-    <div className="relative">
-      <AmbientBackground />
+    <>
       <HeroSection
         onSignIn={() => setShowSignIn(true)}
         onRegister={() => navigate("/register")}
@@ -57,6 +55,6 @@ export function LandingPage() {
         onOpenChange={setShowSignIn}
         onAuthenticated={handleAuthenticated}
       />
-    </div>
+    </>
   )
 }
