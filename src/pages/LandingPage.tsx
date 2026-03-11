@@ -41,7 +41,7 @@ export function LandingPage() {
   }
 
   return (
-    <>
+    <div className="relative">
       <AmbientBackground />
       <HeroSection
         onSignIn={() => setShowSignIn(true)}
@@ -57,6 +57,6 @@ export function LandingPage() {
         onOpenChange={setShowSignIn}
         onAuthenticated={handleAuthenticated}
       />
-    </>
+    </div>
   )
 }
