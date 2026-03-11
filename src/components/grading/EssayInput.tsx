@@ -6,9 +6,9 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 
 const TEXT_SIZE_CLASS = {
-  small: "text-sm",
-  normal: "text-base",
-  large: "text-lg",
+  small: "text-sm md:text-sm",
+  normal: "text-base md:text-base",
+  large: "text-lg md:text-lg",
 } as const;
 
 export interface EssayInputHandle {

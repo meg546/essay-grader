@@ -77,22 +77,26 @@ export function toggleTheme(): void {
   setTheme(resolved === "light" ? "dark" : "light");
 }
 
+// Listen for system theme changes and apply them
+try {
+  window
+    .matchMedia("(prefers-color-scheme: dark)")
+    .addEventListener("change", () => applyTheme());
+} catch {
+  // matchMedia unavailable
+}
+
+// Apply theme on module load (syncs .dark class with current preference)
+if (typeof document !== "undefined") {
+  applyTheme();
+}
+
 export function onThemeChange(callback: (resolved: ResolvedTheme) => void): () => void {
   const listener = () => callback(getResolvedTheme());
   listeners.add(listener);
 
-  // Also listen for system theme changes
-  let mediaQuery: MediaQueryList | null = null;
-  try {
-    mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    mediaQuery.addEventListener("change", listener);
-  } catch {
-    // matchMedia unavailable
-  }
-
   return () => {
     listeners.delete(listener);
-    mediaQuery?.removeEventListener("change", listener);
   };
 }
 
