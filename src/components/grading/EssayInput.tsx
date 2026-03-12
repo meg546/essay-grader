@@ -98,7 +98,7 @@ export const EssayInput = forwardRef<EssayInputHandle, EssayInputProps>(
       editorProps: {
         attributes: {
           class: cn(
-            "outline-none flex-1 overflow-y-auto p-4 leading-relaxed min-h-[250px] md:min-h-[200px]",
+            "outline-none flex-1 p-4 leading-relaxed min-h-[250px] md:min-h-[200px]",
             TEXT_SIZE_CLASS[textSize]
           ),
           "aria-label": "Essay text",
@@ -112,7 +112,7 @@ export const EssayInput = forwardRef<EssayInputHandle, EssayInputProps>(
         editorProps: {
           attributes: {
             class: cn(
-              "outline-none flex-1 overflow-y-auto p-4 leading-relaxed min-h-[250px] md:min-h-[200px]",
+              "outline-none flex-1 p-4 leading-relaxed min-h-[250px] md:min-h-[200px]",
               TEXT_SIZE_CLASS[textSize]
             ),
             "aria-label": "Essay text",
@@ -218,7 +218,7 @@ export const EssayInput = forwardRef<EssayInputHandle, EssayInputProps>(
       >
         <EditorContent
           editor={editor}
-          className="flex-1 flex flex-col [&_.tiptap]:flex-1 [&_.tiptap]:flex [&_.tiptap]:flex-col [&_.tiptap.is-empty]:before:content-['Paste_your_essay_here_or_drag_and_drop_a_file...'] [&_.tiptap.is-empty]:before:text-muted-foreground [&_.tiptap.is-empty]:before:pointer-events-none [&_.tiptap.is-empty]:before:float-left [&_.tiptap.is-empty]:before:h-0 [&_.tiptap.is-empty]:before:w-full"
+          className="flex-1 min-h-0 overflow-y-auto flex flex-col [&_.tiptap]:flex-1 [&_.tiptap]:flex [&_.tiptap]:flex-col [&_.tiptap.is-empty]:before:content-['Paste_your_essay_here_or_drag_and_drop_a_file...'] [&_.tiptap.is-empty]:before:text-muted-foreground [&_.tiptap.is-empty]:before:pointer-events-none [&_.tiptap.is-empty]:before:float-left [&_.tiptap.is-empty]:before:h-0 [&_.tiptap.is-empty]:before:w-full"
         />
         <input
           ref={fileInputRef}
