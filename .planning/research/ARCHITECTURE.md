@@ -1,630 +1,600 @@
-# Architecture Patterns
+# Architecture Research
 
-**Domain:** FastAPI backend integration for AI essay grading app
-**Researched:** 2026-03-09
-**Confidence:** HIGH for backend structure, MEDIUM for model serving (depends on hardware)
+**Domain:** Live essay feedback integration — Tiptap editor, LanguageTool decorations, heuristic analysis, writing timer
+**Researched:** 2026-03-12
+**Confidence:** HIGH for Tiptap/ProseMirror patterns, MEDIUM for LanguageTool CORS behavior (requires runtime verification)
 
-## Existing Frontend Architecture (Context)
+---
 
-```
-React + Vite + TypeScript + Zustand + Tailwind
-  src/api/types.ts       -- GradeEssayRequest, GradingResult, CategoryScore, HighlightRange
-  src/api/grading.ts     -- gradeEssay() returns mock data (1500ms delay)
-  src/api/mock-data.ts   -- hardcoded GradingResult with highlights
-  src/stores/app-store   -- currentResult, history, essayText, rubricFile, rubricText
-  src/stores/profile-store -- email, gradeLevel, isSignedIn (mock auth)
-  src/lib/pdf-extract.ts -- client-side PDF text extraction via unpdf/pdfjs
-```
+## Existing Architecture (What We Are Integrating Into)
 
-**Key integration point:** `src/api/grading.ts` is the ONLY file that needs to change to swap mock data for real API calls. The frontend already expects `http://localhost:8000/api` as the base URL (defined in PROJECT.md constraints). The `GradeEssayRequest` and `GradingResult` types define the API contract.
-
-## Recommended Architecture
-
-### System Overview
+Before describing new components, the existing architecture must be understood precisely because the integration must be surgical — not a rewrite.
 
 ```
-                     Docker Compose Network
-  +------------------------------------------------------------------+
-  |                                                                    |
-  |  [React App]  --->  [FastAPI Backend]  --->  [Inference Service]  |
-  |   (host:5173)       (container:8000)         (configurable URL)   |
-  |                          |                                         |
-  |                          v                                         |
-  |                     [PostgreSQL]                                   |
-  |                     (container:5432)                               |
-  |                                                                    |
-  +------------------------------------------------------------------+
+GradingPage.tsx
+  ├── EssayInput.tsx          ← REPLACED by TiptapEssayEditor.tsx
+  ├── GradingToolbar.tsx      ← MODIFIED (replace History link with WritingTimer)
+  ├── WordStats.tsx           ← UNTOUCHED (remains below editor area)
+  └── [results mode]
+        ├── EssayPanel.tsx    ← UNTOUCHED (uses HighlightedEssay, not Tiptap)
+        └── FeedbackPanel.tsx ← UNTOUCHED
+
+app-store.ts (Zustand, persisted)
+  essayText: string           ← Tiptap syncs plain text here via onUpdate
+  textSize: TextSize          ← Tiptap reads this for font size class
+  setEssayText()              ← Called from Tiptap's onUpdate
 ```
 
-Three services in Docker Compose: FastAPI backend, PostgreSQL database. The inference service (Ollama, vLLM, or remote API) runs separately -- either on the host, on a LAN GPU machine, or as a cloud endpoint. The FastAPI backend treats it as a configurable HTTP endpoint.
+### What Must Not Break
 
-### Why This Separation
+- `essayText` in `app-store.ts` is the single source of truth consumed by `GradingPage.handleSubmit()`, `WordStats`, `EssayPanel`, and the submit button disabled state. Tiptap must keep this field current.
+- `HighlightedEssay.tsx` is a read-only span-based renderer used in the results view. It does not use Tiptap and must remain untouched. Tiptap is only for the input view.
+- `EssayInput.tsx` has a `forwardRef` exposing `triggerFileUpload()` used by `GradingToolbar` → `EssayUploadModal`. The replacement component must preserve this ref interface.
+- `GradingToolbar.tsx` receives `onUploadEssayFile` from `GradingPage` and calls `essayInputRef.current?.triggerFileUpload()`. The ref type must stay compatible.
 
-The inference service MUST be external to Docker Compose because:
-1. GPU passthrough in Docker is fragile and platform-dependent (especially macOS has no GPU passthrough)
-2. The model server may run on a different machine (LAN GPU box)
-3. Ollama/vLLM already provide their own HTTP servers -- wrapping them in another container adds no value
-4. Swapping between local Ollama, LAN vLLM, and cloud APIs becomes a config change, not an architecture change
+---
 
-## Component Boundaries
-
-### Backend Project Structure
-
-Use module-by-feature structure (not file-type). Each domain owns its models, schemas, and routes:
+## System Overview: New Components and Their Relationships
 
 ```
-backend/
-  app/
-    main.py                    -- FastAPI app factory, CORS, lifespan
-    config.py                  -- Pydantic BaseSettings (env vars)
-    database.py                -- async engine, session factory, get_db dependency
+GradingPage.tsx
+  │
+  ├─ TiptapEssayEditor.tsx (NEW — replaces EssayInput.tsx)
+  │    ├── useEditor (Tiptap hook)
+  │    │    ├── StarterKit (configured for plain text only)
+  │    │    ├── LanguageToolExtension (NEW — custom Tiptap Extension)
+  │    │    │    └── addProseMirrorPlugins() → LanguageToolPlugin
+  │    │    │         ├── Plugin state: LTMatch[]
+  │    │    │         └── props.decorations() → DecorationSet (wavy underlines)
+  │    │    └── onUpdate → editor.getText() → store.setEssayText()
+  │    │
+  │    ├── SuggestionPopover.tsx (NEW — shown on decoration click)
+  │    └── file drag-drop + hidden input (preserved from EssayInput.tsx)
+  │
+  ├─ GradingToolbar.tsx (MODIFIED — Clock icon becomes WritingTimer)
+  │    └── WritingTimer.tsx (NEW — inlined or separate component)
+  │
+  ├─ HeuristicFeedbackBanner.tsx (NEW — rendered below editor, above submit)
+  │    └── useEssayHeuristics(essayText) hook (NEW — pure computation)
+  │
+  └─ WordStats.tsx (UNTOUCHED)
 
-    auth/
-      router.py                -- POST /register, POST /login, GET /me
-      service.py               -- create_user, authenticate, create_token
-      models.py                -- User SQLAlchemy model
-      schemas.py               -- UserCreate, UserLogin, TokenResponse
-      dependencies.py          -- get_current_user dependency
+src/api/languagetool.ts (NEW — LanguageTool API layer)
+  └── checkText(text: string): Promise<LTMatch[]>
 
-    grading/
-      router.py                -- POST /grade, GET /submissions, GET /submissions/{id}
-      service.py               -- orchestrates PDF parsing + inference + response mapping
-      models.py                -- Submission, Category, Highlight SQLAlchemy models
-      schemas.py               -- mirrors frontend types (GradeRequest, GradingResult)
-
-    inference/
-      base.py                  -- InferenceClient protocol/ABC
-      ollama_client.py         -- Ollama OpenAI-compat implementation
-      openai_client.py         -- OpenAI/vLLM/any OpenAI-compat endpoint
-      factory.py               -- creates client from config
-      prompts.py               -- system prompts, rubric formatting
-
-    pdf/
-      parser.py                -- PyMuPDF text extraction
-
-  migrations/
-    alembic/                   -- Alembic async migrations
-
-  Dockerfile
-  pyproject.toml               -- dependencies via uv
-  docker-compose.yml
+src/lib/languagetool-types.ts (NEW — shared types)
+  └── LTMatch, LTReplacement, LTRule interfaces
 ```
 
-### Component Responsibilities
+---
+
+## Component Responsibilities
 
 | Component | Responsibility | Communicates With |
 |-----------|---------------|-------------------|
-| FastAPI app (`main.py`) | HTTP routing, CORS, middleware, lifespan events | All routers |
-| Auth module | User registration, login, JWT issue/verify, password hashing | Database, all protected routes via dependency |
-| Grading module | Accepts essay+rubric, orchestrates grading pipeline, stores results | Inference service, PDF parser, Database |
-| Inference module | Abstract client for LLM calls, prompt construction | External inference server (Ollama/vLLM/cloud) |
-| PDF parser | Server-side rubric text extraction | Grading service (called during submission) |
-| Database layer | Async SQLAlchemy 2.0 + asyncpg, session management | PostgreSQL container |
-| Alembic migrations | Schema versioning | PostgreSQL container |
+| `TiptapEssayEditor.tsx` | Replaces textarea; hosts Tiptap instance; syncs plain text to Zustand; handles file drop | `app-store.ts` (write), `LanguageToolExtension` (via editor), `GradingPage` (ref) |
+| `LanguageToolExtension` | Tiptap Extension wrapping the ProseMirror plugin; debounces API calls; dispatches decoration transactions | `src/api/languagetool.ts` (async fetch), ProseMirror view (dispatch) |
+| `LanguageToolPlugin` | ProseMirror Plugin; owns `LTMatch[]` state; renders `DecorationSet` with inline underlines | ProseMirror state machine |
+| `SuggestionPopover.tsx` | Click handler attached to decorated spans; shows fix suggestions; applies replacement | `LanguageToolExtension` (dispatch apply-fix transaction) |
+| `HeuristicFeedbackBanner.tsx` | Renders structural feedback (thesis, paragraphs, evidence, conclusion) as dismissible info banners | `useEssayHeuristics` hook, no Zustand needed |
+| `useEssayHeuristics(text)` | Pure computation hook; runs regex/heuristics on plain text; returns structured feedback items | `app-store.ts` (read `essayText`) |
+| `WritingTimer.tsx` | Tracks elapsed session time; starts on first keystroke; pauses on blur; displays HH:MM | `app-store.ts` (optional: read `essayText` to detect session start) |
+| `src/api/languagetool.ts` | HTTP POST to LanguageTool endpoint; maps response to `LTMatch[]`; handles errors silently | External LanguageTool endpoint or FastAPI proxy |
 
-## API Contract
+---
 
-The backend MUST return responses matching the existing frontend types exactly. This is the contract:
-
-### Endpoints
-
-```
-POST   /api/auth/register        -- { email, password } -> { access_token, token_type }
-POST   /api/auth/login            -- { email, password } -> { access_token, token_type }
-GET    /api/auth/me               -- (Bearer token) -> { id, email, grade_level }
-
-POST   /api/grade                 -- multipart: essay_text, grade_level, rubric_file? -> GradingResult
-GET    /api/submissions           -- (Bearer token) -> HistoryItem[]
-GET    /api/submissions/{id}      -- (Bearer token) -> GradingResult
-```
-
-### Response Schema (must match frontend types)
-
-```python
-# These Pydantic schemas MUST produce JSON matching src/api/types.ts
-
-class HighlightRange(BaseModel):
-    start: int
-    end: int
-    category_id: str          # camelCase alias: categoryId
-    type: Literal["strength", "improvement"]
-    feedback: str
-
-class CategoryScore(BaseModel):
-    id: str
-    name: str
-    score: int
-    max_score: int            # camelCase alias: maxScore
-    strengths: list[str]
-    improvements: list[str]
-    justification: str
-    highlights: list[HighlightRange]
-
-class GradingResult(BaseModel):
-    id: str
-    essay_text: str           # camelCase alias: essayText
-    essay_excerpt: str        # camelCase alias: essayExcerpt
-    overall_score: int        # camelCase alias: overallScore
-    max_score: int            # camelCase alias: maxScore
-    summary: str
-    categories: list[CategoryScore]
-    graded_at: str            # camelCase alias: gradedAt
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-        alias_generator=to_camel     # Use pydantic's camelCase alias generator
-    )
-```
-
-**Critical:** Use Pydantic's `alias_generator = to_camel` with `model_config = ConfigDict(populate_by_name=True)` so Python uses snake_case internally but JSON responses use camelCase matching the frontend TypeScript types. This is a one-time config, not per-field aliasing.
-
-## Data Flow
-
-### Grading Pipeline (the core flow)
+## Recommended Project Structure (New Files Only)
 
 ```
-Client POST /api/grade (multipart form)
-  |
-  v
-[Auth Middleware] -- verify JWT, extract user_id
-  |
-  v
-[Grading Router] -- parse multipart: essay_text, grade_level, rubric_file?
-  |
-  v
-[PDF Parser] -- if rubric_file provided, extract text via PyMuPDF
-  |              (server-side, replaces client-side unpdf extraction)
-  v
-[Grading Service] -- build prompt from essay + rubric_text + grade_level
-  |
-  v
-[Inference Client] -- POST to configured inference URL (Ollama/vLLM/cloud)
-  |                    Uses OpenAI-compatible /v1/chat/completions format
-  |                    System prompt instructs JSON output matching schema
-  v
-[Response Parser] -- validate LLM JSON output against expected schema
-  |                   Compute highlight character offsets from essay text
-  |                   Calculate aggregate scores
-  v
-[Database] -- persist Submission + Categories + Highlights
-  |
-  v
-[Return GradingResult] -- Pydantic model serialized with camelCase aliases
+src/
+├── components/
+│   └── grading/
+│       ├── EssayInput.tsx              ← DELETED (replaced)
+│       ├── TiptapEssayEditor.tsx       ← NEW (drop-in replacement)
+│       ├── SuggestionPopover.tsx       ← NEW (popover on decoration click)
+│       ├── HeuristicFeedbackBanner.tsx ← NEW (structural banners below editor)
+│       └── WritingTimer.tsx            ← NEW (timer replacing History link)
+│
+├── extensions/
+│   └── language-tool/
+│       ├── index.ts                    ← NEW (re-exports extension)
+│       ├── LanguageToolExtension.ts    ← NEW (Tiptap Extension.create())
+│       ├── LanguageToolPlugin.ts       ← NEW (ProseMirror Plugin with state)
+│       └── decoration-builder.ts      ← NEW (builds DecorationSet from LTMatch[])
+│
+├── hooks/
+│   └── useEssayHeuristics.ts          ← NEW (pure heuristic analysis)
+│
+├── api/
+│   └── languagetool.ts                ← NEW (API layer for LT requests)
+│
+└── lib/
+    └── languagetool-types.ts          ← NEW (LTMatch, LTReplacement, LTRule)
 ```
 
-### Authentication Flow
+### Structure Rationale
 
-```
-Register: POST /api/auth/register
-  -> hash password with bcrypt (passlib or pwdlib)
-  -> insert User into PostgreSQL
-  -> return JWT access token
+- **`src/extensions/language-tool/`**: The ProseMirror plugin has enough complexity (state machine, decoration building, debounce logic) to warrant its own folder. Co-locating the Extension, Plugin, and decoration builder keeps this subsystem self-contained.
+- **`src/hooks/useEssayHeuristics.ts`**: Pure computation with no side effects — a hook that takes text and returns feedback items. Isolated for testability.
+- **`src/api/languagetool.ts`**: Follows the existing API layer pattern (alongside `grading.ts`, `auth.ts`). All external HTTP calls live in `src/api/`.
 
-Login: POST /api/auth/login
-  -> verify password hash
-  -> return JWT access token (HS256, 24h expiry for dev)
+---
 
-Protected routes: Authorization: Bearer <token>
-  -> FastAPI dependency extracts + verifies token
-  -> injects user_id into route handler
-```
+## Architectural Patterns
 
-## Inference Service Architecture
+### Pattern 1: Tiptap for Plain Text (Minimal Extension Set)
 
-### The Problem
+**What:** Configure StarterKit with all formatting marks and structural nodes disabled. Keep only Document, Paragraph, Text, HardBreak.
 
-The model server needs to work in three scenarios:
-1. **Local:** Ollama running on the same machine (localhost:11434)
-2. **LAN:** vLLM or Ollama on a GPU machine at e.g. 192.168.1.50:8000
-3. **Cloud:** Any OpenAI-compatible API (Together, Groq, etc.)
+**When to use:** This is the only correct approach — Tiptap's default StarterKit enables bold, italic, headings, lists, etc. These must be explicitly disabled to enforce plain text.
 
-### The Solution: OpenAI-Compatible Protocol + Config
+**Trade-offs:** Tiptap is heavier than a textarea (~50KB gzip for core + ProseMirror). Justified because the ProseMirror plugin layer is the only clean way to render inline decorations without reimplementing a text editor.
 
-All three scenarios speak the same protocol: OpenAI's `/v1/chat/completions`. Ollama supports this natively. vLLM supports this natively. Cloud providers support this natively. So the inference client is just an HTTP client with a configurable base URL and optional API key.
-
-```python
-# app/config.py
-class Settings(BaseSettings):
-    # Inference configuration
-    inference_base_url: str = "http://host.docker.internal:11434"  # Ollama default
-    inference_model: str = "llama3.2:3b"
-    inference_api_key: str | None = None  # needed for cloud providers only
-    inference_timeout: int = 120  # seconds, LLM inference can be slow
-
-    # Database
-    database_url: str = "postgresql+asyncpg://user:pass@db:5432/essaygrader"
-
-    # Auth
-    jwt_secret: str = "change-me-in-production"
-    jwt_algorithm: str = "HS256"
-    jwt_expire_hours: int = 24
-
-    model_config = SettingsConfigDict(env_file=".env")
-```
-
-```python
-# app/inference/base.py
-from typing import Protocol
-
-class InferenceClient(Protocol):
-    async def grade_essay(
-        self, essay_text: str, rubric_text: str | None, grade_level: str
-    ) -> dict:
-        """Returns raw grading result dict from LLM."""
-        ...
-
-# app/inference/openai_client.py
-import httpx
-
-class OpenAICompatClient:
-    """Works with Ollama, vLLM, OpenAI, Together, Groq -- anything OpenAI-compatible."""
-
-    def __init__(self, base_url: str, model: str, api_key: str | None, timeout: int):
-        self.base_url = base_url.rstrip("/")
-        self.model = model
-        self.api_key = api_key
-        self.timeout = timeout
-
-    async def grade_essay(self, essay_text: str, rubric_text: str | None, grade_level: str) -> dict:
-        headers = {"Content-Type": "application/json"}
-        if self.api_key:
-            headers["Authorization"] = f"Bearer {self.api_key}"
-
-        system_prompt = build_grading_prompt(rubric_text, grade_level)
-
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            response = await client.post(
-                f"{self.base_url}/v1/chat/completions",
-                headers=headers,
-                json={
-                    "model": self.model,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": essay_text}
-                    ],
-                    "temperature": 0.3,
-                    "response_format": {"type": "json_object"}
-                }
-            )
-            # parse response, extract content, validate JSON structure
-```
-
-**One client implementation handles all three scenarios.** No need for separate Ollama vs vLLM vs cloud clients. The OpenAI-compatible protocol is the abstraction layer. Switching from local Ollama to a LAN vLLM server is just changing `INFERENCE_BASE_URL` in `.env`.
-
-### Prompt Engineering for Structured Output
-
-The system prompt must instruct the model to return JSON matching the `GradingResult` schema. Key considerations:
-
-1. Include the JSON schema in the system prompt so the model knows the exact structure
-2. Use `response_format: {"type": "json_object"}` where supported (Ollama and vLLM both support this)
-3. The LLM returns category names, scores, feedback text, and highlight phrases (not character offsets)
-4. The backend post-processes to compute character offsets by finding phrase positions in the essay text
-
-```python
-# Post-processing: convert LLM phrase references to character offsets
-def compute_highlight_offsets(essay_text: str, phrase: str) -> tuple[int, int] | None:
-    """Find phrase in essay, return (start, end) character offsets."""
-    idx = essay_text.find(phrase)
-    if idx == -1:
-        return None  # phrase not found, skip this highlight
-    return (idx, idx + len(phrase))
-```
-
-This mirrors exactly what the existing mock data does (the `hl()` helper in `mock-data.ts` uses `indexOf`).
-
-## Database Schema
-
-### PostgreSQL Models
-
-```python
-# app/auth/models.py
-class User(Base):
-    __tablename__ = "users"
-
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
-    password_hash: Mapped[str] = mapped_column(String(255))
-    grade_level: Mapped[str] = mapped_column(String(50), default="high-school")
-    created_at: Mapped[datetime] = mapped_column(default=func.now())
-
-    submissions: Mapped[list["Submission"]] = relationship(back_populates="user")
-
-# app/grading/models.py
-class Submission(Base):
-    __tablename__ = "submissions"
-
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), index=True)
-    essay_text: Mapped[str] = mapped_column(Text)
-    rubric_text: Mapped[str | None] = mapped_column(Text, nullable=True)
-    grade_level: Mapped[str] = mapped_column(String(50))
-    overall_score: Mapped[int]
-    max_score: Mapped[int]
-    summary: Mapped[str] = mapped_column(Text)
-    graded_at: Mapped[datetime] = mapped_column(default=func.now())
-
-    user: Mapped["User"] = relationship(back_populates="submissions")
-    categories: Mapped[list["Category"]] = relationship(
-        back_populates="submission", cascade="all, delete-orphan"
-    )
-
-class Category(Base):
-    __tablename__ = "categories"
-
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    submission_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("submissions.id"), index=True)
-    name: Mapped[str] = mapped_column(String(100))
-    score: Mapped[int]
-    max_score: Mapped[int]
-    strengths: Mapped[list[str]] = mapped_column(ARRAY(Text))
-    improvements: Mapped[list[str]] = mapped_column(ARRAY(Text))
-    justification: Mapped[str] = mapped_column(Text)
-
-    submission: Mapped["Submission"] = relationship(back_populates="categories")
-    highlights: Mapped[list["Highlight"]] = relationship(
-        back_populates="category", cascade="all, delete-orphan"
-    )
-
-class Highlight(Base):
-    __tablename__ = "highlights"
-
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    category_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("categories.id"), index=True)
-    start: Mapped[int]
-    end: Mapped[int]
-    type: Mapped[str] = mapped_column(String(20))  # "strength" | "improvement"
-    feedback: Mapped[str] = mapped_column(Text)
-
-    category: Mapped["Category"] = relationship(back_populates="highlights")
-```
-
-### Why Normalized Tables (Not JSONB)
-
-Store categories and highlights as separate tables, not as JSONB columns on Submission. Reasons:
-1. Enables querying: "show all submissions where Category X scored below 3"
-2. PostgreSQL ARRAY type handles the string lists (strengths, improvements) cleanly
-3. Alembic can manage schema evolution on structured tables; JSONB schema changes are invisible to migrations
-
-## Docker Compose Configuration
-
-```yaml
-# docker-compose.yml
-services:
-  backend:
-    build: .
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql+asyncpg://essaygrader:essaygrader@db:5432/essaygrader
-      - INFERENCE_BASE_URL=http://host.docker.internal:11434  # Ollama on host
-      - INFERENCE_MODEL=llama3.2:3b
-      - JWT_SECRET=dev-secret-change-in-production
-    depends_on:
-      db:
-        condition: service_healthy
-    volumes:
-      - ./app:/code/app  # hot reload in dev
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-
-  db:
-    image: postgres:16-alpine
-    environment:
-      - POSTGRES_USER=essaygrader
-      - POSTGRES_PASSWORD=essaygrader
-      - POSTGRES_DB=essaygrader
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U essaygrader"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-volumes:
-  pgdata:
-```
-
-**Key details:**
-- `host.docker.internal` lets the container reach Ollama running on the host machine
-- Volume mount `./app:/code/app` enables hot reload during development
-- PostgreSQL health check ensures the backend waits for DB readiness
-- No inference service in Compose -- it runs independently (see Inference Service Architecture above)
-
-### Dockerfile
-
-```dockerfile
-FROM python:3.12-slim
-
-WORKDIR /code
-
-# Install uv for fast dependency resolution
-RUN pip install uv
-
-# Copy dependency files first (layer caching)
-COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev
-
-# Copy application code
-COPY app/ ./app/
-COPY migrations/ ./migrations/
-COPY alembic.ini ./
-
-EXPOSE 8000
-
-CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-## Frontend Integration Changes
-
-### Files to Modify (minimal surface area)
-
-Only 3-4 frontend files need changes to swap mock for real:
-
-| File | Change | Why |
-|------|--------|-----|
-| `src/api/grading.ts` | Replace mock delay + return with Axios POST to `/api/grade` | Core integration point |
-| `src/stores/profile-store.ts` | Replace mock signIn with real POST to `/api/auth/login`, store JWT | Auth integration |
-| `src/api/types.ts` | Add auth types (LoginRequest, TokenResponse) | New auth endpoints |
-| New: `src/api/auth.ts` | Register, login, getMe functions | Auth API layer |
-| New: `src/lib/axios.ts` | Axios instance with base URL + auth interceptor | JWT token attachment |
-
-### Axios Instance with Auth
-
+**Example:**
 ```typescript
-// src/lib/axios.ts
-import axios from "axios";
+// TiptapEssayEditor.tsx
+const editor = useEditor({
+  extensions: [
+    StarterKit.configure({
+      bold: false,
+      italic: false,
+      code: false,
+      strike: false,
+      heading: false,
+      blockquote: false,
+      bulletList: false,
+      orderedList: false,
+      codeBlock: false,
+      horizontalRule: false,
+      // Keep: document, paragraph, text, hardBreak, history, dropcursor, gapcursor
+    }),
+    LanguageToolExtension.configure({
+      enabled: true,
+      debounceMs: 3000,
+    }),
+    CharacterCount,  // for word/char count if replacing WordStats
+  ],
+  content: essayText,  // initial value from Zustand store
+  onUpdate: ({ editor }) => {
+    setEssayText(editor.getText({ blockSeparator: '\n\n' }));
+  },
+})
+```
 
-const api = axios.create({
-  baseURL: "http://localhost:8000/api",
+### Pattern 2: ProseMirror Plugin with Transaction Metadata Bridge
+
+**What:** The LanguageTool plugin stores `LTMatch[]` as plugin state. External results (from the async API call) are fed back into the plugin via a transaction with custom metadata. The plugin's `apply()` function checks for this metadata to rebuild decorations.
+
+**When to use:** Any time you need to update ProseMirror decorations from outside the editor's normal transaction flow (e.g., async API responses).
+
+**Trade-offs:** Slightly indirect (data goes: API response → dispatch transaction → plugin apply → DecorationSet). This is the correct ProseMirror pattern — never mutate plugin state directly from outside the plugin.
+
+**Example:**
+```typescript
+// LanguageToolPlugin.ts
+const ltPluginKey = new PluginKey<LTMatch[]>('languageTool');
+
+const LanguageToolPlugin = new Plugin<LTMatch[]>({
+  key: ltPluginKey,
+  state: {
+    init: () => [],
+    apply: (tr, prev) => {
+      const incoming = tr.getMeta(ltPluginKey);
+      if (incoming !== undefined) return incoming;        // new API results
+      if (tr.docChanged) return prev.map(m => mapMatch(m, tr.mapping)); // remap on edit
+      return prev;
+    },
+  },
+  props: {
+    decorations: (state) => {
+      const matches = ltPluginKey.getState(state) ?? [];
+      return buildDecorationSet(state.doc, matches);
+    },
+  },
 });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access_token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-export default api;
+// From LanguageToolExtension, after API response:
+editor.view.dispatch(
+  editor.state.tr.setMeta(ltPluginKey, matches)
+);
 ```
 
-### Updated grading.ts
+### Pattern 3: Debounced API Calls via Extension Options
 
+**What:** The `LanguageToolExtension` holds a debounce timer ref. The Tiptap `onUpdate` callback (or the extension's `onUpdate` hook) triggers the debounced fetch. The 3-second debounce prevents API calls on every keystroke.
+
+**When to use:** Always for LanguageTool. Rate limit is 20 requests/minute. A 3-second debounce on a typical typist (~60 WPM) results in ~1 request per 3 seconds of sustained typing, well within limits.
+
+**Trade-offs:** 3 seconds feels long but is appropriate given the free tier limit. Users see existing decorations during the debounce window.
+
+**Example:**
 ```typescript
-// src/api/grading.ts -- the ONLY grading change
-import api from "@/lib/axios";
-import type { GradeEssayRequest, GradingResult } from "./types";
+// Inside LanguageToolExtension
+onUpdate({ editor }) {
+  clearTimeout(this.storage.debounceTimer);
+  this.storage.debounceTimer = setTimeout(async () => {
+    if (!this.options.enabled) return;
+    const text = editor.getText({ blockSeparator: '\n\n' });
+    if (text.trim().length < 20) return;  // skip very short text
+    try {
+      const matches = await checkText(text);
+      editor.view.dispatch(
+        editor.state.tr.setMeta(ltPluginKey, matches)
+      );
+    } catch {
+      // silent fail — live feedback is non-critical
+    }
+  }, this.options.debounceMs ?? 3000);
+},
+```
 
-export async function gradeEssay(request: GradeEssayRequest): Promise<GradingResult> {
-  const formData = new FormData();
-  formData.append("essay_text", request.essayText);
-  formData.append("grade_level", request.gradeLevel);
-  if (request.rubricFile) {
-    formData.append("rubric_file", request.rubricFile);
-  }
+### Pattern 4: Plain Text Sync to Zustand via onUpdate
 
-  const { data } = await api.post<GradingResult>("/grade", formData);
-  return data;
+**What:** The Tiptap `onUpdate` callback extracts plain text and writes it to `app-store.essayText`. This is a one-way sync: Tiptap → Zustand. The store is the source of truth for submission, not the editor's internal ProseMirror document.
+
+**When to use:** Always. This is the integration seam between the new editor and the existing submission flow.
+
+**Trade-offs:** Two representations of the essay exist simultaneously: ProseMirror doc (editor's internal state) and string (Zustand). They are always in sync because `onUpdate` fires on every change. `editor.getText({ blockSeparator: '\n\n' })` preserves paragraph breaks as double newlines, matching what the existing textarea produced.
+
+**Initial value:** When `TiptapEssayEditor` mounts, if `essayText` in the store is non-empty (user previously typed or loaded from file), set it as Tiptap's initial content via the `content` option in `useEditor`. Do not use `editor.commands.setContent()` in a `useEffect` — that triggers `onUpdate` and causes a circular write.
+
+### Pattern 5: Heuristics as Pure Computation (Not ProseMirror)
+
+**What:** Essay structure heuristics (thesis detection, paragraph length, evidence signals, conclusion check) run as a plain JavaScript hook on the plain text string from Zustand — not inside ProseMirror.
+
+**When to use:** Always. Heuristics are structural, not inline. They produce document-level feedback ("Your essay has 2 paragraphs — try for at least 4") that belongs in banners below the editor, not as inline underlines. Keeping them outside ProseMirror avoids plugin complexity and makes them trivially testable.
+
+**Trade-offs:** Heuristics run on every render that `essayText` changes. For reasonable essay lengths (<20KB), regex and string operations are imperceptible. Debounce heuristic recalculation inside the hook with `useMemo` or a 500ms `useDebounce` if profiling shows cost.
+
+**Heuristic signals to detect:**
+```typescript
+// useEssayHeuristics.ts
+interface HeuristicFeedback {
+  id: string;
+  type: 'info' | 'warning';
+  message: string;
+}
+
+function useEssayHeuristics(text: string): HeuristicFeedback[] {
+  return useMemo(() => {
+    const results: HeuristicFeedback[] = [];
+    const paragraphs = text.split(/\n\n+/).filter(p => p.trim().length > 0);
+    const wordCount = text.trim().split(/\s+/).length;
+
+    // Thesis: check if first paragraph contains strong claim signals
+    const firstPara = paragraphs[0] ?? '';
+    const thesisSignals = /\b(argue|argues|argue that|thesis|claim|believe|contend|this essay)\b/i;
+    if (wordCount > 100 && !thesisSignals.test(firstPara)) {
+      results.push({ id: 'thesis', type: 'info', message: 'Consider stating your thesis clearly in the opening paragraph.' });
+    }
+
+    // Paragraph count
+    if (wordCount > 150 && paragraphs.length < 3) {
+      results.push({ id: 'paragraphs', type: 'info', message: `${paragraphs.length} paragraph${paragraphs.length !== 1 ? 's' : ''} detected. Strong essays typically have 4–6 paragraphs.` });
+    }
+
+    // Evidence signals
+    const evidenceSignals = /\b(for example|for instance|according to|evidence|research|studies|data|source|quote)\b/i;
+    if (wordCount > 200 && !evidenceSignals.test(text)) {
+      results.push({ id: 'evidence', type: 'info', message: 'No evidence signals detected. Consider adding supporting examples or citations.' });
+    }
+
+    // Conclusion: last paragraph signals
+    const lastPara = paragraphs[paragraphs.length - 1] ?? '';
+    const conclusionSignals = /\b(in conclusion|in summary|to summarize|therefore|thus|overall|in closing)\b/i;
+    if (wordCount > 200 && paragraphs.length > 2 && !conclusionSignals.test(lastPara)) {
+      results.push({ id: 'conclusion', type: 'info', message: 'Your final paragraph may not signal a conclusion. Consider using a concluding transition.' });
+    }
+
+    return results;
+  }, [text]);
 }
 ```
 
-**Note:** The rubric PDF file is sent as multipart form data to the backend. Server-side PDF parsing replaces client-side extraction. The `rubricText` field in the request becomes unnecessary -- the backend extracts text from the PDF itself. However, keep `rubricText` as a fallback for cases where users paste rubric text directly (no PDF).
+### Pattern 6: Writing Timer as Self-Contained Component
 
-### PDF Handling Migration
+**What:** `WritingTimer.tsx` is a React component that manages its own timer state (`useRef` for interval, `useState` for elapsed seconds). It starts on the first `essayText` write that transitions from empty to non-empty, and pauses when the editor loses focus.
 
-Currently the frontend extracts PDF text client-side via `unpdf` and sends `rubricText` as a string. With the backend:
+**When to use:** Replace the `Clock` icon + History link in `GradingToolbar` with this component. The timer does not need Zustand — it is session-local UI state.
 
-1. **Primary:** Send the raw PDF file via multipart upload. Backend extracts text with PyMuPDF (faster, more reliable than browser-based extraction).
-2. **Fallback:** If no PDF but rubric text was pasted, send `rubricText` as a string field.
-3. The `unpdf` dependency can be removed from the frontend after backend integration is complete.
+**Trade-offs:** Timer state is lost on page refresh. This is acceptable — it's a session writing tool, not a persistent record.
 
-## Patterns to Follow
+---
 
-### Pattern 1: Repository Pattern for Database Access
-**What:** Thin service layer between routes and SQLAlchemy queries.
-**When:** All database operations.
-**Why:** Keeps route handlers clean, makes testing easier (mock the service, not the ORM).
+## Data Flow
 
-### Pattern 2: Dependency Injection for Auth
-**What:** FastAPI's `Depends()` system for JWT verification.
-**When:** All protected endpoints.
-```python
-@router.get("/submissions")
-async def list_submissions(
-    user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    ...
+### Live Feedback Flow (Happy Path)
+
+```
+User types in TiptapEssayEditor
+    ↓ (Tiptap onUpdate fires)
+editor.getText() → store.setEssayText(text)       [sync, every keystroke]
+    ↓
+debounce timer resets (3 seconds)
+    ↓ (after 3s of no typing)
+checkText(text) → POST https://api.languagetool.org/v2/check
+    ↓ (or FastAPI proxy /api/lt/check if CORS blocked)
+LTMatch[] returned
+    ↓
+editor.view.dispatch(tr.setMeta(ltPluginKey, matches))
+    ↓
+Plugin apply() receives new matches → updates plugin state
+    ↓
+Plugin props.decorations() fires → builds DecorationSet
+    ↓
+ProseMirror re-renders with wavy underlines over error ranges
 ```
 
-### Pattern 3: Pydantic Settings for Configuration
-**What:** All config via environment variables, validated by Pydantic BaseSettings.
-**When:** Database URLs, JWT secrets, inference endpoints.
-**Why:** Type-safe config, .env file support, no hardcoded secrets.
+### Fix Application Flow
 
-### Pattern 4: Async Everything in the Hot Path
-**What:** Use async for all I/O: database queries (asyncpg), HTTP calls (httpx), file reads.
-**When:** All request handlers.
-**Why:** LLM inference takes 10-60 seconds. Blocking the event loop means no concurrent requests.
+```
+User clicks underlined text
+    ↓
+SuggestionPopover renders with replacements[]
+    ↓
+User clicks a replacement
+    ↓
+editor.chain().deleteRange({from, to}).insertContent(replacement).run()
+    ↓
+Document changes → plugin apply() remaps remaining matches → decorations update
+```
 
-### Pattern 5: Structured LLM Output Validation
-**What:** Parse LLM JSON output through Pydantic models before storing.
-**When:** After every inference call.
-**Why:** LLMs produce malformed JSON, missing fields, wrong types. Validate and retry (up to 2x) or return a structured error.
+### Submission Flow (Unchanged from v2.1)
 
-## Anti-Patterns to Avoid
+```
+User clicks "Submit for Grading"
+    ↓
+GradingPage.handleSubmit() reads store.essayText  ← unchanged
+    ↓
+gradeEssay(essayText, gradeLevel, rubricFile)      ← unchanged
+    ↓
+setCurrentResult(result) → results view renders    ← unchanged
+    ↓
+TiptapEssayEditor unmounts, HighlightedEssay renders ← unchanged
+```
 
-### Anti-Pattern 1: Inference Service Inside Docker Compose
-**What:** Running Ollama or vLLM as a Docker Compose service alongside the backend.
-**Why bad:** GPU passthrough is platform-dependent (no GPU access on macOS Docker). Model downloads bloat the container. Coupling inference lifecycle to backend lifecycle means restarting the backend reloads a 2GB model.
-**Instead:** Run inference service independently. Backend connects via configurable HTTP URL.
+### Plain Text Sync Detail
 
-### Anti-Pattern 2: Synchronous ORM Queries in Async Routes
-**What:** Using SQLAlchemy sync sessions in async FastAPI route handlers.
-**Why bad:** Blocks the event loop. During a 30-second LLM inference call, no other requests can be served.
-**Instead:** Use `create_async_engine` + `AsyncSession` + `asyncpg` driver throughout.
+```
+TiptapEssayEditor mounts
+    ├── initial content: useEditor({ content: store.essayText })
+    └── onUpdate: ({ editor }) => store.setEssayText(editor.getText({ blockSeparator: '\n\n' }))
 
-### Anti-Pattern 3: Storing JWT Tokens in Cookies with httpOnly
-**What:** Setting auth tokens as httpOnly cookies for "security."
-**Why bad:** Adds CSRF complexity, breaks the existing Axios interceptor pattern, and this is a course project -- not a bank. The frontend already uses localStorage for Zustand persistence.
-**Instead:** Return JWT in response body. Frontend stores in localStorage. Axios interceptor attaches to requests. Simple and sufficient for this scope.
+File drop/paste into TiptapEssayEditor
+    └── editor.commands.setContent(text, false)  ← false = don't emit update (avoid double write)
+        or editor.commands.insertContent(text) for append
+```
 
-### Anti-Pattern 4: Building a Custom Inference Protocol
-**What:** Inventing a custom REST API between FastAPI and the model server.
-**Why bad:** Every model server (Ollama, vLLM, llama.cpp server, cloud APIs) already speaks OpenAI's chat completions format. Building a custom protocol means writing adapters for each.
-**Instead:** Use `/v1/chat/completions` everywhere. One client implementation, many backends.
+---
 
-### Anti-Pattern 5: Eager Loading Everything from Database
-**What:** Using `joinedload` for categories and highlights on every query.
-**Why bad:** The history endpoint only needs excerpt + score (no categories/highlights). Loading full results for list views wastes bandwidth and query time.
-**Instead:** Two query patterns: lightweight for lists (`SELECT id, essay_excerpt, overall_score, graded_at`), full for detail view (with joined categories + highlights).
+## Integration Points
 
-## Scalability Considerations
+### LanguageTool CORS: Critical Decision Point
 
-| Concern | At 1 User (Dev) | At 10 Users | At 100 Users |
-|---------|-----------------|-------------|-------------- |
-| Inference latency | 10-60s per request, acceptable | Queue builds up, requests timeout | Need inference queue or multiple model instances |
-| Database connections | Single connection fine | asyncpg pool (5 connections) | Increase pool size to 20 |
-| Concurrent grading | Sequential, one at a time | Async handles I/O overlap but inference is the bottleneck | Add background task queue (Celery/ARQ) for grading |
-| PDF processing | <1s per PDF, negligible | Still negligible | Still negligible |
+**Status:** MEDIUM confidence — requires runtime verification.
 
-**For the course project scope (1-5 concurrent users): no queue needed.** Async FastAPI handles the I/O overlap. The inference service is the bottleneck, not the backend.
+The public LanguageTool API (`https://api.languagetool.org/v2/check`) does not reliably support CORS from browser origins. The browser addon works because browser extensions have elevated network permissions that bypass CORS.
 
-## Suggested Build Order (Dependencies)
+**Two options, in order of preference:**
 
-Each step builds on the previous. This order respects dependency chains.
+**Option A (Recommended): FastAPI proxy endpoint**
+Add a lightweight proxy route to the existing FastAPI backend:
 
-| Order | Component | Depends On | Rationale |
-|-------|-----------|------------|-----------|
-| 1 | Project scaffold: pyproject.toml, Dockerfile, docker-compose.yml, app/main.py with CORS | Nothing | Everything else needs the project to exist |
-| 2 | Config (Pydantic BaseSettings) + database.py (async engine/session) | Step 1 | All modules need config and DB access |
-| 3 | Alembic setup + User model + initial migration | Step 2 | Auth depends on User table existing |
-| 4 | Auth module (register, login, JWT, get_current_user dependency) | Step 3 | Grading routes need auth dependency |
-| 5 | Submission/Category/Highlight models + migration | Step 2 | Grading module needs these tables |
-| 6 | PDF parser (PyMuPDF wrapper) | Step 1 | Grading pipeline needs rubric text extraction |
-| 7 | Inference client (OpenAI-compat + prompt engineering) | Step 2 | Grading pipeline needs LLM calls |
-| 8 | Grading service + router (orchestrates 6+7, stores in DB) | Steps 4, 5, 6, 7 | Core feature, depends on all pieces |
-| 9 | History endpoints (list + detail) | Steps 4, 5 | Read-only queries on existing data |
-| 10 | Frontend integration (axios instance, auth store, grading.ts swap) | Steps 4, 8 | Backend must be running and tested first |
+```python
+# backend/app/lt/router.py
+@router.post("/lt/check")
+async def proxy_languagetool(request: Request):
+    body = await request.body()
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            "https://api.languagetool.org/v2/check",
+            content=body,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            timeout=15.0,
+        )
+    return Response(content=resp.content, media_type="application/json")
+```
 
-**Phase groupings for the roadmap:**
-- **Infrastructure** (steps 1-3): Scaffold, config, database, migrations
-- **Auth** (step 4): Registration, login, JWT
-- **Grading pipeline** (steps 5-8): Models, PDF, inference, orchestration
-- **Integration** (steps 9-10): History API, frontend swap
+Frontend then calls `http://localhost:8000/api/lt/check` — same origin as the grading API, no CORS issue. The FastAPI backend already runs during development.
+
+**Option B: Direct browser fetch (verify at build time)**
+Try `fetch('https://api.languagetool.org/v2/check', ...)` directly and check for CORS error. Some reports indicate the public API does allow browser access. If it works, no proxy needed.
+
+**Decision rule:** Implement Option A first (proxy). If the backend is not running (frontend-only dev mode), fall back to Option B with a try/catch. The `src/api/languagetool.ts` layer abstracts this choice.
+
+```typescript
+// src/api/languagetool.ts
+const LT_ENDPOINT = import.meta.env.VITE_LT_ENDPOINT
+  ?? 'http://localhost:8000/api/lt/check';
+  // fallback: 'https://api.languagetool.org/v2/check'
+
+export async function checkText(text: string): Promise<LTMatch[]> {
+  const params = new URLSearchParams({
+    text,
+    language: 'en-US',
+    disabledRules: 'WHITESPACE_RULE',
+  });
+  const resp = await fetch(LT_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params.toString(),
+  });
+  if (!resp.ok) return [];
+  const data = await resp.json();
+  return data.matches ?? [];
+}
+```
+
+### LanguageTool Response Types
+
+```typescript
+// src/lib/languagetool-types.ts
+export interface LTMatch {
+  message: string;
+  shortMessage: string;
+  offset: number;       // 0-based char offset in the submitted text
+  length: number;       // span length
+  replacements: LTReplacement[];
+  rule: LTRule;
+  type: { typeName: 'misspelling' | 'grammar' | 'style' | 'hint' | 'other' };
+}
+
+export interface LTReplacement {
+  value: string;
+}
+
+export interface LTRule {
+  id: string;
+  description: string;
+  category: { id: string; name: string };
+}
+```
+
+### Tiptap ↔ LanguageTool Offset Alignment
+
+**Critical:** LanguageTool operates on the raw text string. ProseMirror operates on a document with structural nodes. The offsets in `LTMatch` are character positions in the string passed to the API.
+
+The plain text extracted via `editor.getText({ blockSeparator: '\n\n' })` must match exactly what is sent to LanguageTool. Use `\n\n` as the paragraph separator because ProseMirror's Paragraph nodes are separated by this in the serialized form.
+
+To map `LTMatch.offset` to ProseMirror positions, use `editor.state.doc.resolve()` after converting character offsets to ProseMirror positions:
+
+```typescript
+// decoration-builder.ts
+import { Decoration, DecorationSet } from '@tiptap/pm/view';
+
+export function buildDecorationSet(doc: any, matches: LTMatch[]): DecorationSet {
+  const decorations: Decoration[] = [];
+  let textPos = 0;  // position in plain text string
+  let pmPos = 0;    // position in ProseMirror document
+
+  // Walk the doc to build a text→PM position map
+  // This is the canonical way to align LT offsets with PM positions
+  doc.nodesBetween(0, doc.content.size, (node: any, pos: number) => {
+    if (node.isText) {
+      const from = pos;
+      const to = pos + node.nodeSize;
+      // ... map LT match offsets that fall in this text node
+    }
+  });
+
+  return DecorationSet.create(doc, decorations);
+}
+```
+
+### Internal Boundaries
+
+| Boundary | Communication | Notes |
+|----------|---------------|-------|
+| TiptapEssayEditor ↔ app-store | Direct Zustand subscribe/set | One-way: editor → store on every change |
+| TiptapEssayEditor ↔ GradingPage | `forwardRef` with `EssayInputHandle` (triggerFileUpload) | Must preserve existing ref interface |
+| LanguageToolExtension ↔ Plugin | Transaction metadata via `PluginKey` | Standard ProseMirror pattern |
+| HeuristicFeedbackBanner ↔ app-store | Read `essayText` via Zustand selector | Read-only, reacts to debounced text changes |
+| WritingTimer ↔ TiptapEssayEditor | `onFocus`/`onBlur` events or GradingPage state | Timer starts/pauses based on editor focus |
+
+---
+
+## Anti-Patterns
+
+### Anti-Pattern 1: Using Tiptap for Rich Text in This Editor
+
+**What people do:** Use Tiptap's default StarterKit without disabling marks; allow users to paste formatted HTML.
+
+**Why it's wrong:** The grading backend receives plain text. Rich text formatting (bold spans, headings) becomes garbage characters in the graded text. Highlight offsets computed against plain text won't align with a formatted document.
+
+**Do this instead:** Disable all marks and block nodes except Paragraph and Text. Configure `editorProps.transformPastedHTML` to strip formatting on paste.
+
+### Anti-Pattern 2: Storing Decorations in Zustand
+
+**What people do:** Manage `LTMatch[]` in a Zustand store and try to read it in a component that then imperatively updates the editor.
+
+**Why it's wrong:** Breaks ProseMirror's transaction model. Decorations must live inside the ProseMirror plugin state to survive document changes and position remapping. External state cannot track document version for offset validity.
+
+**Do this instead:** Plugin state owns the matches. React state (if needed for the toggle UI) can hold an "enabled" boolean. The plugin reads `enabled` from extension options, which are updated via `editor.setOptions()`.
+
+### Anti-Pattern 3: Direct API Call on Every Keystroke
+
+**What people do:** Call LanguageTool in the Tiptap `onUpdate` callback without debouncing.
+
+**Why it's wrong:** Rate limit is 20 requests/minute per IP. A typical user types 60+ WPM, which would exceed the limit within the first minute. The API will return 429 errors, decorations will disappear, and the user gets a broken experience.
+
+**Do this instead:** Debounce at 3 seconds. Clear the timer on each keystroke. Only fire when typing stops.
+
+### Anti-Pattern 4: Initializing Tiptap Content from Zustand in a useEffect
+
+**What people do:**
+```typescript
+useEffect(() => {
+  if (editor && essayText) editor.commands.setContent(essayText);
+}, [editor, essayText]);
+```
+
+**Why it's wrong:** `setContent()` triggers `onUpdate`, which calls `setEssayText()`, which updates `essayText`, which triggers the effect again. Infinite loop. Also loses the user's cursor position on every Zustand store update.
+
+**Do this instead:** Pass `essayText` as the `content` option in `useEditor()` for initialization only. The editor owns the content after mount; Zustand receives updates from the editor, not the reverse.
+
+### Anti-Pattern 5: Heuristics as ProseMirror Decorations
+
+**What people do:** Add thesis/evidence heuristic results as inline underlines via the ProseMirror plugin.
+
+**Why it's wrong:** Heuristics are structural — they apply to the entire document or whole paragraphs. Mapping them to precise character offsets is fragile (which character of "the introduction" is the thesis?). Visually, mixing heuristic highlights with LanguageTool grammar underlines creates noise that confuses students.
+
+**Do this instead:** Render heuristics as banners below the editor. They're informational, not corrections. Keep the inline decoration layer exclusively for LanguageTool grammar/spelling matches.
+
+### Anti-Pattern 6: Replacing HighlightedEssay with Tiptap in Results View
+
+**What people do:** Render the results view using Tiptap instead of the existing `HighlightedEssay` component.
+
+**Why it's wrong:** `HighlightedEssay` uses a completely different data model (highlight ranges from the grading API, category-colored spans, tooltip-on-hover). Tiptap's decoration system is not designed for this bidirectional interaction with `HighlightContext`. Replacing it would require significant rearchitecting of the results flow for no gain.
+
+**Do this instead:** Keep `HighlightedEssay` untouched. Tiptap is only in the input view. The two modes (input vs. results) are already separate branches in `GradingPage.tsx`.
+
+---
+
+## Build Order (Phase Dependency Chain)
+
+Each phase can only start when its dependencies are complete.
+
+| Phase | What to Build | Depends On | Rationale |
+|-------|--------------|-----------|-----------|
+| 1 | `src/lib/languagetool-types.ts` + `src/api/languagetool.ts` | Nothing | Types and API layer have no dependencies; define the data contract first |
+| 2 | `TiptapEssayEditor.tsx` (Tiptap only, no LanguageTool yet) | Phase 1 (types) | Establish the editor, plain text sync, file handling, ref interface. Validate that Zustand sync works before adding decoration complexity |
+| 3 | `LanguageToolExtension.ts` + `LanguageToolPlugin.ts` + `decoration-builder.ts` | Phase 2 (editor running) | Plugin needs a working editor to attach to; decoration rendering needs ProseMirror document to decorate |
+| 4 | `SuggestionPopover.tsx` | Phase 3 (decorations rendered) | Popover needs decorated spans to be clickable before it can trigger |
+| 5 | `useEssayHeuristics.ts` + `HeuristicFeedbackBanner.tsx` | Phase 2 (`essayText` in store) | Heuristics read plain text from store; Phase 2 ensures that sync is solid |
+| 6 | `WritingTimer.tsx` + `GradingToolbar.tsx` modification | Phase 2 (editor focus events available) | Timer needs to hook into editor focus/blur; can be added after editor is stable |
+| 7 | FastAPI proxy endpoint `/api/lt/check` (optional) | Phases 1–6 complete | Only needed if direct browser CORS fails; verify first before building proxy |
+
+---
+
+## Scaling Considerations
+
+This is a single-user SPA. Scaling concerns are about performance at the document level, not infrastructure.
+
+| Concern | At 500 words | At 2000 words | At 5000 words |
+|---------|-------------|--------------|--------------|
+| LanguageTool API | <5KB payload, fine | <15KB, fine | Approaches 20KB/request limit — may need to split by paragraph |
+| Decoration rendering | Negligible | Negligible | ProseMirror DecorationSet is efficient; 100+ decorations are no problem |
+| Heuristic computation | <1ms | <5ms | <20ms — use `useMemo` with `essayText` as dep |
+| Tiptap onUpdate firing | Fine | Fine | Fine — getText() is O(n) but text editors handle this |
+
+At 5000+ words, batch LanguageTool requests by paragraph and merge results to stay under the 20KB/request limit.
+
+---
 
 ## Sources
 
-- Existing codebase analysis: `src/api/types.ts`, `src/api/grading.ts`, `src/stores/`, `src/lib/pdf-extract.ts`
-- [FastAPI official docs: OAuth2 with JWT](https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/) -- auth patterns
-- [FastAPI official docs: Docker deployment](https://fastapi.tiangolo.com/deployment/docker/) -- Dockerfile patterns
-- [FastAPI official docs: Bigger Applications](https://fastapi.tiangolo.com/tutorial/bigger-applications/) -- project structure
-- [Ollama OpenAI compatibility](https://ollama.com/blog/openai-compatibility) -- inference protocol
-- [vLLM or llama.cpp: Choosing the right engine](https://developers.redhat.com/articles/2025/09/30/vllm-or-llamacpp-choosing-right-llm-inference-engine-your-use-case) -- inference server comparison
-- [Building async APIs with FastAPI, SQLAlchemy 2.0, asyncpg](https://leapcell.io/blog/building-high-performance-async-apis-with-fastapi-sqlalchemy-2-0-and-asyncpg) -- database patterns
-- [Setup FastAPI with Async SQLAlchemy 2, Alembic, PostgreSQL, Docker](https://berkkaraal.com/blog/2024/09/19/setup-fastapi-project-with-async-sqlalchemy-2-alembic-postgresql-and-docker/) -- full stack setup
-- [FastAPI best practices (zhanymkanov)](https://github.com/zhanymkanov/fastapi-best-practices) -- conventions
-- [PyMuPDF documentation](https://pymupdf.readthedocs.io/en/latest/about.html) -- PDF extraction performance
+- [Tiptap React installation](https://tiptap.dev/docs/editor/getting-started/install/react) — package requirements, useEditor hook
+- [Tiptap Extension API](https://tiptap.dev/docs/editor/extensions/custom-extensions/create-new/extension) — addProseMirrorPlugins(), storage, options
+- [Tiptap StarterKit extension](https://tiptap.dev/docs/editor/extensions/functionality/starterkit) — disabling marks and nodes
+- [Tiptap Editor events](https://tiptap.dev/docs/editor/api/events) — onUpdate, onCreate, onBlur
+- [Tiptap CharacterCount extension](https://tiptap.dev/docs/editor/extensions/functionality/character-count) — words() and characters() methods
+- [Tiptap Discussion: updating decorators from external state](https://github.com/ueberdosis/tiptap/discussions/1012) — transaction metadata pattern
+- [ProseMirror DecorationSet in React — Medium](https://medium.com/@faisalmujtaba/prosemirror-decorationset-in-react-everything-i-wish-someone-had-told-me-6262eabae7ca) — decoration architecture
+- [LanguageTool Public HTTP API](https://dev.languagetool.org/public-http-api.html) — endpoint, rate limits (20 req/min, 20KB/req)
+- [LanguageTool browser addon API client](https://deepwiki.com/languagetool-org/languagetool-browser-addon/5.2-api-client-and-request-handling) — request format (POST, x-www-form-urlencoded)
+- Existing codebase: `EssayInput.tsx`, `GradingToolbar.tsx`, `app-store.ts`, `HighlightedEssay.tsx`, `GradingPage.tsx`, `highlight-context.tsx`
+
+---
+
+*Architecture research for: v2.2 Live Essay Feedback — Tiptap + LanguageTool + Heuristics integration*
+*Researched: 2026-03-12*

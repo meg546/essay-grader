@@ -1,182 +1,200 @@
 # Pitfalls Research
 
-**Domain:** Adding FastAPI + LLM backend with auth, database, and Docker to existing React essay grading frontend
-**Researched:** 2026-03-09
-**Confidence:** HIGH
+**Domain:** Adding Tiptap editor + LanguageTool API + ProseMirror decorations to existing React essay grader
+**Researched:** 2026-03-12
+**Confidence:** HIGH (Tiptap/ProseMirror pitfalls verified via official docs + GitHub issues; LanguageTool rate limits verified via official API docs)
 
 ## Critical Pitfalls
 
-### Pitfall 1: Event Loop Starvation from Blocking LLM Inference
+### Pitfall 1: Zustand `essayText` Sync Breaks with Tiptap
 
 **What goes wrong:**
-Llama 3.2 3B inference is a CPU/GPU-bound operation that takes seconds to tens of seconds. If the grading endpoint is declared `async def` and calls the inference library directly (e.g., `llama_cpp.create_completion()`), the single-threaded asyncio event loop freezes. No other requests -- health checks, auth, history queries -- can be served until inference completes. Under any concurrent load, the server becomes completely unresponsive and Uvicorn workers time out.
+The existing `EssayInput` component is a thin wrapper around `<Textarea>` with a controlled `value={essayText}` fed from Zustand. Replacing it with Tiptap's `useEditor` hook means the editor owns its own document state internally. You cannot use a controlled React pattern (value prop) with Tiptap. If you try to force `editor.setContent(essayText)` inside a `useEffect` watching `essayText`, you create a feedback loop: typing triggers `onUpdate` → updates Zustand → `useEffect` fires → `setContent` resets the cursor position. Every keystroke jumps the cursor to the end.
 
 **Why it happens:**
-Developers see FastAPI tutorials using `async def` everywhere and assume all handlers should be async. They call the blocking inference function inside an async handler without offloading it. Python's GIL means even threading has limits for CPU-bound work, compounding the problem.
+Developers migrating from textarea assume Tiptap can be used as a controlled component. Tiptap's editor state lives inside ProseMirror, not React state. The editor IS the source of truth for content. Zustand should be a subscriber, not a controller.
 
 **How to avoid:**
-- Since the project already plans configurable endpoints (local/LAN/cloud GPU), design the inference layer as an HTTP client call from the start. Use `httpx.AsyncClient` to call Ollama, vLLM, or a remote endpoint -- this is naturally non-blocking
-- If calling a local Python inference library directly, use `await run_in_threadpool(run_inference, prompt)` from Starlette
-- Simpler alternative: declare the grading handler as plain `def` (not `async def`) -- FastAPI auto-runs sync handlers in a threadpool
-- For production: use a dedicated inference server (Ollama or vLLM) as a separate service, called over HTTP
+- Treat `essayText` in Zustand as write-only from the editor's perspective: use `onUpdate` to push text INTO the store, never use the store to push content back into the editor
+- Populate initial content once via `useEditor({ content: initialText })` using the Zustand value at mount time. After that, the editor controls the content.
+- When restoring a previously loaded essay (file upload or drag-drop), use `editor.commands.setContent(text)` from the upload handler directly, not through a Zustand watch
+- For file upload/drop, imperatively call `editor.commands.setContent()` from the existing `handleFile` callback using a forwarded editor ref
 
 **Warning signs:**
-- Other API endpoints slow down when grading is in progress
-- Uvicorn logs: "Worker timed out" or SIGTERM errors
-- Health check endpoint fails during inference
+- Cursor jumps to end of text on every keypress
+- Undo (Ctrl+Z) behaves erratically, restoring deleted text
+- `console.log` in `onUpdate` and `useEffect` fire in alternating sequence
 
 **Phase to address:**
-Phase 1 (Backend Foundation) -- the inference abstraction must be non-blocking from day one. This is architectural and painful to retrofit.
+Phase 1 (Tiptap Editor Setup) — the sync strategy must be established before any LanguageTool work begins. Getting this wrong cascades into every subsequent phase.
 
 ---
 
-### Pitfall 2: Mock-to-Real API Contract Mismatch (snake_case vs camelCase)
+### Pitfall 2: LanguageTool API Response Positions Don't Map to ProseMirror Positions
 
 **What goes wrong:**
-The existing React frontend has typed interfaces (`GradingResult`, `CategoryScore`, `HighlightRange` in `src/api/types.ts`) using camelCase field names: `overallScore`, `essayText`, `gradedAt`, `maxScore`, `categoryId`. Python/FastAPI with Pydantic defaults to snake_case: `overall_score`, `essay_text`, `graded_at`. The frontend receives responses with wrong field names and every field reads as `undefined`. Scores show NaN, highlights vanish, history is empty.
+LanguageTool returns match offsets as `offset` (character index in the submitted plain text) and `length`. ProseMirror positions are NOT the same as plain text character positions — ProseMirror counts node boundaries as positions. A document with a single paragraph wrapping "Hello world" has ProseMirror positions 0 (before doc), 1 (before paragraph), 2 (before "H"), 13 (after "d"), 14 (after paragraph), 15 (after doc). If you naively add a decoration at positions `offset` and `offset + length`, you decorate the wrong characters or throw a RangeError.
 
 **Why it happens:**
-Python convention is snake_case, JavaScript convention is camelCase. FastAPI's `jsonable_encoder` and Pydantic's `.model_dump()` both output snake_case by default. Developers build the entire backend with Python conventions, then discover the contract mismatch only when connecting the frontend. Additionally, mock data was always "happy path" -- every field populated, no nulls -- but real API responses include edge cases: empty categories, zero scores, missing highlights on short essays.
+Tiptap exposes `getText()` which returns the same plain text string you sent to LanguageTool, making it seem like character positions should be equivalent. The hidden complexity is the ProseMirror document tree. Each paragraph node adds 2 positions (open + close tags). Multi-paragraph essays shift all LanguageTool offsets further and further from their ProseMirror equivalents.
 
 **How to avoid:**
-- Treat the existing `src/api/types.ts` as the source of truth. Print it out. Pin it to the wall
-- Configure Pydantic models with camelCase aliases:
-  ```python
-  from pydantic import ConfigDict
-  from pydantic.alias_generators import to_camel
-
-  class GradingResult(BaseModel):
-      model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
-      overall_score: int  # serializes as "overallScore"
-  ```
-- Write a contract test early: serialize a Pydantic `GradingResult` to JSON and assert all field names match the TypeScript interface
-- Handle nullable fields in frontend: add null checks for `highlights`, default empty arrays, fallback for missing `summary`
+- Use ProseMirror's `doc.resolve()` and `doc.content.findIndex()` to walk the document and map plain text character offsets to ProseMirror positions
+- The correct approach: `editor.state.doc.content.nodesBetween(0, doc.content.size, ...)` to accumulate plain text character counts per node, then map LanguageTool offsets into that coordinate system
+- Reference the `tiptap-languagetool` open-source extension (github.com/sereneinserenade/tiptap-languagetool) as a working reference implementation of this position mapping
+- Write a unit test with a multi-paragraph essay: verify decoration start/end positions decode to the correct words
 
 **Warning signs:**
-- TypeScript errors after swapping mock API for real endpoints
-- Components rendering `undefined` or `NaN` where values should appear
-- JSON responses in network tab show snake_case keys
+- Decorations appear on the wrong words (off by 1-2 characters for single paragraph, worsening with each additional paragraph)
+- `RangeError: Position X out of range` thrown by ProseMirror when applying decorations
+- Decorations work correctly on single-paragraph essays but break on multi-paragraph ones
 
 **Phase to address:**
-Phase 1 (Backend Foundation) -- define Pydantic response models matching TypeScript interfaces before writing any endpoint logic. Verify with integration test in Phase 4 (Frontend Integration).
+Phase 2 (LanguageTool Integration) — implement and test position mapping before building the suggestion popover UI.
 
 ---
 
-### Pitfall 3: CORS Misconfiguration Blocking All Frontend Requests
+### Pitfall 3: Decoration Updates on Every Keystroke Cause Visible Lag
 
 **What goes wrong:**
-The React frontend at `http://localhost:5173` (Vite dev server) sends requests to `http://localhost:8000/api`. Without CORS middleware, browsers block every cross-origin request. Developers fix with `allow_origins=["*"]` but then JWT authentication breaks because `allow_credentials=True` is incompatible with wildcard origins. Or they forget to include `Authorization` in allowed headers, so authenticated requests fail while unauthenticated ones work. Preflight OPTIONS requests fail silently, making POST/PUT requests with JSON bodies get rejected with no obvious error.
+The naive implementation: `onUpdate` fires → debounce timer resets → API call fires after 3 seconds → decorations update. This seems fine. But the problem is that when the document changes between the API call being made and the response arriving, the old decoration positions are now stale (text was inserted or deleted at those positions). Applying stale decorations to the current document breaks position mapping. Additionally, if decorations are stored in React state and updated via `setState`, React re-renders the entire component tree containing the editor on every API response, causing visible flicker.
 
 **Why it happens:**
-CORS is enforced by the browser, not the server. Everything works in Postman and curl. The server-side logs show successful processing. But the browser silently blocks the response. The interaction between credentials mode, specific origins, allowed headers, and preflight is non-obvious.
+Decorations must be applied as a ProseMirror plugin with its own state machine, not as React state fed back into the editor via props. React's rendering and ProseMirror's rendering are separate. Mixing them causes double-rendering artifacts. The LanguageTool community extension pattern uses a ProseMirror plugin (accessible via Tiptap's `addProseMirrorPlugins()` in a custom extension) specifically to avoid this.
 
 **How to avoid:**
-Configure CORS explicitly from the first line of `main.py`:
-```python
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # exact Vite dev URL
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],  # includes Authorization for JWT
-)
-```
-Key rules: (1) list exact origins with protocol and port, never wildcard with credentials, (2) add middleware before all routes, (3) use environment variable for origins so Docker/production can override, (4) `localhost` and `127.0.0.1` are different origins -- be consistent.
+- Implement LanguageTool decorations as a **Tiptap extension** with `addProseMirrorPlugins()`. The plugin manages a `DecorationSet` in its own ProseMirror plugin state, not in React state.
+- When the API response arrives, dispatch a custom transaction to the editor: `editor.view.dispatch(tr.setMeta(pluginKey, { matches: apiResponse }))`. The plugin then builds a fresh `DecorationSet` from the response.
+- Use ProseMirror's `tr.mapping.map()` to remap decoration positions through any transactions that occurred between the API call and the response — this prevents stale position errors.
+- Never store `DecorationSet` in React state or Zustand. It belongs entirely within the ProseMirror plugin state.
 
 **Warning signs:**
-- Browser console shows "blocked by CORS policy" errors
-- Requests work in Postman but fail from the React app
-- POST requests fail but GET works (preflight issue)
-- Auth requests fail after adding JWT (missing Authorization header)
+- Editor flickers or loses focus when grammar results arrive
+- Typing during an in-flight API call causes decorations to appear on wrong text
+- `console.log` shows React component re-rendering on every API response
 
 **Phase to address:**
-Phase 1 (Backend Foundation) -- CORS is literally the first thing to configure. Test with the Vite dev server before writing any business logic.
+Phase 2 (LanguageTool Integration) — architecture decision that cannot be retrofitted easily once the popover UI is built on top of it.
 
 ---
 
-### Pitfall 4: Alembic Migration Chaos in Docker
+### Pitfall 4: LanguageTool Free API Rate Limit Exhaustion
 
 **What goes wrong:**
-Developers create database tables with `Base.metadata.create_all()` during initial development, then try to add Alembic later. Alembic autogenerate sees existing tables and either generates a migration that fails ("table already exists") or generates an empty migration (thinks everything is in sync). In Docker, migrations run before PostgreSQL is ready, causing "Connection refused" errors. Or `env.py` does not import all model modules, so autogenerate silently misses tables.
+The free LanguageTool API allows 20 requests per IP per minute and a maximum of 20KB of text per request. At a 3-second debounce, a fast typist who pauses briefly every few seconds generates a request approximately every 3 seconds — that is 20 requests per minute, hitting the cap under normal continuous use. The API returns HTTP 429 with no retry-after header. If the rate limit is hit, the error handling must suppress the error silently (not toast a red error at the user for a background check), and the next successful check must pick up fresh results.
 
 **Why it happens:**
-`create_all()` is convenient for getting started but creates schema outside Alembic's tracking. Docker Compose `depends_on` only waits for the container to start, not for PostgreSQL to accept connections (port 5432 may not be listening yet). The `env.py` model import requirement is poorly documented and easy to miss.
+3 seconds sounds conservative, but the rate limit is per-IP for all users behind a NAT or corporate proxy. In a demo/class environment with many students on the same network, every student contributes to a shared 20 req/min cap. Even solo, a student writing actively will hit the cap if the debounce is not managed carefully.
 
 **How to avoid:**
-- Never use `create_all()` in application code. Use Alembic from the very first migration, even for the initial schema
-- In `env.py`, import all model modules explicitly: `from app.models import user, submission, result` -- or use a central `app.models.__init__` that imports all models
-- Use `alembic init -t async` if using async SQLAlchemy engine with asyncpg
-- Add a database readiness check in Docker entrypoint before running migrations:
-  ```bash
-  # entrypoint.sh
-  while ! pg_isready -h db -p 5432; do sleep 1; done
-  alembic upgrade head
-  uvicorn app.main:app --host 0.0.0.0 --port 8000
-  ```
-- Run migrations as an entrypoint step, NOT inside FastAPI's lifespan handler (async context conflicts with Alembic's sync execution)
+- Use 3-second debounce as a minimum, increasing to 5+ seconds when the previous request returned a 429
+- Implement a simple backoff: on 429, skip the next 2 check windows (add a `skipUntil` timestamp in the extension state)
+- Only send requests when text has actually changed (compare hash of last-checked text before firing)
+- Cap text at 20KB before sending — `text.slice(0, 20000)` with a character warning to the user if truncation occurs
+- On rate-limit errors, keep the last successful set of decorations rather than clearing them
 
 **Warning signs:**
-- `alembic revision --autogenerate` produces empty migration files
-- "Table already exists" or "relation does not exist" errors
-- Migrations work locally but fail in Docker
-- Some tables exist but others are missing
+- Grammar underlines vanish during active typing sessions
+- Network tab shows HTTP 429 responses
+- Users report "feedback stopped working" after several minutes
 
 **Phase to address:**
-Phase 2 (Database) -- establish Alembic from the first model definition. Docker migration execution in Phase 3 (Docker Compose).
+Phase 2 (LanguageTool Integration) — debounce and error handling must be built with the rate limit in mind from the start.
 
 ---
 
-### Pitfall 5: LLM Response Format Instability
+### Pitfall 5: Tiptap useEditor Stale Closure in onUpdate Callback
 
 **What goes wrong:**
-The grading endpoint sends a prompt expecting structured JSON output from Llama 3.2 3B with specific fields: `categories` array, numeric `scores`, `highlights` with character offsets, `strengths` and `improvements` arrays. The 3B model intermittently returns malformed JSON (unclosed braces, trailing commas), omits required fields, hallucinates extra fields, produces scores outside valid ranges (negative numbers, exceeding maxScore), or generates highlight character offsets that are out of bounds for the essay text.
+`useEditor({ onUpdate: () => { doSomething(someVar) } })` captures `someVar` in a closure at mount time. If `someVar` is a React state variable that changes (e.g., a "feedback enabled" toggle), the `onUpdate` callback always sees the stale value from when the editor was created. This is a documented Tiptap bug — the `useEditor` hook does not update callback options after mount by default.
+
+In this project: the toolbar will have a "live feedback toggle" that enables/disables LanguageTool. If `onUpdate` captures the initial `feedbackEnabled = false` value, the toggle will appear to work but the underlying behavior never changes.
 
 **Why it happens:**
-LLMs are probabilistic. A 3B parameter model is particularly prone to format instability compared to larger models. Character-level offset generation is fundamentally unreliable -- the model has no reliable concept of character positions. Even with structured output prompting, some percentage of responses will be malformed.
+The `useEditor` hook memoizes the editor instance. Callbacks passed as options are saved once, not updated with each re-render. This is a known limitation documented in Tiptap GitHub issues (#2403, #5831).
 
 **How to avoid:**
-- Wrap all LLM output parsing in try/except with a structured degraded fallback (return scores without highlights rather than 500 error)
-- Use Pydantic to validate LLM JSON output: parse into model, catch `ValidationError`, retry once with a simpler prompt, or return degraded response
-- For highlights: have the model return quoted text snippets, then use Python string matching (`str.find()`) to compute actual character offsets. Never trust the LLM to produce correct numerical offsets directly
-- Clamp scores to valid ranges: `score = max(0, min(score, max_score))`
-- Set maximum retry count (2) before returning degraded result
-- Log all LLM parsing failures with the raw output for prompt iteration
+- Use a `ref` for any values that `onUpdate` needs to access: `const feedbackEnabledRef = useRef(feedbackEnabled); useEffect(() => { feedbackEnabledRef.current = feedbackEnabled; }, [feedbackEnabled]);`
+- Inside `onUpdate`, read from `feedbackEnabledRef.current` instead of the captured closure variable
+- Alternatively, move the LanguageTool triggering logic into the Tiptap extension itself using ProseMirror's `appendTransaction` hook, which always has access to fresh extension storage/options
 
 **Warning signs:**
-- Intermittent 500 errors on the grading endpoint
-- Highlights appearing at wrong positions or causing IndexError
-- Scores of -1, 150/100, or NaN reaching the frontend
-- Grading working "most of the time" but randomly failing
+- The live feedback toggle appears to work visually but decorations still appear/disappear incorrectly
+- Console logging `feedbackEnabled` inside `onUpdate` always shows the initial value regardless of toggle state
+- Behavior is correct immediately after page reload but breaks after toggling the setting
 
 **Phase to address:**
-Phase 1 (Backend Foundation) -- build the response parsing and validation layer with fallback from the start. This is not optional polish.
+Phase 1 (Tiptap Editor Setup) and Phase 3 (Toolbar + Toggle Feature) — establish the ref pattern for mutable options before building toggle-dependent logic.
 
 ---
 
-### Pitfall 6: JWT Token Handling Breaks the Existing Frontend Auth Flow
+### Pitfall 6: ProseMirror Decoration Cursor Jump on Async State Update
 
 **What goes wrong:**
-The existing frontend has mock auth in `profile-store.ts` that persists `isSignedIn`, `email`, and `gradeLevel` to localStorage. Developers add real JWT auth but: (1) stale `isSignedIn: true` in localStorage from the mock era causes the frontend to think the user is logged in when they have no valid token, (2) tokens stored in localStorage are XSS-vulnerable, (3) no token refresh mechanism means users get logged out mid-essay and lose their work, (4) Axios requests do not include the Authorization header.
+When a LanguageTool API response arrives and the extension dispatches a transaction to update decorations, if that transaction is dispatched outside of a browser event context (e.g., in a `setTimeout` or `fetch().then()` callback), ProseMirror can misplace the cursor — particularly if the user was typing at the end of a line at the moment the update was applied. This is a documented ProseMirror issue (github.com/ProseMirror/prosemirror/issues/942).
 
 **Why it happens:**
-The mock auth stores a boolean `isSignedIn` with no token concept. The migration from mock to real auth requires changing how auth state is represented (boolean to token), how it is stored (localStorage to memory or httpOnly cookies), and how it is transmitted (no header to Bearer token). Developers update the backend but leave the frontend store logic unchanged.
+ProseMirror reconciles the DOM's selection with its internal selection after each transaction. When a transaction arrives asynchronously while the browser's native text input processing is in flight (e.g., IME composition, autocorrect), the selection reconciliation can displace the cursor.
 
 **How to avoid:**
-- Clear existing localStorage keys (`essay-grader-profile`) during migration, or version the store key
-- Store JWT in Zustand state (in-memory, not persisted). On page refresh, attempt a token refresh or redirect to login
-- Add an Axios request interceptor that attaches `Authorization: Bearer <token>` to every request
-- Add an Axios response interceptor that catches 401 responses, attempts token refresh, and retries the original request
-- Keep the existing pattern: grading works without auth, auth only required for history persistence and profile settings
-- Use short-lived access tokens (15-30 min) with a `/refresh` endpoint
+- Use `requestAnimationFrame` to defer decoration transactions until after the current browser event loop tick completes: `requestAnimationFrame(() => { editor.view.dispatch(decorationTransaction) })`
+- Mark the decoration transaction with `.setMeta('addToHistory', false)` to prevent it from appearing in undo history
+- Test with IME input (macOS Chinese/Japanese input) and with Safari's spellcheck autocorrect enabled
 
 **Warning signs:**
-- Users appear logged in but API calls return 401
-- Token visible in browser DevTools > Application > localStorage
-- No 401 handling in Axios -- user sees generic "network error" on token expiry
-- Refresh loses auth state entirely
+- Cursor jumps to a random position when grammar check results arrive
+- Undo skips past legitimate typing history (decoration updates polluting history)
+- Issue only appears when actively typing, not when testing with a pre-pasted essay
 
 **Phase to address:**
-Phase 2 (Authentication) for backend JWT implementation. Phase 4 (Frontend Integration) for Axios interceptors and store migration.
+Phase 2 (LanguageTool Integration) — test this during decoration implementation, not as a post-hoc fix.
+
+---
+
+### Pitfall 7: The Existing HighlightedEssay System Breaks After EssayText Contains HTML
+
+**What goes wrong:**
+`HighlightedEssay.tsx` uses `result.essayText` (a plain text string) for its segment-based highlighting. The `buildSegments()` utility in `highlight-utils` performs character-based substring extraction using `start`/`end` offsets from the grading API response. If `essayText` in the store is ever set to Tiptap's HTML output (from `editor.getHTML()`) instead of plain text (from `editor.getText()`), the character offsets in the grading response will not match the HTML string, and every highlight will appear at the wrong position or display raw HTML tags.
+
+**Why it happens:**
+When migrating to Tiptap, developers may call `editor.getHTML()` when syncing text to Zustand because it's the "save the document" instinct. The grading API receives HTML with `<p>` tags, scores against that, produces offsets against that string, and they appear to work — until the results view renders them against the plain text that `HighlightedEssay` expects.
+
+**How to avoid:**
+- Always use `editor.getText({ blockSeparator: '\n\n' })` when syncing to Zustand `essayText` and when submitting to the grading API
+- The `essayText` in the store must remain a plain text contract — never contain markup
+- Add a TypeScript comment on the `setEssayText` action noting: "Must be plain text — used for character-offset highlighting in results view"
+- In the `onUpdate` callback: `const text = editor.getText({ blockSeparator: '\n\n' }); setEssayText(text);`
+
+**Warning signs:**
+- `HighlightedEssay` shows visible `<p>` or `</p>` substrings in the rendered essay text
+- Highlights appear offset by a few characters in ways that correlate to HTML tag lengths
+- Works correctly when essay has one paragraph, breaks with two or more paragraphs
+
+**Phase to address:**
+Phase 1 (Tiptap Editor Setup) — this is a data contract decision that must be locked in on the first day of migration.
+
+---
+
+### Pitfall 8: React 19 Compatibility — Tiptap UI Components Not Yet Fully Supported
+
+**What goes wrong:**
+This project uses React 19.2.0. Tiptap's core `@tiptap/react` package works with React 19, but Tiptap's UI component library (`@tiptap/ui-components`, pre-built toolbar and popover primitives) is officially documented as working best with React 18. Using Tiptap UI components in React 19 may cause warning floods or subtle rendering bugs. Custom-built popover/suggestion UIs using Radix (already in the project as shadcn/ui components) are safer.
+
+**Why it happens:**
+Tiptap's UI layer bundles its own Radix-based primitives that were built and tested against React 18. React 19's changes to how refs are handled and how transitions work can conflict with these assumptions.
+
+**How to avoid:**
+- Do NOT use `@tiptap/ui-components` or `@tiptap/suggestion` UI primitives. Build the suggestion popover using the existing `Popover` component from `src/components/ui/popover.tsx` (already in project, Radix-based, React 19 compatible)
+- Stick to `@tiptap/core`, `@tiptap/react`, `@tiptap/starter-kit` — these are the stable packages confirmed working with React 19
+- When building the click-to-fix popover, position it based on the decoration's DOM element coordinates via `editor.view.domAtPos()` rather than relying on Tiptap's built-in suggestion extensions
+
+**Warning signs:**
+- React console warns about `ref` prop changes or `act()` requirements in tests
+- Popover positioning is subtly broken in React 19 but not React 18
+- Installing `@tiptap/extension-mention` or similar extensions brings in `@tiptap/suggestion` which may pull in incompatible UI packages
+
+**Phase to address:**
+Phase 1 (Tiptap Editor Setup) — decide on popover strategy before installing any Tiptap UI packages.
 
 ---
 
@@ -184,117 +202,114 @@ Phase 2 (Authentication) for backend JWT implementation. Phase 4 (Frontend Integ
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| `Base.metadata.create_all()` instead of Alembic | DB works in 2 minutes | Cannot evolve schema, no rollback, migration nightmare | Never -- Alembic adds 30 min setup to save days of pain |
-| JWT in localStorage | Simple, persists across tabs/refreshes | XSS vulnerability | Academic project with no real user data -- document the risk |
-| Sync inference in async handler | Works for single user testing | Server freezes under any concurrency | Never -- use threadpool or HTTP client from day one |
-| `allow_origins=["*"]` CORS | "It just works" | Breaks with credentials, insecure | Only during first 10 minutes of debugging, replace immediately |
-| Single Dockerfile for backend + model | Simpler container management | Cannot scale inference independently, huge image size | Acceptable for academic project if model is called via HTTP |
-| Skipping Pydantic response models | Faster to return raw dicts | No validation, contract drift, serialization bugs | Never -- Pydantic models ARE the API contract |
-| Hardcoded inference timeout | Avoid timeout configuration | Different models/hardware need different timeouts | Only acceptable if using env variable for the timeout value |
+| Storing decorations in React state (useState) instead of ProseMirror plugin state | Familiar React patterns, easier to debug | Editor flicker on every API response, cursor displacement, double-render | Never — use ProseMirror plugin state |
+| Using `editor.getHTML()` for the Zustand `essayText` store | Preserves paragraph structure | Breaks `HighlightedEssay` character-offset system entirely | Never — always use `getText()` |
+| Calling LanguageTool on every `onUpdate` without debounce | Immediate feedback | Hits 20 req/min rate limit in under a minute | Never |
+| Skipping position mapping unit tests | Faster development | Off-by-N decoration bugs that are invisible on single-paragraph essays | Never — multi-paragraph essays are the common case |
+| Using Tiptap UI components package in React 19 | Less custom code | Potential React 19 incompatibilities, extra bundle weight | Not until Tiptap officially supports React 19 |
+| Setting `content` on useEditor from persisted Zustand state on every re-render | Keeps store "in sync" | Infinite cursor-reset loop | Never — set initial content once at mount only |
+| Calling `editor.commands.setContent()` inside `useEffect` watching Zustand state | Seems reactive | Cursor jump on every keystroke | Never — imperative setContent only from event handlers |
 
 ## Integration Gotchas
 
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| React Axios + FastAPI | Not adding Authorization header | Create Axios instance with request interceptor: `config.headers.Authorization = \`Bearer ${token}\`` |
-| Vite dev + FastAPI | Assuming `localhost` and `127.0.0.1` are same origin | They are different for CORS. Use consistent hostname. Vite defaults to `localhost` |
-| Zustand persist + Real Auth | Persisted `isSignedIn: true` from mock era causes phantom auth | On app load, validate token with `/api/auth/me` endpoint; clear state if invalid |
-| FastAPI + PostgreSQL in Docker | Using `localhost` as DB host in app config | Docker services use service names: `DATABASE_URL=postgresql+asyncpg://user:pass@db:5432/essays` |
-| Alembic in Docker | Running migrations inside FastAPI lifespan handler | Run `alembic upgrade head` in entrypoint.sh before `uvicorn`, or as `docker compose run backend alembic upgrade head` |
-| Frontend PDF upload | Sending PDF as base64 in JSON body | Use `multipart/form-data` with FastAPI `UploadFile`. Set correct Content-Type in Axios |
-| Frontend history | Fetching full `GradingResult` for history list | History list endpoint returns lightweight `HistoryItem`; fetch full result only on click |
-| Docker Compose networking | Frontend container calling `localhost:8000` | In Docker network, use service name `backend:8000`. For dev, use Vite proxy or env-based API URL |
+| Tiptap + Zustand | Bidirectional sync via useEffect | One-way: editor → Zustand via `onUpdate`. Zustand → editor only at mount or from imperative handlers (file upload) |
+| LanguageTool API | GET request | POST only to `https://api.languagetool.org/v2/check` with `Content-Type: application/x-www-form-urlencoded` |
+| LanguageTool API | Sending JSON body | Use `URLSearchParams` to encode form body: `text=...&language=en-US` |
+| LanguageTool API | Sending HTML content from editor.getHTML() | Send `editor.getText({ blockSeparator: '\n\n' })` — plain text only |
+| ProseMirror decorations | Applying DecorationSet from React state | Use `addProseMirrorPlugins()` in a Tiptap extension; decorations live in plugin state, not React state |
+| LanguageTool offsets | Treating LanguageTool character offsets as ProseMirror positions | Walk the doc with `nodesBetween` to build an offset-to-PM-position map |
+| Tiptap + React 19 | Using @tiptap/ui-components | Build suggestion popover with existing Radix `Popover` from shadcn/ui |
+| Suggestion popover positioning | Computing pixel position from LanguageTool offset alone | Use `editor.view.domAtPos(pmPos)` to get the DOM node, then `getBoundingClientRect()` for screen coordinates |
+| EssayPanel edit mode | textarea still used for post-grading editing | The results view `EssayPanel` editing textarea can remain — only the pre-grading input gets Tiptap |
 
 ## Performance Traps
 
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| Loading LLM model per request | 30-60 second cold start per grading | Load model once at startup via FastAPI lifespan, or use persistent inference server (Ollama) | Every request after idle |
-| No DB connection pooling | "Too many connections" errors | SQLAlchemy async engine: `pool_size=5, max_overflow=10` | 10+ concurrent users |
-| Unbounded essay in LLM context | OOM, inference takes minutes | Enforce essay length limit (e.g., 10,000 chars). Llama 3.2 3B has 128K context but inference time scales quadratically | Essays > 5000 words |
-| Full essay text in history list response | Slow history loading, excessive bandwidth | History endpoint returns `HistoryItem` with excerpt only. Full `GradingResult` fetched via `/submissions/{id}` | 50+ submissions |
-| No response streaming | User stares at spinner for 30+ seconds | Use SSE (Server-Sent Events) to stream partial results | Always -- UX concern |
-| Synchronous PDF parsing in request handler | Blocks event loop for large PDFs | Use `run_in_threadpool` for PDF extraction, or process async | PDFs > 5MB |
+| No debounce on LanguageTool API | Rate limit hit in under 60 seconds of active typing | 3-second debounce minimum; cancel previous pending request on new keypress | Immediately without debounce |
+| DecorationSet rebuilt on every editor transaction | Editor feels sluggish; 100ms+ input latency | Only rebuild `DecorationSet` when LanguageTool meta is present in the transaction, not on every transaction | Essays > 500 words with many matches |
+| Running heuristics on every `onUpdate` | Noticeable lag on each keypress | Debounce heuristics separately (1 second); most heuristics are O(n) on word count | Essays > 2000 words |
+| `editor.getText()` called on every render | Repeated full document serialization | Call `getText()` only in `onUpdate` callback, cache result | Not a real bottleneck at essay scale, but is sloppy |
+| Many overlapping decorations | Slow ProseMirror redraws | LanguageTool typically returns 5-30 matches per essay check; this is not a problem at essay scale | Thousands of decorations (not applicable here) |
 
 ## Security Mistakes
 
 | Mistake | Risk | Prevention |
 |---------|------|------------|
-| JWT secret hardcoded in source code | Token forgery if repo is public | Use env variable `JWT_SECRET_KEY`. Generate: `openssl rand -hex 32`. Add to `.gitignore` via `.env` |
-| No password hashing (or using MD5/SHA256) | Password leak exposes plaintext credentials | Use `passlib[bcrypt]` or `pwdlib` with Argon2. Never store reversible hashes |
-| No rate limiting on grading endpoint | Inference is expensive; abuse exhausts GPU resources | Use `slowapi` middleware: 10 grades/hour per user |
-| Exposing stack traces in error responses | Information leakage about internals | FastAPI exception handler returns generic error in production. Log details server-side |
-| No input validation on essay text length | Prompt injection, resource exhaustion via huge essays | Validate: 50 chars min, 50,000 chars max. Reject before hitting LLM |
-| Database URL with credentials in docker-compose.yml | Credentials in version control | Use `.env` file referenced by `env_file:` in docker-compose.yml. Keep `.env` in `.gitignore` |
+| Sending essay text to LanguageTool public API | User essay content transmitted to third-party server | Add visible disclosure in UI: "Grammar checking uses LanguageTool's service. Your text is sent to their servers." Required by their terms of use. |
+| Missing `rel` attribution for LanguageTool | TOS violation — LanguageTool requires visible attribution link without `rel="nofollow"` | Add "Powered by LanguageTool" link in the editor area or footer when grammar check is active |
+| Sending HTML with user content to LanguageTool | XSS via crafted text is not a risk here (plain text sent), but HTML leak could expose markup | Always send `editor.getText()`, never `getHTML()` — plain text only to external API |
 
 ## UX Pitfalls
 
 | Pitfall | User Impact | Better Approach |
 |---------|-------------|-----------------|
-| No progress feedback during inference (30+ sec) | User thinks app broke, refreshes, loses context | Show staged progress: "Analyzing essay...", "Evaluating criteria...", "Generating feedback..." Even approximate stages improve perceived performance |
-| Hard logout on token expiry | User loses essay text mid-writing | Essay text is already in Zustand (persisted to localStorage). On re-auth, state survives. But add Axios 401 interceptor to auto-refresh |
-| Requiring auth before any grading | Friction kills first-time usage | Keep current pattern: grading works without auth. Auth only for saving history and profile settings |
-| Different error formats per endpoint | Frontend needs endpoint-specific error handling | Standardize: `{"detail": "Human message", "code": "ERROR_CODE"}` everywhere |
-| PDF upload fails silently on server | User thinks rubric was received but grading ignores it | Return rubric text preview in grading response. Frontend already shows preview on upload -- backend should confirm what it parsed |
-| Grading fails with no actionable error | User has no idea what went wrong | Differentiate errors: "Essay too short" vs "Rubric could not be parsed" vs "Grading service unavailable" -- give specific user-facing messages |
+| Red underline appears on partial words as user types | Distracting, feels broken | Debounce ensures underlines only appear after typing pause; clear all decorations immediately when typing resumes using a `compositionstart` handler |
+| Grammar popover stays open when user clicks elsewhere | Blocks typing, confusing | Close popover on any editor click outside the marked text; close on `Escape` key |
+| Live feedback indistinguishable from grading highlights | User confused about which highlights are grammar vs. rubric feedback | Use different visual style: LanguageTool = wavy underline (`text-decoration: wavy underline`); grading highlights = background color (existing system) |
+| "Feedback off" toggle state not visible | User types, wonders why nothing is checking | Show indicator in toolbar: toggle must have clear on/off visual state with label, not just an icon |
+| 3-second delay before first feedback | User types first sentence, nothing happens for 3 seconds | Show a subtle "checking..." indicator in the toolbar during the debounce window |
+| Grammar errors from LanguageTool shown after user fixes them | Stale underlines linger | Ensure each successful API response fully replaces the previous DecorationSet |
+| Suggestion popover covers the text being corrected | User cannot see context | Flip popover above/below based on viewport position (Floating UI / Radix handles this automatically) |
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **CORS:** Tested with actual browser from Vite dev server, not just curl/Postman. Includes preflight for POST with JSON body
-- [ ] **Auth flow:** Token refresh works -- set token expiry to 1 minute, use the app for 2 minutes, verify auto-refresh
-- [ ] **API contract:** Every field in `src/api/types.ts` has a matching camelCase field in the API response. No extra fields, no missing fields
-- [ ] **Alembic:** `alembic upgrade head` works on completely empty database. Tested by dropping all tables and re-running
-- [ ] **Docker startup:** `docker compose down -v && docker compose up` creates schema, runs migrations, starts all services without manual intervention
-- [ ] **LLM error handling:** Grading endpoint returns a valid degraded response when LLM output is garbage JSON. Test by temporarily corrupting the prompt
-- [ ] **Highlight offsets:** Every `start`/`end` in highlights response is a valid index into the essay text. No off-by-one, no out-of-bounds
-- [ ] **History pagination:** Works with 0 items, 1 item, and 100+ items. Empty state handled gracefully
-- [ ] **PDF upload:** Tested with: normal PDF, scanned image PDF (should fail gracefully), large PDF (>5MB, size limit), and password-protected PDF (clear error)
-- [ ] **localStorage migration:** App works after clearing all localStorage. No stale mock-era data confuses real auth state
-- [ ] **Environment:** `.env` in `.gitignore`. `.env.example` with all required variables exists and is documented
-- [ ] **Docker networking:** Backend connects to `db` service name, not `localhost`. Frontend API URL is configurable via env variable
+- [ ] **Tiptap → Zustand sync:** `editor.getText({ blockSeparator: '\n\n' })` is what gets stored and submitted. Verified: paste an essay with 3+ paragraphs, submit for grading, confirm `HighlightedEssay` highlights appear on correct words
+- [ ] **File upload works with Tiptap:** Drag-dropping a .txt file or selecting via file input sets editor content AND Zustand `essayText`. Verified: `editor.getText()` equals the file content after drop
+- [ ] **Debounce cancellation:** Rapid typing produces exactly one API request per typing pause, not one per keystroke. Verify in Network tab.
+- [ ] **Rate limit handling:** Simulate 429 by temporarily pointing at a fake endpoint that returns 429. Verify no toast error shown to user, existing decorations retained.
+- [ ] **Multi-paragraph position mapping:** Check 3 specific LanguageTool match offsets against their ProseMirror positions in a 3-paragraph essay. Decorations must highlight the correct word.
+- [ ] **Cursor stability:** Type continuously while a grammar check is in flight. Cursor must not jump when API response arrives.
+- [ ] **Toggle works with stale closure fix:** Enable editor, toggle feedback off, type, toggle back on — confirm live feedback activates/deactivates correctly.
+- [ ] **Post-grading view unaffected:** Submit an essay for grading, confirm `HighlightedEssay` in results still renders correctly. The Tiptap migration must not break the existing highlight system.
+- [ ] **EssayPanel edit mode still works:** In results view, click edit, modify essay text in the existing `<textarea>`, click re-grade. Tiptap editor is NOT in the results view; that textarea stays.
+- [ ] **LanguageTool attribution:** A visible "Powered by LanguageTool" link (no nofollow) is present when grammar checking is enabled.
+- [ ] **Word count still works:** `WordStats` component receives accurate word count from Tiptap editor. The existing `essayText` Zustand store is the source; verify it stays plain text.
 
 ## Recovery Strategies
 
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| Event loop starvation | LOW | Refactor to `run_in_threadpool` or HTTP client call. No schema changes needed, just handler refactor |
-| CORS misconfiguration | LOW | Fix middleware config in `main.py`, restart server. 5-minute fix once diagnosed |
-| snake_case/camelCase mismatch | MEDIUM | Add `alias_generator=to_camel` to all Pydantic models. May need frontend null-safety patches for edge cases |
-| No Alembic from start | HIGH | Must stamp current schema state, recreate migration history. Risk of schema drift or data loss |
-| JWT localStorage + no refresh | MEDIUM | Move token to memory, add refresh endpoint and Axios interceptors. Both backend and frontend changes |
-| LLM output not validated | MEDIUM | Add Pydantic parsing layer and fallback responses. Must identify all failure modes through testing |
-| Docker migration timing | LOW | Add `pg_isready` wait loop to entrypoint script. Quick fix once diagnosed |
+| Bidirectional Zustand sync cursor bug | MEDIUM | Remove the `useEffect` watching `essayText`, convert file upload to imperative `editor.commands.setContent()`. One-time refactor of EssayInput. |
+| Wrong position mapping (decorations on wrong words) | MEDIUM | Rewrite position mapper function; unit test confirms fix. Does not affect API integration code. |
+| Decorations in React state (flicker) | HIGH | Must restructure as Tiptap extension with ProseMirror plugin state. Requires rewrite of LanguageTool integration layer. |
+| Rate limit without backoff | LOW | Add `skipUntil` ref to debounce logic. 30-minute fix once identified. |
+| HTML stored in essayText | HIGH | Causes silent corruption of all grading results. Requires fixing getText() extraction AND clearing all persisted Zustand state in localStorage. |
+| Tiptap UI component React 19 conflicts | MEDIUM | Uninstall `@tiptap/ui-components`, rebuild popovers using project's existing Radix primitives. |
+| Stale closure on feedback toggle | LOW | Add `useRef` pattern for toggle state. 15-minute fix. |
 
 ## Pitfall-to-Phase Mapping
 
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| Event loop starvation | Phase 1: Backend Foundation | 5 concurrent grading requests complete without timeout. Other endpoints respond during inference |
-| API contract mismatch | Phase 1: Backend Foundation | Serialize Pydantic models to JSON; all field names match TypeScript interfaces exactly |
-| CORS blocking | Phase 1: Backend Foundation | React dev server calls all endpoints without browser CORS errors |
-| Alembic migration chaos | Phase 2: Database | `docker compose down -v && docker compose up` recreates schema from scratch |
-| JWT token handling | Phase 2: Auth + Phase 4: Frontend | Token refresh works. Stale localStorage does not cause phantom auth |
-| LLM response instability | Phase 1: Backend Foundation | Grading returns valid degraded response when LLM returns malformed JSON |
-| Docker networking | Phase 3: Docker Compose | All services start and communicate. Frontend reaches backend, backend reaches DB and inference |
-| Mock-to-real state migration | Phase 4: Frontend Integration | App works correctly after clearing all localStorage |
-| No streaming UX | Phase 4: Frontend Integration | User sees progressive status within 5 seconds of submission |
+| Zustand ↔ Tiptap bidirectional sync | Phase 1: Tiptap Editor Setup | Typing does not move cursor; file upload sets content correctly |
+| HTML vs. plain text in essayText | Phase 1: Tiptap Editor Setup | `typeof essayText` logged after paste — must be plain text with no angle brackets |
+| Stale closure on onUpdate callback | Phase 1: Tiptap Editor Setup | Toggle feedback off, type 10 words, toggle on — API fires correctly |
+| React 19 Tiptap UI compatibility | Phase 1: Tiptap Editor Setup | No React 19 warnings in console; popover built with shadcn/ui Popover |
+| LanguageTool offset → ProseMirror position | Phase 2: LanguageTool Integration | Unit test: 3-paragraph essay, verify 5 matches render on correct words |
+| Decorations in React state (flicker) | Phase 2: LanguageTool Integration | Editor does not flicker on API response; cursor stable during typing |
+| Async decoration cursor jump | Phase 2: LanguageTool Integration | Type continuously through an API response arrival — cursor stays in place |
+| Rate limit exhaustion | Phase 2: LanguageTool Integration | Simulate rapid editing — no error toasts; graceful degradation |
+| Stale decorations after fix applied | Phase 3: Suggestion Popover | Accept a fix, confirm underline disappears; next check shows fresh results |
+| Post-grading HighlightedEssay unaffected | Phase 1 + Phase 2 verification | Submit graded essay — existing color highlights render correctly |
 
 ## Sources
 
-- [FastAPI CORS Documentation](https://fastapi.tiangolo.com/tutorial/cors/)
-- [FastAPI Async / Await Guide](https://fastapi.tiangolo.com/async/)
-- [FastAPI JWT / OAuth2 Tutorial](https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/)
-- [FastAPI Docker Deployment Guide](https://fastapi.tiangolo.com/deployment/docker/)
-- [Running Blocking ML Operations Asynchronously in FastAPI](https://apxml.com/courses/fastapi-ml-deployment/chapter-5-async-operations-performance/running-blocking-ml-operations)
-- [Async Gotchas in FastAPI](https://medium.com/@rameshkannanyt0078/async-isnt-always-faster-common-gotchas-in-fastapi-5308480a48db)
-- [FastAPI + SQLAlchemy + Alembic + Docker Setup](https://berkkaraal.com/blog/2024/09/19/setup-fastapi-project-with-async-sqlalchemy-2-alembic-postgresql-and-docker/)
-- [Alembic Async Engine Context Issues](https://github.com/sqlalchemy/alembic/issues/1606)
-- [FastAPI Security Design: JWT, OAuth2, CSRF Pitfalls](https://blog.greeden.me/en/2025/10/14/a-beginners-guide-to-serious-security-design-with-fastapi-authentication-authorization-jwt-oauth2-cookie-sessions-rbac-scopes-csrf-protection-and-real-world-pitfalls/)
-- [Streaming LLM Output in FastAPI](https://junkangworld.com/blog/stream-llm-output-in-fastapi-a-5-step-2025-tutorial)
-- [Ollama VRAM Requirements for Local LLMs](https://localllm.in/blog/ollama-vram-requirements-for-local-llms)
-- [Celery + Redis for Long-Running AI Jobs](https://markaicode.com/redis-celery-long-running-ai-jobs/)
-- Direct codebase analysis: `src/api/types.ts` (camelCase TypeScript interfaces), `src/api/grading.ts` (mock API structure), `src/stores/profile-store.ts` (mock auth with localStorage persistence), `src/stores/app-store.ts` (Zustand persist config)
+- [Tiptap Integration Performance Guide](https://tiptap.dev/docs/guides/performance) — re-render isolation, `shouldRerenderOnTransaction`, `useEditorState`
+- [Tiptap React Installation Docs](https://tiptap.dev/docs/editor/getting-started/install/react) — `immediatelyRender`, React 19 status
+- [Tiptap Liveblocks Best Practices](https://liveblocks.io/docs/guides/tiptap-best-practices-and-tips) — `content` vs `initialContent`, schema validation
+- [LanguageTool Public HTTP API Docs](https://dev.languagetool.org/public-http-api.html) — rate limits (20 req/min, 20KB/request), POST requirement, attribution requirement
+- [ProseMirror DecorationSet in React — Faisal Mujtaba, Medium](https://medium.com/@faisalmujtaba/prosemirror-decorationset-in-react-everything-i-wish-someone-had-told-me-6262eabae7ca) — external API decoration patterns
+- [ProseMirror Issue #942 — Cursor jump on decoration update from setInterval/API response](https://github.com/ProseMirror/prosemirror/issues/942)
+- [Tiptap Issue #2403 — onUpdate callback not updated after re-render (stale closure)](https://github.com/ueberdosis/tiptap/issues/2403)
+- [Tiptap Issue #5831 — useEditor does not react when option value changes](https://github.com/ueberdosis/tiptap/issues/5831)
+- [Tiptap Discussion #3496 — Working with React state management](https://github.com/ueberdosis/tiptap/discussions/3496)
+- [tiptap-languagetool reference implementation](https://github.com/sereneinserenade/tiptap-languagetool) — position mapping, decoration extension pattern
+- [Tiptap Issue #5856 — SSR / immediatelyRender hydration mismatch](https://github.com/ueberdosis/tiptap/issues/5856)
+- Direct codebase analysis: `src/components/grading/EssayInput.tsx` (current textarea + Zustand pattern), `src/components/results/HighlightedEssay.tsx` (character-offset highlight system), `src/lib/highlight-context.tsx` (existing highlight state), `src/stores/app-store.ts` (essayText in Zustand persist), `src/pages/GradingPage.tsx` (submission flow), `src/components/results/EssayPanel.tsx` (post-grading edit textarea)
 
 ---
-*Pitfalls research for: AI Essay Grader v2.0 Backend Implementation*
-*Researched: 2026-03-09*
+*Pitfalls research for: AI Essay Grader v2.2 Live Essay Feedback (Tiptap + LanguageTool)*
+*Researched: 2026-03-12*

@@ -1,206 +1,217 @@
-# Feature Landscape
+# Feature Research
 
-**Domain:** FastAPI backend for AI essay grading (v2.0 -- replacing mock frontend API layer with real backend)
-**Researched:** 2026-03-09
-**Confidence:** MEDIUM-HIGH (official docs for FastAPI, vLLM, PyMuPDF verified; LLM grading patterns from academic research)
+**Domain:** Live essay feedback — inline grammar/spelling checking, structural essay analysis, writing productivity tools in an educational writing editor
+**Researched:** 2026-03-12
+**Confidence:** HIGH (LanguageTool API documented; Tiptap integration patterns verified via official GitHub; UX patterns confirmed from Grammarly/QuillBot analysis; heuristics from academic writing guidelines)
 
 ## Context
 
-The React frontend (v1.1) is complete with mock data behind typed async API functions. This research covers ONLY the backend features needed to replace mock data with real inference, persistence, and authentication. The frontend API contract (`GradingResult`, `HistoryItem`, `GradeEssayRequest`) is already defined and must be matched exactly.
+This research covers ONLY the v2.2 milestone: replacing the plain `<textarea>` with a Tiptap-based editor that provides real-time feedback as students write. The existing grading pipeline (submit essay → LLM → results with highlighting) is already built. New features must integrate cleanly with the existing `GradingPage` component structure.
 
 ---
 
-## Table Stakes
+## Feature Landscape
 
-Features the backend MUST have for the frontend to function. Without these, the mock-to-real swap cannot happen.
+### Table Stakes (Users Expect These)
 
-| Feature | Why Expected | Complexity | Depends On |
-|---------|--------------|------------|------------|
-| **POST /api/grade endpoint returning `GradingResult` JSON** | Frontend `gradeEssay()` expects exact shape: `id`, `essayText`, `essayExcerpt`, `overallScore`, `maxScore`, `summary`, `categories[]` with scores/strengths/improvements/justification/highlights, and `gradedAt`. Any deviation breaks the entire results view. | High | LLM inference, structured output, prompt engineering |
-| **GET /api/history returning `HistoryItem[]`** | Profile page lists past submissions; frontend expects array with `id`, `essayExcerpt`, `overallScore`, `maxScore`, `categoryCount`, `gradedAt` | Low | PostgreSQL, JWT auth |
-| **GET /api/history/:id returning full `GradingResult`** | Clicking a history entry loads full result with all categories, highlights, and essay text for the side-by-side view | Low | PostgreSQL, JWT auth |
-| **POST /api/auth/register (email + password)** | Frontend has sign-in form on ProfilePage; needs real user creation. Currently mock accepts any valid email format + 6+ char password | Low | PostgreSQL, password hashing (bcrypt/argon2) |
-| **POST /api/auth/login returning JWT access token** | Frontend needs Bearer token; profile store already has `signIn()` method that will call this endpoint | Low | JWT signing (python-jose) |
-| **Token-based route protection** | All /api/grade and /api/history endpoints must be user-scoped; unauthorized requests get 401 | Low | FastAPI `Depends()` with OAuth2PasswordBearer |
-| **Server-side rubric PDF text extraction** | Frontend currently extracts rubric text client-side with `unpdf` and sends `rubricText` string in `GradeEssayRequest`. Backend should also accept raw PDF upload as a fallback/primary path | Med | PyMuPDF (pymupdf4llm) |
-| **Structured JSON from LLM matching `GradingResult` schema** | Model must return valid JSON with nested categories, highlight ranges, score integers -- not free-form prose requiring regex parsing | High | vLLM constrained decoding or Ollama JSON mode + Pydantic validation |
-| **Docker Compose for FastAPI + PostgreSQL** | Project requirement: single `docker compose up` runs the backend stack. Model server runs separately (not in Docker) | Med | Dockerfile, docker-compose.yml, health checks |
-| **CORS middleware** | Vite dev server at localhost:5173 must reach FastAPI at localhost:8000 | Low | `CORSMiddleware` in FastAPI |
-| **Pydantic response models matching frontend types** | FastAPI response schemas must mirror the TypeScript interfaces in `src/api/types.ts` exactly -- field names, types, nesting. This IS the API contract | Low | Direct translation of existing TypeScript types |
-| **Database schema for users, submissions, results** | Users table (id, email, hashed_password). Submissions table (id, user_id, essay_text, rubric_text, grade_level, created_at). Results stored as JSON blob or normalized category/highlight tables | Med | SQLAlchemy models, Alembic migrations |
+Features that users expect from any inline writing feedback tool. Missing these makes the editor feel broken or unpolished.
 
-## Differentiators
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| **Red/yellow underlines for grammar and spelling errors** | Grammarly, browser spell check, Google Docs — all use underlines. Users scan for underlines when proofreading. | MEDIUM | LanguageTool returns match offsets; Tiptap decorations render underlines via CSS. Color convention: red = spelling, yellow = grammar/style |
+| **Click-to-fix suggestion popover** | Industry standard since Grammarly. Users expect to click an underline and get replacement options in a popup. | MEDIUM | Tiptap BubbleMenu or custom popover positioned at cursor. Show match message, replacement(s), and a dismiss option. One-click replacement via `editor.commands.replaceText()` |
+| **Debounced checking (not on every keystroke)** | Users are actively typing — mid-word underlines would be jarring. All major tools delay until the user pauses. | LOW | 2-3 second debounce on `editor.on('update')`. 3s chosen per PROJECT.md to respect LanguageTool free tier (20 req/min). Cancel pending request on new input. |
+| **Toggle to enable/disable live feedback** | Writers need a distraction-free mode. Grammarly has a "Set Goals" panel; most editors have a toggle. Without one, users with anxiety around writing find the red underlines actively harmful. | LOW | Single toolbar button with on/off state stored in component state (or Zustand). When toggled off, clear all decorations immediately. |
+| **Word count display** | Every essay grading tool shows word count. Students have word count requirements and check constantly. Currently the plain textarea already shows this. | LOW | Tiptap `editor.storage.characterCount.words()` via `@tiptap/extension-character-count`. Display inline near editor bottom or in toolbar. |
+| **Preserve existing essay text on editor mount** | Users paste in their essay before submitting. The editor replacement must not lose or scramble text already in the textarea. | LOW | Initialize Tiptap with `content: existingText`. Plain text only (no rich text formatting). Sync editor content back to the parent component's state that gets submitted. |
+| **Error count summary** | Users want to know "how many issues are there" at a glance. Grammarly shows a count badge. | LOW | Count active LanguageTool matches. Display as "X issues" near toggle. Update reactively as user accepts suggestions. |
 
-Features that go beyond basic mock replacement and add real value to the grading experience.
+### Differentiators (Competitive Advantage)
 
-| Feature | Value Proposition | Complexity | Depends On |
-|---------|-------------------|------------|------------|
-| **Rubric-aligned dynamic category generation** | Instead of hardcoded 4 categories (Content & Ideas, Organization, Style & Voice, Language Conventions), the LLM reads the rubric PDF text and generates scoring categories that match the rubric's actual criteria. A biology rubric gets "Scientific Accuracy" and "Data Analysis" categories, not generic writing ones | High | Quality rubric text extraction, sophisticated prompt engineering, schema flexibility |
-| **Character-offset highlight ranges from LLM** | LLM identifies specific essay passages and returns `start`/`end` character positions linked to feedback. This powers the side-by-side highlighting. The two-pass approach (LLM quotes text, post-processing computes offsets) is far more reliable than asking the LLM to count characters | High | Two-pass inference or post-processing pipeline |
-| **Grade-level calibration** | Frontend sends `gradeLevel` (elementary/middle-school/high-school/college) via `GradeEssayRequest`. LLM adjusts scoring strictness and feedback language accordingly -- an elementary essay scored at college level would get 1/6 on everything | Med | Prompt engineering with grade-level instructions |
-| **Configurable model endpoint (local/LAN/cloud)** | Environment variable points to wherever the model runs: `http://localhost:11434` (Ollama local), `http://192.168.1.x:8000` (LAN vLLM), or cloud GPU endpoint. FastAPI backend is a thin proxy | Med | Abstraction layer, OpenAI-compatible client |
-| **Alembic database migrations** | Schema versioning so the database evolves without manual SQL or data loss. Standard for any production FastAPI+PostgreSQL setup | Med | Alembic + SQLAlchemy |
-| **Streaming inference with SSE** | Stream partial results as the LLM generates them instead of a 10-30s blocking wait. Frontend progressively renders scores and feedback sections | High | vLLM streaming, FastAPI `EventSourceResponse`, frontend SSE client changes |
-| **Refresh token rotation** | Short-lived access tokens (15min) with longer refresh tokens (7d). Better security without constant re-login | Med | Separate refresh token table, rotation logic |
+Features that go beyond basic spell-check and align with the educational essay-grading context of this product.
 
-## Anti-Features
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| **Client-side structural essay heuristics (info banners)** | Most grammar tools only check language mechanics. Structural analysis (thesis, paragraph structure, conclusion) is directly relevant to rubric-aligned grading — this bridges pre-submission writing with the post-submission grading results. | MEDIUM | Client-side only — no API call needed. Analyze plain text via regex and string heuristics: paragraph count, first/last paragraph length ratio, signal phrases ("In conclusion", "I argue that", "For example"). Render as dismissible banners or a sidebar panel, NOT as inline underlines (keep structural feedback visually separate from LanguageTool underlines). |
+| **Writing timer** | Replaces History toolbar button per PROJECT.md. Students writing timed essays need a visible elapsed timer. Shows time-on-task, which is also useful metadata for the teacher/student. | LOW | Simple `setInterval` counter starting on first keystroke (or on mount). Display as `MM:SS` in toolbar. No Pomodoro complexity — just elapsed time. Reset on new essay session. |
+| **Structural feedback: thesis signal detection** | Students frequently omit a thesis. A banner saying "No thesis statement detected in first paragraph" before submission prevents the most common rubric failure. | LOW | Heuristic: scan first paragraph for claim-like language. Signal phrases: "I argue", "This essay will", "The purpose of", "In my opinion", "Therefore", "This shows that". No thesis signal + first paragraph present = show banner. |
+| **Structural feedback: paragraph count and balance** | Short essays with single wall-of-text paragraphs score poorly on Organization rubric criteria. A "You have 1 paragraph — consider adding paragraph breaks" nudge is low-effort and high-impact. | LOW | Count `\n\n` or `\n` paragraph breaks. Flag if < 3 paragraphs for essays > 200 words. Flag if any single paragraph exceeds 60% of total word count. |
+| **Structural feedback: conclusion signal detection** | Missing conclusions are a top rubric failure. Signal phrases: "In conclusion", "To summarize", "In summary", "Overall", "As I have shown". | LOW | Scan last paragraph for these phrases. If not found and essay > 150 words, show soft banner. |
+| **Structural feedback: evidence/support signals** | Essays that make claims without evidence (quotes, data references, "According to", "For example", "Research shows") score lower on evidence criteria in most rubrics. | LOW | Count evidence signal phrases. If 0 found in an essay > 300 words, show an advisory banner. |
 
-Features to explicitly NOT build in v2.0.
+### Anti-Features (Commonly Requested, Often Problematic)
 
-| Anti-Feature | Why Avoid | What to Do Instead |
-|--------------|-----------|-------------------|
-| **Fine-tuning pipeline for Llama 3.2 3B** | Requires training data collection, GPU hours for training, evaluation methodology, and experiment tracking. This is a separate research project, not a backend feature | Use base Llama 3.2 3B Instruct with prompt engineering. Design inference layer so a fine-tuned model is a drop-in replacement via config change |
-| **OAuth / social login (Google, GitHub)** | OAuth redirect flows, provider registration, callback handling -- massive complexity for zero demo value | Email + password with bcrypt + JWT. The existing frontend auth UI already works this way |
-| **GPU inference inside Docker** | Running vLLM/Ollama in Docker requires NVIDIA Container Toolkit, GPU passthrough config, 10+ GB image sizes, and GPU memory management | Model server runs OUTSIDE Docker on bare metal or dedicated GPU host. FastAPI container calls it via HTTP. Docker Compose runs only FastAPI + PostgreSQL |
-| **Model evaluation framework** | Automated scoring accuracy metrics (QWK, Cohen's kappa) against human graders requires labeled essay datasets that do not exist for this project | Manual spot-checking of output quality. If scores feel reasonable on 10-20 test essays, that is sufficient for v2.0 |
-| **Rate limiting / abuse prevention** | Single-user course project demo. No adversarial users | Can be added as FastAPI middleware later (slowapi) if ever needed |
-| **Plagiarism / AI detection** | Different product domain requiring corpus comparison or classifier models. Explicitly out of scope per PROJECT.md | Not even a placeholder -- separate concern entirely |
-| **Multi-language support** | Requires multilingual models and i18n infrastructure | English only per PROJECT.md |
-| **PDF export of grading results** | Proper PDF generation (WeasyPrint, reportlab) adds a dependency for a rarely-used feature | At most a disabled "Export" button on frontend |
-| **WebSocket real-time updates** | No multi-user collaboration. SSE is simpler for uni-directional streaming and does not require WebSocket infrastructure | If streaming is added, use SSE (Server-Sent Events) which works over standard HTTP |
-| **Caching layer (Redis)** | Adds infrastructure complexity. Same essay+rubric combo being re-graded is unlikely in normal usage | Database stores results; if same essay is resubmitted, re-grade it (results may vary and that is fine) |
+| Anti-Feature | Why Requested | Why Problematic | Alternative |
+|--------------|---------------|-----------------|-------------|
+| **Auto-correct (apply fix without user confirmation)** | Seems like a convenience shortcut | Silently modifies the student's voice and word choice. In an academic context this is academically dishonest — the student loses ownership of their own writing. Teachers detecting unnatural phrasing patterns will flag it. | Always require explicit click-to-accept. Never auto-apply. |
+| **Rich text formatting (bold, italic, headers)** | Users are used to word processors | Per PROJECT.md, editor must be plain text only. Rich text would break the existing essay text pipeline — the backend expects plain text, and the existing highlight system works on character offsets in plain text. Bold/italic would introduce HTML that shifts character counts unpredictably. | Plain text Tiptap configuration. Disable all formatting extensions. Intercept paste events to strip HTML. |
+| **LLM-powered inline suggestions in the editor** | Would give richer, context-aware feedback per sentence | Requires an LLM API call per sentence update — prohibitively slow, costly, and complex for a real-time editor experience. This also duplicates the existing post-submission grading LLM pipeline. | Explicitly deferred to a future milestone per PROJECT.md. Heuristics are fast and free; LLM feedback is available after submission. |
+| **Custom dictionary / user ignore list** | Power users want to add domain-specific vocabulary | Adds persistent user preferences storage, UI to manage the list, and API changes. Disproportionate complexity for a demo/course project. LanguageTool's "Ignore" already handles the single-session case. | Single-session "Ignore this suggestion" (dismiss individual LanguageTool match) without persistence. Out of scope per PROJECT.md. |
+| **Character-level inline comments** | Comment threads like Google Docs | Per PROJECT.md, passage-level highlighting via the grading system is sufficient. Editor comments would create a separate comment thread that competes visually with both the LanguageTool underlines AND the existing post-grade highlight system. | Keep the two feedback systems visually distinct: LanguageTool = underlines in editor pre-submission; rubric feedback = highlighted passages in results view post-submission. |
+| **Pomodoro / break timer** | Productivity apps often offer this | Adds complexity and state management for a feature tangential to essay grading. Students want a stopwatch, not a behavior modification tool. | Simple elapsed time counter (writing timer). |
+| **Real-time word-count goal progress bar** | Some writing sprint tools show this | Students in an essay grading tool care about rubric compliance, not gamified word sprints. A progress bar toward a word count target adds visual noise with minimal grading value. | Static word count display. |
+
+---
 
 ## Feature Dependencies
 
 ```
-Docker Compose (FastAPI + PostgreSQL)
-  -> Alembic migrations (creates tables)
-    -> User model + password hashing
-      -> POST /api/auth/register
-      -> POST /api/auth/login (returns JWT)
-        -> FastAPI Depends() auth middleware
-          -> All protected endpoints below
+Tiptap editor (replaces <textarea>)
+  -> Plain text configuration (no rich text extensions)
+    -> Paste handler (strip HTML from paste)
+      -> Word count display (character-count extension)
+      -> LanguageTool integration
+        -> Debounced editor.on('update') handler
+          -> LanguageTool API call (api.languagetool.org)
+            -> Decoration marks on matched ranges
+              -> Click-to-fix popover (BubbleMenu or positioned div)
+                -> acceptSuggestion() command
+                -> dismissSuggestion() command
+        -> Toggle (enable/disable)
+          -> When off: clear all decorations immediately
+          -> Error count display (reactive to match count)
+      -> Structural heuristics (client-side, no API)
+        -> Runs on editor.on('update') (separate debounce, shorter — 1s is fine)
+          -> Thesis banner
+          -> Paragraph count/balance banner
+          -> Conclusion banner
+          -> Evidence signals banner
+      -> Writing timer
+        -> Start on first editor keystroke
+        -> Increment via setInterval
+        -> Display in toolbar
 
-PostgreSQL + Auth
-  -> Submission persistence (INSERT on grade, SELECT on history)
-    -> GET /api/history (user-scoped)
-    -> GET /api/history/:id (user-scoped)
-
-LLM serving (Ollama for dev, vLLM for production)
-  -> Structured JSON output (constrained decoding)
-    -> POST /api/grade
-      -> Score generation (per-category scores + feedback text)
-      -> Highlight generation (two-pass: LLM quotes text -> post-process computes offsets)
-        -> Full GradingResult response
-
-PyMuPDF server-side extraction
-  -> Rubric text available for grading prompt
-    -> POST /api/grade accepts multipart/form-data (PDF file) OR JSON (pre-extracted text)
-
-Frontend integration (LAST)
-  -> Replace gradeEssay() body with Axios POST to /api/grade
-  -> Replace getHistory() / getHistoryItem() with Axios GET calls
-  -> Replace signIn() with Axios POST to /api/auth/login
-  -> Add Axios interceptor for Authorization: Bearer header
-  -> Handle 401 -> auto sign-out
+Parent component integration (GradingPage)
+  -> editor.getText() replaces textarea value
+  -> Submit button reads from Tiptap, not textarea
+  -> After grading results load: editor becomes read-only (or remains editable for resubmit)
 ```
 
-## MVP Recommendation
+### Dependency Notes
 
-**Prioritize (in build order):**
+- **Tiptap requires plain text config:** Rich text extensions (Bold, Italic, Heading) must be omitted entirely — not just hidden. If included, they will be triggered by keyboard shortcuts and break the character-offset pipeline.
+- **LanguageTool toggle must clear decorations immediately:** Leaving stale underlines when feedback is disabled breaks the "clean editor" expectation. Tiptap decorations must be cleared via a transaction on toggle-off.
+- **Structural heuristics depend on Tiptap (not the old textarea):** They need `editor.getText()` to get the current content. This is only possible after Tiptap replaces the textarea.
+- **Writing timer does not depend on LanguageTool:** They are independent features that share the toolbar. The timer should work even if feedback is toggled off.
+- **Submit handler must be updated:** The existing `GradingPage` submits `essayText` state from a controlled `<textarea>`. After Tiptap migration, `essayText` must be populated from `editor.getText()` via an `onUpdate` callback or read at submit time.
 
-1. **Docker Compose with FastAPI skeleton + PostgreSQL** -- Foundation everything sits on. Includes health checks, CORS middleware, Alembic for schema setup. Validates the infrastructure before writing business logic.
+---
 
-2. **User model + JWT auth (register/login/protect routes)** -- Unblocks all user-scoped endpoints. Follow FastAPI's official OAuth2+JWT pattern. Use `passlib[bcrypt]` for hashing and `python-jose[cryptography]` for JWT. Simple access token with 24h expiry (no refresh token needed for demo).
+## MVP Definition
 
-3. **Submission persistence + history endpoints** -- Straightforward CRUD: store `GradingResult` as JSONB in PostgreSQL on grade completion, query by user_id for history. Validates the database layer works before adding LLM complexity.
+### Launch With (v2.2)
 
-4. **LLM inference endpoint with structured output** -- The hard part. Start with Ollama locally for easy dev setup (`ollama pull llama3.2:3b`). Use Ollama's JSON mode (`format: "json"`) with Pydantic validation. Design the inference client interface so vLLM is a config swap later. Use two-pass approach: (a) LLM generates scores + feedback + quoted text spans, (b) Python post-processing finds quoted spans in essay text and computes character offsets.
+Minimum viable feature set for this milestone as specified in PROJECT.md.
 
-5. **Server-side PDF extraction** -- PyMuPDF (`pymupdf4llm`) for rubric parsing. Accept both `multipart/form-data` (PDF file upload) and JSON body with `rubricText` string. Frontend currently sends pre-extracted text, so the JSON path is the primary flow; PDF upload is the robust fallback.
+- [ ] **Tiptap editor replacing textarea** — core dependency of everything else; plain text only
+- [ ] **LanguageTool integration with inline underlines** — the primary value prop of the milestone
+- [ ] **Click-to-fix suggestion popover** — without this, users can see issues but cannot act on them
+- [ ] **3-second debounce** — required to stay within LanguageTool free tier limits
+- [ ] **Toggle to enable/disable feedback** — required; always-on underlines are disruptive during first draft
+- [ ] **Word count display** — already existed in old textarea; must not regress
+- [ ] **Writing timer** — explicitly listed in PROJECT.md as replacing History toolbar button
+- [ ] **Structural heuristics (thesis, paragraph, conclusion, evidence)** — explicitly listed in PROJECT.md
 
-6. **Frontend integration** -- Swap mock API function bodies to real Axios calls. Add auth token to Zustand profile store. Wire up Axios interceptor for Bearer header. Handle error responses (401 -> sign out, 422 -> validation error display, 500 -> generic error).
+### Add After Validation (v2.x)
 
-**Defer to v2.1:**
+- [ ] **Error count badge** — nice quality signal; add once the underline/popover flow is solid
+- [ ] **Structural heuristic refinement** — tune signal phrases based on real student essay testing; false positive rate unknown until tested
 
-- **Streaming SSE**: Synchronous grading works first. The 10-30s wait is acceptable; streaming is polish.
-- **Refresh token rotation**: 24h access token expiry is fine for a demo. No refresh token complexity.
-- **Dynamic rubric category extraction**: Start with a fixed prompt that always produces 4 categories matching the existing frontend mock structure. Rubric text is included for context but categories are predefined. Dynamic extraction can come later.
-- **Alembic migrations**: For v2.0 initial setup, `Base.metadata.create_all()` is sufficient. Add Alembic when the schema needs to evolve.
+### Future Consideration (v3+)
 
-## Complexity Deep Dive
+- [ ] **LLM-powered inline suggestions** — explicitly deferred per PROJECT.md; requires separate LLM infrastructure
+- [ ] **Grade-level calibrated LanguageTool rules** — LanguageTool premium offers rule customization; not available on free tier
+- [ ] **Custom ignore list / personal dictionary** — explicitly out of scope per PROJECT.md
 
-### The Hard Problem: Structured LLM Output with Highlight Ranges
+---
 
-The most complex feature is getting Llama 3.2 3B to reliably produce:
-1. Valid JSON matching the nested `GradingResult` schema
-2. Character-offset highlight ranges (`start`, `end`) that correspond to actual positions in the essay text
+## Feature Prioritization Matrix
 
-**Why this is hard:**
-- Llama 3.2 3B (3 billion params) struggles with complex JSON schemas out-of-the-box. HuggingFace forum reports confirm this -- the model often produces malformed JSON or misses required fields without constrained decoding.
-- Character offset calculation requires "counting" characters -- LLMs cannot do this reliably. Asking for `{"start": 142, "end": 198}` will produce wrong numbers.
-- The target schema is non-trivial: 4 categories, each with arrays of strings and arrays of highlight objects containing integers.
+| Feature | User Value | Implementation Cost | Priority |
+|---------|------------|---------------------|----------|
+| Tiptap editor replacing textarea | HIGH | MEDIUM | P1 |
+| LanguageTool inline underlines | HIGH | MEDIUM | P1 |
+| Click-to-fix popover | HIGH | MEDIUM | P1 |
+| Debounce (3s) | HIGH | LOW | P1 |
+| Toggle enable/disable | HIGH | LOW | P1 |
+| Word count display | MEDIUM | LOW | P1 |
+| Writing timer | MEDIUM | LOW | P1 |
+| Thesis detection banner | MEDIUM | LOW | P1 |
+| Paragraph count/balance banner | MEDIUM | LOW | P1 |
+| Conclusion detection banner | MEDIUM | LOW | P1 |
+| Evidence signals banner | MEDIUM | LOW | P1 |
+| Error count summary | LOW | LOW | P2 |
+| Structural heuristic tuning | LOW | LOW | P2 |
+| LLM-powered suggestions | HIGH | VERY HIGH | P3 |
+| Grade-level rule calibration | MEDIUM | HIGH | P3 |
 
-**Recommended two-pass approach:**
+**Priority key:**
+- P1: Must have for v2.2 launch
+- P2: Should have, add when P1 is solid
+- P3: Future milestone
 
-Pass 1 -- LLM generates grading content:
-```json
-{
-  "categories": [
-    {
-      "name": "Content & Ideas",
-      "score": 5,
-      "maxScore": 6,
-      "strengths": ["Strong thesis..."],
-      "improvements": ["Needs more evidence..."],
-      "justification": "The essay presents...",
-      "highlightQuotes": [
-        {"text": "technology has fundamentally transformed", "type": "strength", "feedback": "Strong opening..."},
-        {"text": "Schools must address infrastructure gaps", "type": "improvement", "feedback": "Needs data..."}
-      ]
-    }
-  ],
-  "summary": "Overall assessment..."
-}
-```
+---
 
-Pass 2 -- Python post-processing:
-- For each `highlightQuotes[].text`, find the substring in the original essay using `str.find()` or fuzzy matching
-- Compute `start` and `end` integer offsets
-- If a quote is not found (LLM hallucinated or paraphrased), drop that highlight silently
-- Assemble the final `GradingResult` with computed offsets
+## Competitor Feature Analysis
 
-**Confidence:** HIGH that this approach works. Quoting text is something LLMs do well. String matching is deterministic. The only failure mode is the LLM paraphrasing instead of quoting exactly, which fuzzy matching mitigates.
+| Feature | Grammarly | QuillBot | Hemingway App | Our Approach |
+|---------|-----------|----------|----------------|--------------|
+| Inline underlines | Red (spelling), green (grammar), blue (style) | Yellow (all issues) | Color-coded sentence highlighting | Red/yellow underlines via Tiptap decorations |
+| Click-to-fix | Popover with one-click replacement | Popover with replacement options | No inline fix — sidebar only | BubbleMenu or positioned popover |
+| Structural analysis | Premium only (Goals panel) | Essay checker post-paste | Always-on sentence-level analysis | Heuristic banners — pre-submission, client-side |
+| Toggle | Per-category settings panel | Not applicable (single check on paste) | No toggle — always on | Single toolbar toggle (on/off) |
+| Word count | Yes, toolbar | Yes | Yes | Via character-count extension |
+| Writing timer | No | No | No | Elapsed timer — differentiator |
+| API | Proprietary, cloud-only | Proprietary, cloud-only | None (client-side) | LanguageTool free tier (open, self-hostable) |
+| Plain text mode | No (full rich text) | Full rich text | Markdown | Tiptap in plain-text-only config |
 
-### Auth Token Integration with Existing Frontend
+---
 
-The frontend Zustand profile store already has `signIn()`, `signOut()`, `isSignedIn`, and `email`. The integration path:
+## Implementation Notes
 
-- `signIn()` calls `POST /api/auth/login`, receives `{ access_token, token_type }`, stores token in Zustand (persisted to localStorage via existing `persist` middleware)
-- New Axios interceptor reads token from store, adds `Authorization: Bearer <token>` header to all requests
-- 401 responses trigger `signOut()` which clears token and redirects to profile page
-- Registration is a new `POST /api/auth/register` call; on success, auto-login
+### LanguageTool API Constraints
 
-This is straightforward because the frontend already has the complete auth UI and store structure -- only the function bodies change, exactly as designed in v1.1.
+- **Free tier endpoint:** `https://api.languagetool.org/v2/check`
+- **Rate limit:** 20 requests/minute per IP, 75,000 characters/minute, 20,000 characters/request
+- **Auto language detection:** Send `language: auto` — avoids needing user language config
+- **For a student essay:** At 3s debounce, peak rate is ~20 req/min, which exactly hits the limit. In practice students pause more, so average rate is lower. If rate limit is hit, silently skip the check (do not show error to user).
+- **Self-host option:** LanguageTool is open source. For production use, run a self-hosted instance to remove rate limits. For demo/course project, the public API is sufficient.
 
-### Rubric PDF Handling: Client-Side vs Server-Side
+### Tiptap Extension: tiptap-languagetool
 
-Current flow: Frontend extracts text client-side with `unpdf` library, sends `rubricText` string in `GradeEssayRequest`. This works but has limitations:
-- `unpdf` is less robust than server-side extractors for complex PDFs
-- Large PDFs slow down the browser
+The community extension `sereneinserenade/tiptap-languagetool` provides the Tiptap integration layer. Key facts:
+- Uses Tiptap decorations to render underlines without modifying the document
+- Stores matches in `editor.extensionStorage.languagetool.match`
+- Exposes a `proofread()` command for manual triggering
+- Has `automaticMode` option (set to `false` and trigger manually via debounce for rate limit control)
+- No built-in UI — the popover must be implemented separately (Tiptap BubbleMenu or custom positioned component)
+- TypeScript and JavaScript versions available; copy the extension file into the project rather than installing via npm (the npm package may be stale)
 
-Recommended approach for v2.0:
-- **Primary path**: Frontend continues sending `rubricText` string (backward compatible, no upload needed)
-- **Enhanced path**: Frontend sends PDF as `multipart/form-data`, backend extracts with PyMuPDF (more robust, handles scanned PDFs with OCR if needed)
-- **Backend endpoint accepts both**: Check Content-Type; if `multipart/form-data` with a PDF file, extract server-side; if JSON with `rubricText`, use it directly
-- This avoids breaking the existing frontend flow while enabling a better path
+### Structural Heuristics: What Works
+
+Based on academic writing guidelines (thesis in last sentence of intro, introduction = ~10% of word count, evidence phrases, conclusion phrases):
+
+- **Thesis detection:** Scan first paragraph (up to first `\n\n`) for phrases: `I argue`, `This essay`, `The purpose`, `In my opinion`, `This paper`, `I will`, `I believe`, `The following`. Absence of these + essay > 100 words = suggest adding thesis signal. Confidence: MEDIUM (false positive risk if student writes a strong implicit thesis).
+- **Paragraph balance:** `essay.split(/\n\n+/)` gives paragraphs. Flag if count < 3 for essays > 200 words. Flag if any paragraph is > 60% of total word count. Confidence: HIGH (purely structural, low false positive risk).
+- **Conclusion:** Check last paragraph for: `In conclusion`, `To summarize`, `In summary`, `Overall`, `As I have shown`, `As discussed`. Confidence: MEDIUM (students often write conclusions without these exact phrases).
+- **Evidence:** Search entire essay for: `For example`, `According to`, `Research shows`, `Studies show`, `For instance`, `This is shown by`, `As stated in`. Zero hits + essay > 300 words = suggest adding evidence. Confidence: MEDIUM.
+
+All heuristics should render as **dismissible info banners** (not blocking, not inline underlines) to avoid confusion with LanguageTool error underlines. Tone should be advisory ("Consider adding...") not prescriptive ("You must...").
+
+---
 
 ## Sources
 
-- [FastAPI Official JWT/OAuth2 Tutorial](https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/) -- HIGH confidence, official docs
-- [vLLM Structured Outputs Documentation](https://docs.vllm.ai/en/v0.8.2/features/structured_outputs.html) -- HIGH confidence, official docs
-- [vLLM Structured Outputs in Practice (Red Hat)](https://developers.redhat.com/articles/2025/06/03/structured-outputs-vllm-guiding-ai-responses) -- MEDIUM confidence
-- [Ollama vs vLLM Performance Comparison (Red Hat)](https://developers.redhat.com/articles/2025/08/08/ollama-vs-vllm-deep-dive-performance-benchmarking) -- MEDIUM confidence
-- [vLLM vs Ollama vs llama.cpp 2025 Guide (ITECS)](https://itecsonline.com/post/vllm-vs-ollama-vs-llama.cpp-vs-tgi-vs-tensort) -- MEDIUM confidence
-- [PyMuPDF Documentation](https://pymupdf.readthedocs.io/en/latest/tutorial.html) -- HIGH confidence, official docs
-- [Python PDF Extractors 2025 Comparison](https://onlyoneaman.medium.com/i-tested-7-python-pdf-extractors-so-you-dont-have-to-2025-edition-c88013922257) -- MEDIUM confidence
-- [LLM-based Automated Essay Scoring (Nature, 2025)](https://www.nature.com/articles/s41598-025-87862-3) -- HIGH confidence, peer-reviewed
-- [Multi-Step Grading Rubrics with LLMs](https://www.thegreenreport.blog/articles/multi-step-grading-rubrics-with-llms-for-answer-evaluation/multi-step-grading-rubrics-with-llms-for-answer-evaluation.html) -- MEDIUM confidence
-- [Llama 3.2 3B Structured JSON (HuggingFace Forums)](https://discuss.huggingface.co/t/ask-for-a-structured-json-object-in-the-call-to-meta-llama-llama-3-2-3b-instruct/138998) -- MEDIUM confidence, community reports
-- [FastAPI LLM Best Practices (Agents Arcade)](https://agentsarcade.com/blog/building-llm-apps-with-fastapi-best-practices) -- MEDIUM confidence
-- [Docker Compose FastAPI + PostgreSQL patterns](https://blog.devops.dev/a-scalable-approach-to-fastapi-projects-with-postgresql-alembic-pytest-and-docker-using-uv-78ebf6f7fb9a) -- MEDIUM confidence
-- [LLM JSON Structured Output (Llama API)](https://llama.developer.meta.com/docs/features/structured-output/) -- HIGH confidence, official Meta docs
+- [LanguageTool HTTP API — Official](https://languagetool.org/http-api/) — HIGH confidence
+- [LanguageTool API Rate Limits — Help Center](https://help.languagetool.org/en/articles/307929-does-languagetool-offer-an-api) — HIGH confidence
+- [tiptap-languagetool Extension — GitHub](https://github.com/sereneinserenade/tiptap-languagetool) — HIGH confidence (official source)
+- [Tiptap Official Documentation](https://tiptap.dev/) — HIGH confidence
+- [Grammarly Editor User Guide](https://support.grammarly.com/hc/en-us/articles/360003474732-Grammarly-Editor-user-guide) — HIGH confidence (UX pattern reference)
+- [QuillBot Free Essay Checker](https://quillbot.com/essay-checker) — MEDIUM confidence (competitor UX reference)
+- [Essay Structure Guidelines — Swansea University](https://www.swansea.ac.uk/academic-success/academic-skills-lab/academic_writing_articles/essay-structure/structure-your-essays/) — HIGH confidence (academic writing standard)
+- [Thesis Statement Length and Placement — Word Counter](https://wordcounter.io/blog/whats-a-good-word-count-for-a-thesis-statement) — MEDIUM confidence
+- [SprintWrite Writing Sprint Timer — Chrome Web Store](https://chromewebstore.google.com/detail/sprintwrite/gcpkilhgmkcfiibhgfdagelbcgppiafd) — MEDIUM confidence (writing timer UX reference)
 
 ---
-*Feature research for: AI Essay Grader v2.0 Backend Implementation*
-*Researched: 2026-03-09*
+*Feature research for: Live Essay Feedback (v2.2 milestone — Tiptap editor, LanguageTool, structural heuristics)*
+*Researched: 2026-03-12*
