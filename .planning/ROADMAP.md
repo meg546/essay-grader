@@ -306,7 +306,7 @@ v2.2: 19 → 20 → 21 → 22, 23 (22 and 23 can proceed after 20 independently)
 | 16. Landing Page & Auth Entry | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 17. Registration Wizard | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 18. Profile Settings & History Management | v2.1 | 2/2 | Complete | 2026-03-10 |
-| 19. Tiptap Editor Foundation | 2/2 | Complete   | 2026-03-12 | - |
+| 19. Tiptap Editor Foundation | 2/2 | Complete    | 2026-03-12 | - |
 | 20. LanguageTool Decorations | v2.2 | 0/? | Not started | - |
 | 21. Suggestion Popover | v2.2 | 0/? | Not started | - |
 | 22. Feedback Toggle & Issue Badge | v2.2 | 0/? | Not started | - |
