@@ -32,7 +32,6 @@ export function EssayPanel({ result, onRegrade, isRegrading, readOnly }: EssayPa
     }
   }, [result.essayText, setEssayText, readOnly]);
 
-  const displayText = readOnly ? result.essayText : essayText;
   const hasChanges = !readOnly && essayText !== result.essayText;
 
   return (

@@ -34,7 +34,7 @@ export function HowItWorks() {
           How It Works
         </h2>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-[1fr_auto_1fr_auto_1fr]  md:items-start md:gap-0">
-          {steps.map((step, index) => (
+          {steps.map((step) => (
             <div key={step.number} className="flex flex-col items-center text-center md:px-4">
               <div className="flex size-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
                 {step.number}
