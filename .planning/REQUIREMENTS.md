@@ -78,7 +78,38 @@ Requirements for Onboarding & Layout Redesign milestone.
 
 - [ ] **HIST-01**: User can delete individual grading submissions from their history
 
+## v2.2 Requirements
+
+Requirements for Live Essay Feedback milestone.
+
+### Editor
+
+- [ ] **EDIT-01**: User can type essays in a Tiptap-based plain text editor
+- [ ] **EDIT-02**: User can drag-and-drop or upload .txt/.pdf files into the editor
+- [ ] **EDIT-03**: User can adjust text size (small/normal/large) in the editor
+
+### Spelling & Grammar
+
+- [ ] **GRAM-01**: User sees inline underlines for spelling, grammar, and style issues as they type
+- [ ] **GRAM-02**: User can click an underlined issue to see suggestions and apply a fix or ignore it
+
+### Toolbar & Productivity
+
+- [ ] **TOOL-01**: User can toggle live feedback on/off via the toolbar
+- [ ] **TOOL-02**: User can set a writing timer with preset durations from the toolbar
+- [ ] **TOOL-03**: User sees a badge showing the count of open issues on the feedback toggle
+
 ## Future Requirements
+
+### Structural Heuristics (deferred from v2.2)
+
+- **HEUR-01**: User sees a thesis hint only after the first paragraph is substantive
+- **HEUR-02**: User sees evidence hints only for body paragraphs once the essay has 3+ paragraphs
+- **HEUR-03**: User sees a conclusion hint only when the essay appears structurally complete (4+ paragraphs)
+
+### LLM-Powered Feedback
+
+- **LLM-01**: User receives rubric-aware feedback in the editor as they write
 
 ### Streaming
 
@@ -107,6 +138,10 @@ Requirements for Onboarding & Layout Redesign milestone.
 | PDF export of results | Placeholder only; not core value |
 | WebSocket real-time updates | SSE is simpler if streaming is added later |
 | Caching layer (Redis) | Adds infrastructure complexity for unlikely re-grading scenario |
+| Rich text formatting | Editor is plain text only — grading evaluates plain text |
+| Auto-correct | Academically problematic — students must explicitly accept fixes |
+| Custom dictionary / ignore lists | Adds complexity without core value |
+| Structural heuristics | Deferred — contextual triggering needs more design work |
 
 ## Traceability
 
@@ -148,13 +183,22 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROF-01 | Phase 18 | Pending |
 | PROF-02 | Phase 18 | Pending |
 | HIST-01 | Phase 18 | Pending |
+| EDIT-01 | — | Pending |
+| EDIT-02 | — | Pending |
+| EDIT-03 | — | Pending |
+| GRAM-01 | — | Pending |
+| GRAM-02 | — | Pending |
+| TOOL-01 | — | Pending |
+| TOOL-02 | — | Pending |
+| TOOL-03 | — | Pending |
 
 **Coverage:**
 - v2.0 requirements: 22 total (all complete)
-- v2.1 requirements: 12 total
-- Mapped to phases: 12/12
-- Unmapped: 0
+- v2.1 requirements: 12 total (9 complete, 3 pending)
+- v2.2 requirements: 8 total
+- Mapped to phases: 0/8
+- Unmapped: 8 ⚠️
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-10 after v2.1 roadmap created*
+*Last updated: 2026-03-12 after v2.2 requirements defined*
