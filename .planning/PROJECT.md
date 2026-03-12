@@ -31,20 +31,23 @@ Users can submit an essay with a rubric and immediately see clear, rubric-aligne
 - ✓ Editable essay in results view with resubmit — v1.1
 - ✓ Mock email+password authentication on profile page — v1.1
 - ✓ Two-tab navigation (Home / Profile) — v1.1
+- ✓ Grammarly-style landing page with feature highlights — v2.1
+- ✓ Multi-step registration wizard with grade level — v2.1
+- ✓ Profile settings page for user preferences — v2.1
 
 ### Active
 
-#### Current Milestone: v2.1 Onboarding & Layout Redesign
+#### Current Milestone: v2.2 Live Essay Feedback
 
-**Goal:** Redesign the app layout inspired by Grammarly — dedicated landing page, prominent auth buttons, multi-step registration wizard, and profile settings for changing user preferences.
+**Goal:** Replace the plain textarea essay input with a Tiptap-based editor providing real-time spelling, grammar, and structural feedback as students write.
 
 **Target features:**
-- Grammarly-style landing page with site info and feature highlights
-- Prominent Sign In / Register buttons at top of landing page
-- Multi-step registration wizard (slider) with writing purpose and grade level questions
-- All wizard steps skippable except grade level (required)
-- Post-registration redirect to grading page
-- Profile settings page to update grade level and other preferences
+- Tiptap editor replacing plain textarea (no rich text formatting — plain text only)
+- LanguageTool API integration for live spelling/grammar/style checking with inline underlines
+- Click-to-fix suggestion popovers
+- Client-side essay structure heuristics (thesis detection, paragraph length, evidence signals, conclusion check)
+- Toggleable live feedback via toolbar
+- Writing timer replacing the History toolbar button
 
 ### Out of Scope
 
@@ -57,7 +60,9 @@ Users can submit an essay with a rubric and immediately see clear, rubric-aligne
 - Docker / deployment setup — comes later
 - Mobile-optimized layout (<768px) — tablet minimum is sufficient
 - Resizable/draggable split panes — fixed split sufficient for grading
-- Rich text editing — grading evaluates plain text
+- Rich text formatting (bold, italic, etc.) — editor is plain text only
+- LLM-powered rubric feedback in editor — future enhancement, heuristics for v2.2
+- Custom dictionary or user-defined ignore lists
 - Character-level inline comments — passage-level highlighting sufficient
 
 ## Context
@@ -98,4 +103,10 @@ Users can submit an essay with a rubric and immediately see clear, rubric-aligne
 | Bidirectional hover via shared context | activeCategoryId/activeHighlightId in HighlightProvider enables card↔highlight interaction without prop drilling | ✓ Good |
 
 ---
-*Last updated: 2026-03-10 after v2.1 milestone started*
+| Tiptap editor for essay input | Rich text frameworks handle cursor/IME/undo; Tiptap has best React ecosystem | — Pending |
+| LanguageTool free API with auto-detect | Free, good quality, auto-detect avoids language config | — Pending |
+| 3-second debounce for API checks | Balances responsiveness with rate limit constraints (~20 req/min) | — Pending |
+| Heuristics as info banners, not inline | Separates structural feedback from LanguageTool underlines visually | — Pending |
+
+---
+*Last updated: 2026-03-12 after v2.2 milestone started*
