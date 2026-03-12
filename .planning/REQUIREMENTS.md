@@ -84,9 +84,9 @@ Requirements for Live Essay Feedback milestone.
 
 ### Editor
 
-- [ ] **EDIT-01**: User can type essays in a Tiptap-based plain text editor
+- [x] **EDIT-01**: User can type essays in a Tiptap-based plain text editor
 - [ ] **EDIT-02**: User can drag-and-drop or upload .txt/.pdf files into the editor
-- [ ] **EDIT-03**: User can adjust text size (small/normal/large) in the editor
+- [x] **EDIT-03**: User can adjust text size (small/normal/large) in the editor
 
 ### Spelling & Grammar
 
@@ -183,8 +183,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROF-01 | Phase 18 | Complete |
 | PROF-02 | Phase 18 | Complete |
 | HIST-01 | Phase 18 | Complete |
-| EDIT-01 | Phase 19 | Pending |
-| EDIT-03 | Phase 19 | Pending |
+| EDIT-01 | Phase 19 | Complete |
+| EDIT-03 | Phase 19 | Complete |
 | GRAM-01 | Phase 20 | Pending |
 | GRAM-02 | Phase 21 | Pending |
 | TOOL-01 | Phase 22 | Pending |

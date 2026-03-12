@@ -62,7 +62,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Milestone Goal:** Replace the plain textarea essay input with a Tiptap-based editor that gives students real-time spelling, grammar, and structural feedback as they write, before they submit for LLM grading.
 
-- [ ] **Phase 19: Tiptap Editor Foundation** — Install Tiptap, replace textarea with plain-text editor, establish one-way Zustand sync, preserve word count and grading submission flow
+- [x] **Phase 19: Tiptap Editor Foundation** — Install Tiptap, replace textarea with plain-text editor, establish one-way Zustand sync, preserve word count and grading submission flow (completed 2026-03-12)
 - [ ] **Phase 20: LanguageTool Decorations** — ProseMirror plugin for inline spelling/grammar underlines, position-mapped decorations, 3-second debounce with rate-limit backoff
 - [ ] **Phase 21: Suggestion Popover** — Click-to-fix popover on decorated spans, apply/dismiss suggestions, viewport-aware positioning via shadcn/ui Popover
 - [ ] **Phase 22: Feedback Toggle & Issue Badge** — Toolbar toggle to enable/disable live feedback with visible issue count badge on the toggle button
@@ -228,7 +228,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. User can select small, normal, or large text size from the toolbar and the editor font size changes immediately
   3. Word and character count updates live as the user types, matching the behavior of the removed textarea
   4. Submitting the essay for grading produces identical results to the previous textarea — the plain text contract is preserved
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
 - [ ] 19-01-PLAN.md — Install Tiptap editor and add text size selector
 
@@ -305,7 +305,7 @@ v2.2: 19 → 20 → 21 → 22, 23 (22 and 23 can proceed after 20 independently)
 | 16. Landing Page & Auth Entry | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 17. Registration Wizard | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 18. Profile Settings & History Management | v2.1 | 2/2 | Complete | 2026-03-10 |
-| 19. Tiptap Editor Foundation | v2.2 | 0/1 | Not started | - |
+| 19. Tiptap Editor Foundation | 1/1 | Complete   | 2026-03-12 | - |
 | 20. LanguageTool Decorations | v2.2 | 0/? | Not started | - |
 | 21. Suggestion Popover | v2.2 | 0/? | Not started | - |
 | 22. Feedback Toggle & Issue Badge | v2.2 | 0/? | Not started | - |
