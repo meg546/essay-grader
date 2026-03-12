@@ -30,7 +30,7 @@ Replace `<Textarea>` with a Tiptap editor in `EssayInput.tsx`.
 
 - Use `StarterKit` for basic text editing (paragraphs, hard breaks, undo/redo)
 - Style the editor to match the current textarea appearance — no formatting toolbar, plain text only
-- Sync plain text to `useAppStore.essayText` via `editor.getText()` on every update so the grading API flow is untouched
+- Sync plain text to `useAppStore.essayText` on every update so the grading API flow is untouched. Use a custom serializer that emits `\n\n` between paragraph nodes (matching textarea double-newline convention) so paragraph boundaries are preserved for heuristic analysis and grading
 - Keep existing drag-and-drop file handling and file upload trigger
 - Respect `textSize` and `disabled` props exactly as today
 
@@ -46,9 +46,19 @@ A new service module (`src/services/language-tool.ts`) handles communication wit
 - Sends the full essay text with `language: "auto"` for automatic language detection
 - Returns an array of issues, each with: offset, length, message, suggested replacements, and issue type (spelling, grammar, style)
 
+### Rate Limits & Error Handling
+
+The free public LanguageTool API enforces rate limits (~20 req/min, ~10K character max per request). To stay within limits:
+
+- **Debounce interval: 3 seconds** (not 1s) after typing stops — reduces request volume
+- **Text length cap:** If essay exceeds 10,000 characters, only check the paragraph the cursor is in plus surrounding context
+- **429 (rate limit) handling:** Back off silently, retry after 30 seconds. Show a subtle muted indicator on the toggle icon (not a toast — don't interrupt writing flow)
+- **Network/API errors:** Fail silently. The toggle icon dims slightly to indicate feedback is unavailable. No toasts or error modals. Retry on next debounce cycle.
+- **AbortController:** Cancel any in-flight request when a new debounce fires or toggle is turned off
+
 ### Debounced Checking
 
-- After the student stops typing for ~1 second, fire a check request
+- After the student stops typing for ~3 seconds, fire a check request
 - Cancel any in-flight request if they start typing again
 - No checks fire while the toggle is off
 
@@ -65,8 +75,9 @@ Each LanguageTool match maps to a Tiptap decoration (underline) with metadata at
 Hovering an underlined word shows a small popover with:
 - The issue message
 - Replacement suggestions as clickable chips
-- Clicking a suggestion applies the fix directly in the editor and removes that decoration
+- Clicking a suggestion applies the fix directly in the editor and removes that decoration. ProseMirror's `DecorationSet.map` handles offset adjustments for remaining decorations through the transaction. A fresh LanguageTool check is NOT triggered immediately — it fires naturally on the next debounce after the edit.
 - An "Ignore" button dismisses the issue without changing text
+- On touch devices (no hover), tap the underlined word to open the popover. Tap outside to dismiss.
 
 ---
 
@@ -92,7 +103,7 @@ A client-side analysis module (`src/services/essay-heuristics.ts`) runs structur
 ### Checks
 
 - **Thesis detection** — checks if the first paragraph contains signal phrases (e.g., "I argue," "This essay will," "The purpose of"). Flags if no thesis-like statement is found.
-- **Paragraph length** — flags paragraphs that are too short (<2 sentences) or too long (>8 sentences) as potential structure issues.
+- **Paragraph length** — flags paragraphs that are too short (`MIN_SENTENCES = 2`) or too long (`MAX_SENTENCES = 8`) as potential structure issues. Thresholds defined as named constants for easy tuning.
 - **Evidence signals** — scans for citation/evidence markers ("according to," "research shows," quotation marks, parenthetical references). Flags body paragraphs that lack any evidence signals.
 - **Conclusion check** — flags if the final paragraph doesn't contain concluding language ("in conclusion," "therefore," "ultimately").
 
@@ -102,7 +113,7 @@ Displayed as subtle dismissible info-bar hints at the top or bottom of the edito
 
 ### Execution
 
-Runs on the same debounce as LanguageTool (after 1s of inactivity), but computed entirely client-side so it's instant.
+Runs on the same debounce as LanguageTool (after 3s of inactivity), but computed entirely client-side so it's instant.
 
 ### Future: Rubric-Aware
 
@@ -132,12 +143,14 @@ Replace the History button (`Clock` icon) with a Writing Timer button (`Timer` l
 
 History remains accessible via the existing nav/essays page.
 
+Note: The Writing Timer is independently shippable from the live feedback features.
+
 ### State
 
-- Add `liveFeedbackEnabled: boolean` to `useAppStore` with `persist`. Defaults to `true` for new users.
+- Add `liveFeedbackEnabled: boolean` to `useAppStore` with `persist`. Defaults to `true` for new users. Must be added to the `partialize` return object and store version bumped from 3 to 4 with migration.
 - Toggle on → debounced LanguageTool checks + heuristic analysis start running
 - Toggle off → cancel any in-flight requests, clear all decorations and heuristic banners immediately
-- Grading starts → pause live feedback automatically, resume after results are dismissed and student returns to editing
+- Grading starts → live feedback is automatically disabled (the editor is replaced by `HighlightedEssay` in the results view, so decorations are naturally gone). When the user clicks "Grade Another" and returns to the editor, live feedback resumes if the toggle is still on.
 
 ### Issue Count Badge
 
@@ -173,4 +186,12 @@ When live feedback is active, show a small count badge on the toolbar icon indic
 
 - `@tiptap/react` — React bindings for Tiptap
 - `@tiptap/starter-kit` — core editing extensions
-- `@tiptap/pm` — ProseMirror access for custom plugin
+- `@tiptap/pm` — ProseMirror access for custom plugin (verify at implementation time whether `@tiptap/core` re-exports the needed APIs — if so, skip this dependency)
+
+---
+
+## Accessibility
+
+- Issue popovers must be keyboard-navigable (focus trap, Escape to dismiss, Tab through suggestions)
+- Screen reader: announce issue count changes via `aria-live` region
+- Underline colors supplemented with distinct patterns (wavy vs dashed) so distinction doesn't rely solely on color
