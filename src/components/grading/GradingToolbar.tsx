@@ -23,17 +23,16 @@ import { RubricModal } from "./RubricModal";
 import { EssayUploadModal } from "./EssayUploadModal";
 import { ToneSelector } from "./ToneSelector";
 import { GradingSettings } from "./GradingSettings";
+import { TextSizeSelector } from "./TextSizeSelector";
 
 interface GradingToolbarProps {
   disabled?: boolean;
-  essayText: string;
   onClear: () => void;
   tone: string;
   onToneChange: (tone: string) => void;
   gradeLevelOverride: string | null;
   onGradeLevelChange: (level: string | null) => void;
   userGradeLevel: string | null;
-  onUploadEssayFile: () => void;
   onStatsToggle: (visible: boolean) => void;
 }
 
@@ -72,14 +71,12 @@ function ToolbarButton({
 
 export function GradingToolbar({
   disabled,
-  essayText,
   onClear,
   tone,
   onToneChange,
   gradeLevelOverride,
   onGradeLevelChange,
   userGradeLevel,
-  onUploadEssayFile,
   onStatsToggle,
 }: GradingToolbarProps) {
   const rubricFile = useAppStore((s) => s.rubricFile);
@@ -129,6 +126,8 @@ export function GradingToolbar({
         >
           <BarChart3 aria-hidden="true" className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]" />
         </ToolbarButton>
+
+        <TextSizeSelector />
 
         <Tooltip>
           <TooltipTrigger
