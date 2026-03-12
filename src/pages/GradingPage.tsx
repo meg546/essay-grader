@@ -163,6 +163,7 @@ export function GradingPage() {
           onGradeLevelChange={setGradeLevelOverride}
           userGradeLevel={gradeLevel}
           onStatsToggle={setShowStats}
+          onEssayTextLoaded={(text) => essayInputRef.current?.loadContent(text)}
         />
       </div>
 

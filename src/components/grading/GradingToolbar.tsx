@@ -34,6 +34,7 @@ interface GradingToolbarProps {
   onGradeLevelChange: (level: string | null) => void;
   userGradeLevel: string | null;
   onStatsToggle: (visible: boolean) => void;
+  onEssayTextLoaded?: (text: string) => void;
 }
 
 function ToolbarButton({
@@ -78,6 +79,7 @@ export function GradingToolbar({
   onGradeLevelChange,
   userGradeLevel,
   onStatsToggle,
+  onEssayTextLoaded,
 }: GradingToolbarProps) {
   const rubricFile = useAppStore((s) => s.rubricFile);
   const [rubricModalOpen, setRubricModalOpen] = useState(false);
@@ -190,6 +192,7 @@ export function GradingToolbar({
       <EssayUploadModal
         open={essayModalOpen}
         onOpenChange={setEssayModalOpen}
+        onTextLoaded={onEssayTextLoaded}
       />
     </>
   );

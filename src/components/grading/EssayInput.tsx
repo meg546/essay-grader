@@ -16,6 +16,7 @@ const TEXT_SIZE_CLASS: Record<TextSize, string> = {
 
 export interface EssayInputHandle {
   triggerFileUpload: () => void;
+  loadContent: (text: string) => void;
 }
 
 interface EssayInputProps {
@@ -66,10 +67,6 @@ export const EssayInput = forwardRef<EssayInputHandle, EssayInputProps>(
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDragOver, setIsDragOver] = useState(false);
     const dragCounterRef = useRef(0);
-
-    useImperativeHandle(ref, () => ({
-      triggerFileUpload: () => fileInputRef.current?.click(),
-    }));
 
     const editor = useEditor({
       immediatelyRender: false,
@@ -123,6 +120,18 @@ export const EssayInput = forwardRef<EssayInputHandle, EssayInputProps>(
         },
       });
     }
+
+    useImperativeHandle(ref, () => ({
+      triggerFileUpload: () => fileInputRef.current?.click(),
+      loadContent: (text: string) => {
+        if (editor) {
+          const html = `<p>${text.replace(/\n\n/g, "</p><p>").replace(/\n/g, "<br>")}</p>`;
+          editor.commands.setContent(html);
+        }
+        // Keep store in sync (belt-and-suspenders with modal's setEssayText)
+        useAppStore.getState().setEssayText(text);
+      },
+    }), [editor]);
 
     const handleFile = useCallback(
       async (file: File) => {

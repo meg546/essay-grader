@@ -16,6 +16,7 @@ import {
 interface EssayUploadModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onTextLoaded?: (text: string) => void;
 }
 
 async function readFileAsText(file: File): Promise<string> {
@@ -45,7 +46,7 @@ async function readFileAsText(file: File): Promise<string> {
   return "";
 }
 
-export function EssayUploadModal({ open, onOpenChange }: EssayUploadModalProps) {
+export function EssayUploadModal({ open, onOpenChange, onTextLoaded }: EssayUploadModalProps) {
   const setEssayText = useAppStore((s) => s.setEssayText);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -63,12 +64,13 @@ export function EssayUploadModal({ open, onOpenChange }: EssayUploadModalProps) 
       const text = await readFileAsText(file);
       if (text) {
         setEssayText(text);
+        onTextLoaded?.(text);
         toast.success("Essay uploaded");
         onOpenChange(false);
         setSelectedFile(null);
       }
     },
-    [setEssayText, onOpenChange]
+    [setEssayText, onTextLoaded, onOpenChange]
   );
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
