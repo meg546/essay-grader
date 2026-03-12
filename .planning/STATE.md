@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Live Essay Feedback
-status: defining_requirements
+status: ready_to_plan
 stopped_at: null
 last_updated: "2026-03-12"
-last_activity: 2026-03-12 — Milestone v2.2 started
+last_activity: 2026-03-12 — Roadmap created for v2.2 (Phases 19-23)
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,22 +21,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** Users can submit an essay with a rubric and immediately see clear, rubric-aligned scores with structured feedback and highlighted essay passages
-**Current focus:** Defining requirements for v2.2 Live Essay Feedback
+**Current focus:** Phase 19 — Tiptap Editor Foundation
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-12 — Milestone v2.2 started
+Phase: 19 of 23 (Tiptap Editor Foundation)
+Plan: — (not yet planned)
+Status: Ready to plan
+Last activity: 2026-03-12 — Roadmap created for v2.2 (Phases 19-23)
 
-Progress: [░░░░░░░░░░] 0% (v2.2)
+Progress: [██████████░░░░░░░░░░] ~78% overall (18/23 phases complete)
 
 ## Performance Metrics
 
-**Velocity (from v1.0 + v1.1 + v2.0 + v2.1):**
+**Velocity (v1.0 through v2.1):**
 - Total plans completed: 30+
-- Feature commits: 28+
+- Phases complete: 18
 - Total LOC: 2,541+ across 38+ files
 
 *Updated after each plan completion*
@@ -45,13 +45,12 @@ Progress: [░░░░░░░░░░] 0% (v2.2)
 
 ### Decisions
 
-- [v2.2]: Tiptap chosen over Slate and raw contentEditable for editor framework
-- [v2.2]: LanguageTool free API with language auto-detect for spelling/grammar
-- [v2.2]: 3-second debounce to stay within rate limits
-- [v2.2]: Heuristic structural checks as info banners, not inline underlines
-- [v2.2]: Writing timer replaces History toolbar button (history accessible from essays page)
-- [v2.2]: Live feedback toggleable via toolbar, persisted in Zustand store
-- [v2.2]: Design spec at docs/superpowers/specs/2026-03-12-live-essay-feedback-design.md
+- [v2.2]: Tiptap v3 chosen for editor — best React ecosystem, headless, `immediatelyRender: false` required for React 19
+- [v2.2]: One-way Zustand sync only — editor.getText() → store on `onUpdate`; store never writes back to editor after mount
+- [v2.2]: All @tiptap/* packages must be pinned to same minor version (3.20.x) — mismatched versions cause silent plugin failures
+- [v2.2]: Decorations must live in ProseMirror plugin state (not React state) — avoids flicker and cursor displacement
+- [v2.2]: LanguageTool CORS confirmed via curl but must verify in browser during Phase 20 — FastAPI proxy ready as fallback
+- [v2.2]: Heuristics deferred from v2.2 scope (moved to Future Requirements in REQUIREMENTS.md)
 
 ### Pending Todos
 
@@ -59,10 +58,11 @@ None.
 
 ### Blockers/Concerns
 
-None.
+- [Phase 20]: LanguageTool CORS must be verified in the browser early — have FastAPI proxy plan ready if direct fetch fails
+- [Phase 20]: ProseMirror position offset mapping is highest implementation risk — validate with unit test before building Phase 21 on top
 
 ## Session Continuity
 
 Last session: 2026-03-12
-Stopped at: Defining requirements for v2.2
+Stopped at: Roadmap created — ready to plan Phase 19
 Resume file: None

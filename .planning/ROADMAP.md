@@ -5,7 +5,8 @@
 - ✅ **v1.0 MVP** — Phases 1-6 (shipped 2026-03-08)
 - ✅ **v1.1 UX Redesign** — Phases 7-10 (shipped 2026-03-09)
 - ✅ **v2.0 Backend Implementation** — Phases 11-15 (shipped 2026-03-10)
-- 🚧 **v2.1 Onboarding & Layout Redesign** — Phases 16-18 (in progress)
+- ✅ **v2.1 Onboarding & Layout Redesign** — Phases 16-18 (shipped 2026-03-10)
+- 🚧 **v2.2 Live Essay Feedback** — Phases 19-23 (in progress)
 
 ## Phases
 
@@ -48,13 +49,24 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 </details>
 
-### 🚧 v2.1 Onboarding & Layout Redesign (In Progress)
-
-**Milestone Goal:** Redesign the app layout inspired by Grammarly — dedicated landing page, prominent auth buttons, multi-step registration wizard, and profile settings for changing user preferences.
+<details>
+<summary>✅ v2.1 Onboarding & Layout Redesign (Phases 16-18) — SHIPPED 2026-03-10</summary>
 
 - [x] **Phase 16: Landing Page & Auth Entry** — Grammarly-style landing page with feature highlights and sign-in/register entry points (completed 2026-03-10)
 - [x] **Phase 17: Registration Wizard** — Multi-step onboarding slider with writing purpose and grade level questions (completed 2026-03-10)
-- [ ] **Phase 18: Profile Settings & History Management** — Update user preferences from profile and delete submissions from history
+- [x] **Phase 18: Profile Settings & History Management** — Update user preferences from profile and delete submissions from history (completed 2026-03-10)
+
+</details>
+
+### 🚧 v2.2 Live Essay Feedback (In Progress)
+
+**Milestone Goal:** Replace the plain textarea essay input with a Tiptap-based editor that gives students real-time spelling, grammar, and structural feedback as they write, before they submit for LLM grading.
+
+- [ ] **Phase 19: Tiptap Editor Foundation** — Install Tiptap, replace textarea with plain-text editor, establish one-way Zustand sync, preserve word count and grading submission flow
+- [ ] **Phase 20: LanguageTool Decorations** — ProseMirror plugin for inline spelling/grammar underlines, position-mapped decorations, 3-second debounce with rate-limit backoff
+- [ ] **Phase 21: Suggestion Popover** — Click-to-fix popover on decorated spans, apply/dismiss suggestions, viewport-aware positioning via shadcn/ui Popover
+- [ ] **Phase 22: Feedback Toggle & Issue Badge** — Toolbar toggle to enable/disable live feedback with visible issue count badge on the toggle button
+- [ ] **Phase 23: Writing Timer & File Upload** — Elapsed session timer in the toolbar replacing the History button, drag-and-drop .txt/.pdf file upload into the editor
 
 ## Phase Details
 
@@ -156,7 +168,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 2/2 plans complete
 
 ### Phase 15: Frontend Integration
-**Goal**: The React frontend uses the real backend for all operations -- no mock data remains
+**Goal**: The React frontend uses the real backend for all operations — no mock data remains
 **Depends on**: Phase 12, Phase 13, Phase 14
 **Requirements**: FRONT-01, FRONT-02, FRONT-03, FRONT-04
 **Success Criteria** (what must be TRUE):
@@ -169,20 +181,20 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 </details>
 
+<details>
+<summary>v2.1 Phase Details (Phases 16-18)</summary>
+
 ### Phase 16: Landing Page & Auth Entry
 **Goal**: Users arrive at a dedicated landing page that communicates the product value and provides clear paths to sign in or register
 **Depends on**: Phase 15
 **Requirements**: LAND-01, LAND-02, LAND-03, AUTH2-01, AUTH2-02
 **Success Criteria** (what must be TRUE):
-  1. Unauthenticated user visiting the root URL sees a landing page with site description and feature highlights -- not the grading page
+  1. Unauthenticated user visiting the root URL sees a landing page with site description and feature highlights — not the grading page
   2. Landing page displays prominent Sign In and Register buttons within the page content (not only in a nav bar)
   3. Clicking Sign In opens the sign-in flow and successful login redirects to the grading page
   4. Clicking Register begins the registration flow (entering the onboarding wizard in Phase 17)
   5. An already-authenticated user visiting the root URL is redirected to the grading page, bypassing the landing page
-**Plans**: 2 plans
-Plans:
-- [x] 16-01-PLAN.md — Route restructure, ProtectedRoute, LandingLayout, auth redirects
-- [x] 16-02-PLAN.md — Landing page content sections (hero, features, how-it-works, walkthrough, footer)
+**Plans:** 2/2 plans complete
 
 ### Phase 17: Registration Wizard
 **Goal**: New users complete a multi-step onboarding wizard during registration that captures their preferences before entering the app
@@ -191,12 +203,9 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. After entering registration credentials, user sees a multi-step slider wizard (not a single form)
   2. Wizard includes a writing purpose step (work / school / other) that can be skipped
-  3. Wizard includes a grade level step that cannot be skipped -- user must select before proceeding
+  3. Wizard includes a grade level step that cannot be skipped — user must select before proceeding
   4. After completing (or skipping to) the final wizard step, user is redirected to the grading page with their preferences saved
-**Plans**: 2 plans
-Plans:
-- [ ] 17-01-PLAN.md — Backend preference columns, migration, PATCH endpoint, frontend API/store sync
-- [ ] 17-02-PLAN.md — Wizard UI components, RegisterPage form, ProtectedRoute wizard gate
+**Plans:** 2/2 plans complete
 
 ### Phase 18: Profile Settings & History Management
 **Goal**: Users can update their onboarding preferences at any time from the profile page and manage their submission history
@@ -206,7 +215,64 @@ Plans:
   1. User can change their grade level from the profile settings page and the new value persists across sessions
   2. User can change their writing purpose from the profile settings page and the new value persists across sessions
   3. User can delete an individual grading submission from their history list and it no longer appears
-**Plans**: [To be planned]
+**Plans:** 2/2 plans complete
+
+</details>
+
+### Phase 19: Tiptap Editor Foundation
+**Goal**: The essay input is a Tiptap-based plain text editor that syncs content to Zustand one-way, preserves existing submission flow, and supports text size adjustment
+**Depends on**: Phase 18
+**Requirements**: EDIT-01, EDIT-03
+**Success Criteria** (what must be TRUE):
+  1. User can type an essay in the editor and the text displays correctly with proper cursor, undo, and IME behavior
+  2. User can select small, normal, or large text size from the toolbar and the editor font size changes immediately
+  3. Word and character count updates live as the user types, matching the behavior of the removed textarea
+  4. Submitting the essay for grading produces identical results to the previous textarea — the plain text contract is preserved
+**Plans**: TBD
+
+### Phase 20: LanguageTool Decorations
+**Goal**: Users see wavy underlines for spelling, grammar, and style issues that appear automatically as they type, powered by the LanguageTool API
+**Depends on**: Phase 19
+**Requirements**: GRAM-01
+**Success Criteria** (what must be TRUE):
+  1. Spelling and grammar errors in a typed essay are marked with colored wavy underlines within 3-4 seconds of the user stopping
+  2. Underlines correctly highlight the exact word or phrase flagged by LanguageTool — no off-by-one errors in single or multi-paragraph essays
+  3. Underlines clear immediately and re-check when the user resumes typing
+  4. When LanguageTool returns a 429 rate-limit error, existing underlines remain visible and a new check is retried after a backoff delay
+**Plans**: TBD
+
+### Phase 21: Suggestion Popover
+**Goal**: Users can act on flagged issues by clicking an underline to see suggestions, apply a fix, or dismiss the issue
+**Depends on**: Phase 20
+**Requirements**: GRAM-02
+**Success Criteria** (what must be TRUE):
+  1. Clicking an underlined word or phrase opens a popover showing the issue message and available replacement suggestions
+  2. Clicking a suggestion in the popover replaces the flagged text in the editor and closes the popover
+  3. User can dismiss an issue from the popover — the underline disappears and the issue does not reappear for that occurrence until the text changes
+  4. Popover stays within the visible viewport even when the flagged text is near the top or bottom edge of the editor
+**Plans**: TBD
+
+### Phase 22: Feedback Toggle & Issue Badge
+**Goal**: Users can disable live grammar feedback when they want to write without distraction, and always see how many issues are open at a glance
+**Depends on**: Phase 20
+**Requirements**: TOOL-01, TOOL-03
+**Success Criteria** (what must be TRUE):
+  1. Clicking the feedback toggle button in the toolbar immediately removes all underlines from the editor
+  2. Clicking the toggle again immediately triggers a new LanguageTool check and underlines reappear
+  3. A badge on the toggle button shows the current count of open issues and updates as issues are resolved or new ones are found
+  4. The toggle state is preserved if the user navigates away and returns to the grading page
+**Plans**: TBD
+
+### Phase 23: Writing Timer & File Upload
+**Goal**: Users have a session timer in the toolbar to track their writing time, and can load essay content by dropping or uploading a file instead of typing
+**Depends on**: Phase 19
+**Requirements**: TOOL-02, EDIT-02
+**Success Criteria** (what must be TRUE):
+  1. The toolbar displays an elapsed MM:SS timer that starts on the first keystroke in the editor and pauses when the editor loses focus
+  2. User can select preset timer durations (e.g., 15 min, 30 min, 45 min) and the timer counts down, showing time remaining
+  3. User can drag and drop a .txt or .pdf file onto the editor and the file's text content is loaded into the editor
+  4. User can click an upload button in the editor to open a file picker and load a .txt or .pdf file the same way
+**Plans**: TBD
 
 ## Progress
 
@@ -214,7 +280,8 @@ Plans:
 v1.0: 1 → 2 → 3 → 4 → 5 → 6 (complete)
 v1.1: 7 → 8 → 9 → 10 (complete)
 v2.0: 11 → 12 → 13 → 14 → 15 (complete)
-v2.1: 16 → 17 → 18
+v2.1: 16 → 17 → 18 (complete)
+v2.2: 19 → 20 → 21 → 22, 23 (22 and 23 can proceed after 20 independently)
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -234,5 +301,10 @@ v2.1: 16 → 17 → 18
 | 14. Persistence & History | v2.0 | 2/2 | Complete | 2026-03-10 |
 | 15. Frontend Integration | v2.0 | 3/3 | Complete | 2026-03-10 |
 | 16. Landing Page & Auth Entry | v2.1 | 2/2 | Complete | 2026-03-10 |
-| 17. Registration Wizard | 2/2 | Complete    | 2026-03-10 | - |
-| 18. Profile Settings & History Management | v2.1 | 0/? | Not started | - |
+| 17. Registration Wizard | v2.1 | 2/2 | Complete | 2026-03-10 |
+| 18. Profile Settings & History Management | v2.1 | 2/2 | Complete | 2026-03-10 |
+| 19. Tiptap Editor Foundation | v2.2 | 0/? | Not started | - |
+| 20. LanguageTool Decorations | v2.2 | 0/? | Not started | - |
+| 21. Suggestion Popover | v2.2 | 0/? | Not started | - |
+| 22. Feedback Toggle & Issue Badge | v2.2 | 0/? | Not started | - |
+| 23. Writing Timer & File Upload | v2.2 | 0/? | Not started | - |

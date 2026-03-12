@@ -71,12 +71,12 @@ Requirements for Onboarding & Layout Redesign milestone.
 
 ### Profile
 
-- [ ] **PROF-01**: User can change grade level from the profile page
-- [ ] **PROF-02**: User can change writing purpose from the profile page
+- [x] **PROF-01**: User can change grade level from the profile page
+- [x] **PROF-02**: User can change writing purpose from the profile page
 
 ### History
 
-- [ ] **HIST-01**: User can delete individual grading submissions from their history
+- [x] **HIST-01**: User can delete individual grading submissions from their history
 
 ## v2.2 Requirements
 
@@ -180,25 +180,25 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ONBD-02 | Phase 17 | Complete |
 | ONBD-03 | Phase 17 | Complete |
 | ONBD-04 | Phase 17 | Complete |
-| PROF-01 | Phase 18 | Pending |
-| PROF-02 | Phase 18 | Pending |
-| HIST-01 | Phase 18 | Pending |
-| EDIT-01 | — | Pending |
-| EDIT-02 | — | Pending |
-| EDIT-03 | — | Pending |
-| GRAM-01 | — | Pending |
-| GRAM-02 | — | Pending |
-| TOOL-01 | — | Pending |
-| TOOL-02 | — | Pending |
-| TOOL-03 | — | Pending |
+| PROF-01 | Phase 18 | Complete |
+| PROF-02 | Phase 18 | Complete |
+| HIST-01 | Phase 18 | Complete |
+| EDIT-01 | Phase 19 | Pending |
+| EDIT-03 | Phase 19 | Pending |
+| GRAM-01 | Phase 20 | Pending |
+| GRAM-02 | Phase 21 | Pending |
+| TOOL-01 | Phase 22 | Pending |
+| TOOL-03 | Phase 22 | Pending |
+| TOOL-02 | Phase 23 | Pending |
+| EDIT-02 | Phase 23 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 22 total (all complete)
-- v2.1 requirements: 12 total (9 complete, 3 pending)
+- v2.1 requirements: 12 total (all complete)
 - v2.2 requirements: 8 total
-- Mapped to phases: 0/8
-- Unmapped: 8 ⚠️
+- Mapped to phases: 8/8 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-12 after v2.2 requirements defined*
+*Last updated: 2026-03-12 after v2.2 roadmap created (Phases 19-23)*
