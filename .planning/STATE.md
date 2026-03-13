@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-12)
 Phase: 19 of 23 (Tiptap Editor Foundation)
 Plan: — (not yet planned)
 Status: Ready to plan
-Last activity: 2026-03-12 — Roadmap created for v2.2 (Phases 19-23)
+Last activity: 2026-03-13 - Completed quick task 15: Implement Grammarly-like popup for LanguageTool suggestions
 
 Progress: [██████████░░░░░░░░░░] ~78% overall (18/23 phases complete)
 
@@ -64,6 +64,12 @@ None.
 
 - [Phase 20]: LanguageTool CORS must be verified in the browser early — have FastAPI proxy plan ready if direct fetch fails
 - [Phase 20]: ProseMirror position offset mapping is highest implementation risk — validate with unit test before building Phase 21 on top
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 15 | Implement Grammarly-like popup for LanguageTool suggestions | 2026-03-13 | 4846ed8 | [15-implement-grammarly-like-popup-for-langu](./quick/15-implement-grammarly-like-popup-for-langu/) |
 
 ## Session Continuity
 
