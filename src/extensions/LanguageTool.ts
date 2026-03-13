@@ -2,12 +2,14 @@ import { Extension } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
-import { checkText } from '@/api/languagetool'
-import type { LTMatch } from '@/api/languagetool'
+import { WorkerLinter } from 'harper.js'
 
 export const ltPluginKey = new PluginKey<DecorationSet>('languageTool')
 
 let debounceTimer: ReturnType<typeof setTimeout>
+
+// Module-level linter singleton — runs WASM in Web Worker, non-blocking
+const linter = new WorkerLinter()
 
 // --- Offset mapping ---
 
@@ -75,52 +77,70 @@ function snapToWordBounds(
 
 // --- Decoration building ---
 
-function getCssClass(issueType: string): string {
-  const type = issueType.toLowerCase()
-  if (type === 'misspelling' || type === 'typographical') {
+function getCssClass(lintKind: string): string {
+  if (lintKind === 'Spelling') {
     return 'lt-misspelling'
   }
-  if (type === 'grammar' || type === 'duplication' || type === 'inconsistency') {
+  if (
+    lintKind === 'Repetition' ||
+    lintKind === 'WordChoice' ||
+    lintKind === 'Capitalization' ||
+    lintKind === 'Sentence'
+  ) {
     return 'lt-grammar'
   }
-  if (
-    type === 'style' ||
-    type === 'locale-violation' ||
-    type === 'register' ||
-    type === 'formatting'
-  ) {
+  if (lintKind === 'Readability' || lintKind === 'Formatting') {
     return 'lt-style'
   }
   // Default
   return 'lt-grammar'
 }
 
-function buildDecorations(
-  doc: ProseMirrorNode,
-  _text: string,
-  matches: LTMatch[]
-): DecorationSet {
+function getCategoryFromLintKind(lintKind: string): string {
+  if (lintKind === 'Spelling') return 'spelling'
+  if (
+    lintKind === 'Repetition' ||
+    lintKind === 'WordChoice' ||
+    lintKind === 'Capitalization' ||
+    lintKind === 'Sentence'
+  ) {
+    return 'grammar'
+  }
+  if (lintKind === 'Readability' || lintKind === 'Formatting') return 'style'
+  return 'grammar'
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function buildDecorations(doc: ProseMirrorNode, _text: string, lints: any[]): DecorationSet {
   const map = buildOffsetMap(doc)
   const decorations: Decoration[] = []
 
-  for (const match of matches) {
-    const snapped = snapToWordBounds(_text, match.offset, match.length)
+  for (const lint of lints) {
+    const span = lint.span() as { start: number; end: number }
+    const snapped = snapToWordBounds(_text, span.start, span.end - span.start)
     const from = ltOffsetToPmPos(snapped.offset, map)
     const to = ltOffsetToPmPos(snapped.offset + snapped.length, map)
 
     if (from >= to) continue
 
-    const cssClass = getCssClass(match.rule.issueType)
+    const lintKind = lint.lint_kind() as string
+    const cssClass = getCssClass(lintKind)
+    const category = getCategoryFromLintKind(lintKind)
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const suggestions = (lint.suggestions() as any[]).map((s: any) =>
+      s.get_replacement_text()
+    )
 
     decorations.push(
       Decoration.inline(from, to, {
         class: cssClass,
         style: 'cursor: pointer',
-        'data-lt-message': match.message,
-        'data-lt-replacements': JSON.stringify(match.replacements.map((r) => r.value)),
+        'data-lt-message': lint.message(),
+        'data-lt-replacements': JSON.stringify(suggestions),
         'data-lt-from': String(from),
         'data-lt-to': String(to),
-        'data-lt-category': match.rule.issueType.toLowerCase(),
+        'data-lt-category': category,
       })
     )
   }
@@ -205,13 +225,13 @@ export const LanguageToolExtension = Extension.create({
         return
       }
 
-      const matches = await checkText(text)
+      const lints = await linter.lint(text)
 
       if (editor.isDestroyed) return // Check again after async (Pitfall 3)
 
-      const decorations = buildDecorations(editor.state.doc, text, matches)
+      const decorations = buildDecorations(editor.state.doc, text, lints)
       editor.view.dispatch(editor.state.tr.setMeta(ltPluginKey, decorations))
-    }, 3000)
+    }, 300)
   },
 
   onDestroy() {
