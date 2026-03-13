@@ -51,6 +51,28 @@ function ltOffsetToPmPos(offset: number, map: OffsetEntry[]): number {
   return result.pmPos + (offset - result.charOffset)
 }
 
+// --- Word boundary snapping ---
+
+function isWordChar(ch: string): boolean {
+  return /[\w'\u2019-]/.test(ch)
+}
+
+function snapToWordBounds(
+  text: string,
+  offset: number,
+  length: number
+): { offset: number; length: number } {
+  let start = offset
+  let end = offset + length
+
+  // Expand backward to start of word
+  while (start > 0 && isWordChar(text[start - 1])) start--
+  // Expand forward to end of word
+  while (end < text.length && isWordChar(text[end])) end++
+
+  return { offset: start, length: end - start }
+}
+
 // --- Decoration building ---
 
 function getCssClass(issueType: string): string {
@@ -82,8 +104,9 @@ function buildDecorations(
   const decorations: Decoration[] = []
 
   for (const match of matches) {
-    const from = ltOffsetToPmPos(match.offset, map)
-    const to = ltOffsetToPmPos(match.offset + match.length, map)
+    const snapped = snapToWordBounds(_text, match.offset, match.length)
+    const from = ltOffsetToPmPos(snapped.offset, map)
+    const to = ltOffsetToPmPos(snapped.offset + snapped.length, map)
 
     if (from >= to) continue
 
@@ -92,8 +115,12 @@ function buildDecorations(
     decorations.push(
       Decoration.inline(from, to, {
         class: cssClass,
+        style: 'cursor: pointer',
         'data-lt-message': match.message,
         'data-lt-replacements': JSON.stringify(match.replacements.map((r) => r.value)),
+        'data-lt-from': String(from),
+        'data-lt-to': String(to),
+        'data-lt-category': match.rule.issueType.toLowerCase(),
       })
     )
   }
@@ -129,7 +156,10 @@ export const LanguageToolExtension = Extension.create({
                 return DecorationSet.empty
               }
 
-              // Find the block containing the cursor
+              // Map old decorations to new doc positions FIRST
+              const mapped = oldSet.map(tr.mapping, tr.doc)
+
+              // Find the block containing the cursor (in new doc)
               const $pos = tr.doc.resolve(tr.selection.from)
 
               // Get start/end of the block node at this position
@@ -140,15 +170,12 @@ export const LanguageToolExtension = Extension.create({
                 blockStart = $pos.start($pos.depth)
                 blockEnd = $pos.end($pos.depth)
               } else {
-                // At top level — use position 0 to full doc size
                 blockStart = 0
                 blockEnd = tr.doc.content.size
               }
 
-              // Remove decorations only in the touched block
-              const clearedSet = oldSet.remove(oldSet.find(blockStart, blockEnd))
-              // Map remaining decorations through the transaction
-              return clearedSet.map(tr.mapping, tr.doc)
+              // Remove decorations only in the touched block (now using new-doc positions)
+              return mapped.remove(mapped.find(blockStart, blockEnd))
             }
 
             return oldSet
