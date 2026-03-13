@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-12)
 Phase: 19 of 23 (Tiptap Editor Foundation)
 Plan: — (not yet planned)
 Status: Ready to plan
-Last activity: 2026-03-13 - Completed quick task 15: Implement Grammarly-like popup for LanguageTool suggestions
+Last activity: 2026-03-13 - Completed quick task 16: Replace LanguageTool with Harper.js WASM
 
 Progress: [██████████░░░░░░░░░░] ~78% overall (18/23 phases complete)
 
