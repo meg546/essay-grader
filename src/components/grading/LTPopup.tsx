@@ -15,44 +15,22 @@ interface PopupData {
 }
 
 function getCategoryDotClass(category: string): string {
-  if (category === 'misspelling' || category === 'typographical') {
+  if (category === 'spelling') {
     return 'inline-block w-2 h-2 rounded-full bg-red-500 flex-shrink-0'
   }
-  if (
-    category === 'grammar' ||
-    category === 'duplication' ||
-    category === 'inconsistency'
-  ) {
+  if (category === 'grammar') {
     return 'inline-block w-2 h-2 rounded-full bg-blue-500 flex-shrink-0'
   }
-  if (
-    category === 'style' ||
-    category === 'locale-violation' ||
-    category === 'register' ||
-    category === 'formatting'
-  ) {
+  if (category === 'style') {
     return 'inline-block w-2 h-2 rounded-full bg-amber-500 flex-shrink-0'
   }
   return 'inline-block w-2 h-2 rounded-full bg-blue-500 flex-shrink-0'
 }
 
 function getCategoryLabel(category: string): string {
-  if (category === 'misspelling' || category === 'typographical') return 'Spelling'
-  if (
-    category === 'grammar' ||
-    category === 'duplication' ||
-    category === 'inconsistency'
-  ) {
-    return 'Grammar'
-  }
-  if (
-    category === 'style' ||
-    category === 'locale-violation' ||
-    category === 'register' ||
-    category === 'formatting'
-  ) {
-    return 'Style'
-  }
+  if (category === 'spelling') return 'Spelling'
+  if (category === 'grammar') return 'Grammar'
+  if (category === 'style') return 'Style'
   return 'Grammar'
 }
 
