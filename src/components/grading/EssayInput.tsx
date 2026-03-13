@@ -2,6 +2,7 @@ import { useRef, useState, useCallback, useImperativeHandle, forwardRef } from "
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { CharacterCount } from "@tiptap/extension-character-count";
+import { LanguageToolExtension } from "@/extensions/LanguageTool";
 import { toast } from "sonner";
 import { useAppStore } from "@/stores/app-store";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
@@ -84,6 +85,7 @@ export const EssayInput = forwardRef<EssayInputHandle, EssayInputProps>(
           orderedList: false,
         }),
         CharacterCount,
+        LanguageToolExtension,
       ],
       content: initialText
         ? `<p>${initialText.replace(/\n\n/g, "</p><p>").replace(/\n/g, "<br>")}</p>`
