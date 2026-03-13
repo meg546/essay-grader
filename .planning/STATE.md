@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Live Essay Feedback
 status: planning
-stopped_at: Completed 19-tiptap-editor-foundation 19-02-PLAN.md
-last_updated: "2026-03-12T18:39:57.078Z"
+stopped_at: Phase 20 context gathered
+last_updated: "2026-03-13T19:25:30.763Z"
 last_activity: 2026-03-12 — Roadmap created for v2.2 (Phases 19-23)
 progress:
   total_phases: 23
@@ -66,6 +66,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-12T17:16:35.174Z
-Stopped at: Completed 19-tiptap-editor-foundation 19-02-PLAN.md
-Resume file: None
+Last session: 2026-03-13T19:25:30.760Z
+Stopped at: Phase 20 context gathered
+Resume file: .planning/phases/20-languagetool-decorations/20-CONTEXT.md
