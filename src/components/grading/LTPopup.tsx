@@ -139,13 +139,14 @@ export function LTPopup({ editor }: LTPopupProps) {
   useEffect(() => {
     if (!editor || !popupData) return
 
+    const editorView = editor.view
     const scrollContainer =
-      editor.view.dom.closest('.overflow-y-auto') ?? editor.view.dom.parentElement
+      editorView.dom.closest('.overflow-y-auto') ?? editorView.dom.parentElement
 
     function handleScroll() {
       if (!popupData) return
       // Find the decoration span by from position
-      const spans = editor.view.dom.querySelectorAll('[data-lt-from]')
+      const spans = editorView.dom.querySelectorAll('[data-lt-from]')
       for (const span of spans) {
         const spanFrom = parseInt((span as HTMLElement).getAttribute('data-lt-from') ?? '-1', 10)
         if (spanFrom === popupData.from) {

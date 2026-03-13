@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback, useImperativeHandle, forwardRef } from "react";
+import { LTPopup } from "@/components/grading/LTPopup";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { CharacterCount } from "@tiptap/extension-character-count";
@@ -18,6 +19,7 @@ const TEXT_SIZE_CLASS: Record<TextSize, string> = {
 export interface EssayInputHandle {
   triggerFileUpload: () => void;
   loadContent: (text: string) => void;
+  clearContent: () => void;
 }
 
 interface EssayInputProps {
@@ -104,6 +106,7 @@ export const EssayInput = forwardRef<EssayInputHandle, EssayInputProps>(
             TEXT_SIZE_CLASS[textSize]
           ),
           "aria-label": "Essay text",
+          spellcheck: "false",
         },
       },
     });
@@ -118,6 +121,7 @@ export const EssayInput = forwardRef<EssayInputHandle, EssayInputProps>(
               TEXT_SIZE_CLASS[textSize]
             ),
             "aria-label": "Essay text",
+            spellcheck: "false",
           },
         },
       });
@@ -132,6 +136,11 @@ export const EssayInput = forwardRef<EssayInputHandle, EssayInputProps>(
         }
         // Keep store in sync (belt-and-suspenders with modal's setEssayText)
         useAppStore.getState().setEssayText(text);
+      },
+      clearContent: () => {
+        if (editor) {
+          editor.commands.clearContent(true);
+        }
       },
     }), [editor]);
 
@@ -222,6 +231,7 @@ export const EssayInput = forwardRef<EssayInputHandle, EssayInputProps>(
           editor={editor}
           className="flex-1 min-h-0 overflow-y-auto flex flex-col [&_.tiptap]:flex-1 [&_.tiptap]:flex [&_.tiptap]:flex-col [&_.tiptap.is-empty]:before:content-['Paste_your_essay_here_or_drag_and_drop_a_file...'] [&_.tiptap.is-empty]:before:text-muted-foreground [&_.tiptap.is-empty]:before:pointer-events-none [&_.tiptap.is-empty]:before:float-left [&_.tiptap.is-empty]:before:h-0 [&_.tiptap.is-empty]:before:w-full"
         />
+        <LTPopup editor={editor} />
         <input
           ref={fileInputRef}
           type="file"
