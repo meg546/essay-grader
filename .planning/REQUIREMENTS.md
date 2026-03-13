@@ -90,7 +90,7 @@ Requirements for Live Essay Feedback milestone.
 
 ### Spelling & Grammar
 
-- [ ] **GRAM-01**: User sees inline underlines for spelling, grammar, and style issues as they type
+- [x] **GRAM-01**: User sees inline underlines for spelling, grammar, and style issues as they type
 - [ ] **GRAM-02**: User can click an underlined issue to see suggestions and apply a fix or ignore it
 
 ### Toolbar & Productivity
@@ -185,7 +185,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | HIST-01 | Phase 18 | Complete |
 | EDIT-01 | Phase 19 | Complete |
 | EDIT-03 | Phase 19 | Complete |
-| GRAM-01 | Phase 20 | Pending |
+| GRAM-01 | Phase 20 | Complete |
 | GRAM-02 | Phase 21 | Pending |
 | TOOL-01 | Phase 22 | Pending |
 | TOOL-03 | Phase 22 | Pending |

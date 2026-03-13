@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Live Essay Feedback
 status: planning
-stopped_at: Phase 20 context gathered
-last_updated: "2026-03-13T19:25:30.763Z"
+stopped_at: Completed 20-01-PLAN.md (LanguageTool API layer)
+last_updated: "2026-03-13T20:05:46.788Z"
 last_activity: 2026-03-12 — Roadmap created for v2.2 (Phases 19-23)
 progress:
   total_phases: 23
   completed_phases: 12
-  total_plans: 24
-  completed_plans: 24
+  total_plans: 26
+  completed_plans: 25
   percent: 78
 ---
 
@@ -54,6 +54,7 @@ Progress: [██████████░░░░░░░░░░] ~78% ov
 - [Phase 19-tiptap-editor-foundation]: getState().setEssayText in onUpdate avoids stale closure (Pitfall 3); setOptions per-render keeps textSize class reactive
 - [Phase 19-tiptap-editor-foundation]: Removed essayText and onUploadEssayFile from GradingToolbar — toolbar uses EssayUploadModal internally, props were unused
 - [Phase 19-tiptap-editor-foundation]: loadContent placed after useEditor in EssayInput to avoid TypeScript block-scoped-before-declaration error (TS2448/TS2454)
+- [Phase 20-languagetool-decorations]: Default LanguageTool level (not picky) — avoids noise from over-sensitive rules
 
 ### Pending Todos
 
@@ -66,6 +67,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-13T19:25:30.760Z
-Stopped at: Phase 20 context gathered
-Resume file: .planning/phases/20-languagetool-decorations/20-CONTEXT.md
+Last session: 2026-03-13T20:05:46.786Z
+Stopped at: Completed 20-01-PLAN.md (LanguageTool API layer)
+Resume file: None
