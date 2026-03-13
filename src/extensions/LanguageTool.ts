@@ -2,14 +2,22 @@ import { Extension } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
-import { WorkerLinter } from 'harper.js'
+import type { Linter } from 'harper.js'
 
 export const ltPluginKey = new PluginKey<DecorationSet>('languageTool')
 
 let debounceTimer: ReturnType<typeof setTimeout>
 
-// Module-level linter singleton — runs WASM in Web Worker, non-blocking
-const linter = new WorkerLinter()
+// Module-level linter singleton — lazy-initialized on first lint call
+let _linterPromise: Promise<Linter> | null = null
+function getLinter(): Promise<Linter> {
+  if (!_linterPromise) {
+    _linterPromise = import('harper.js').then(({ LocalLinter, binaryInlined, Dialect }) => {
+      return new LocalLinter({ binary: binaryInlined, dialect: Dialect.American })
+    })
+  }
+  return _linterPromise
+}
 
 // --- Offset mapping ---
 
@@ -225,6 +233,7 @@ export const LanguageToolExtension = Extension.create({
         return
       }
 
+      const linter = await getLinter()
       const lints = await linter.lint(text)
 
       if (editor.isDestroyed) return // Check again after async (Pitfall 3)
