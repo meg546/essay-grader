@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useImperativeHandle, forwardRef } from "react";
+import { useRef, useState, useCallback, useImperativeHandle, forwardRef, useEffect } from "react";
 import { LTPopup } from "@/components/grading/LTPopup";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -112,7 +112,8 @@ export const EssayInput = forwardRef<EssayInputHandle, EssayInputProps>(
     });
 
     // Update editorProps when textSize changes (reactive class update)
-    if (editor) {
+    useEffect(() => {
+      if (!editor) return;
       editor.setOptions({
         editorProps: {
           attributes: {
@@ -125,7 +126,7 @@ export const EssayInput = forwardRef<EssayInputHandle, EssayInputProps>(
           },
         },
       });
-    }
+    }, [textSize, editor]);
 
     useImperativeHandle(ref, () => ({
       triggerFileUpload: () => fileInputRef.current?.click(),
@@ -229,7 +230,7 @@ export const EssayInput = forwardRef<EssayInputHandle, EssayInputProps>(
       >
         <EditorContent
           editor={editor}
-          className="flex-1 min-h-0 overflow-y-auto flex flex-col [&_.tiptap]:flex-1 [&_.tiptap]:flex [&_.tiptap]:flex-col [&_.tiptap.is-empty]:before:content-['Paste_your_essay_here_or_drag_and_drop_a_file...'] [&_.tiptap.is-empty]:before:text-muted-foreground [&_.tiptap.is-empty]:before:pointer-events-none [&_.tiptap.is-empty]:before:float-left [&_.tiptap.is-empty]:before:h-0 [&_.tiptap.is-empty]:before:w-full"
+          className="flex-1 min-h-0 overflow-y-auto flex flex-col [&_.tiptap]:flex-1 [&_.tiptap]:flex [&_.tiptap]:flex-col [&_.tiptap.is-empty]:before:content-['Paste_your_essay_here_or_drag_and_drop_a_file\u2026'] [&_.tiptap.is-empty]:before:text-muted-foreground [&_.tiptap.is-empty]:before:pointer-events-none [&_.tiptap.is-empty]:before:float-left [&_.tiptap.is-empty]:before:h-0 [&_.tiptap.is-empty]:before:w-full"
         />
         <LTPopup editor={editor} />
         <input

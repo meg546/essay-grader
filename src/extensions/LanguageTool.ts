@@ -131,6 +131,15 @@ function buildDecorations(doc: ProseMirrorNode, _text: string, lints: any[]): De
 
     if (from >= to) continue
 
+    // Skip decorations that cross block (paragraph) boundaries. When a lint
+    // span straddles a paragraph boundary, ProseMirror clips the inline
+    // decoration to each paragraph's end/start, causing the underline to
+    // extend across the full paragraph width and appear as a red horizontal
+    // bar between paragraphs.
+    const $from = doc.resolve(from)
+    const $to = doc.resolve(to)
+    if ($from.parent !== $to.parent) continue
+
     const lintKind = lint.lint_kind() as string
     const cssClass = getCssClass(lintKind)
     const category = getCategoryFromLintKind(lintKind)
@@ -184,26 +193,9 @@ export const LanguageToolExtension = Extension.create({
                 return DecorationSet.empty
               }
 
-              // Map old decorations to new doc positions FIRST
-              const mapped = oldSet.map(tr.mapping, tr.doc)
-
-              // Find the block containing the cursor (in new doc)
-              const $pos = tr.doc.resolve(tr.selection.from)
-
-              // Get start/end of the block node at this position
-              let blockStart: number
-              let blockEnd: number
-
-              if ($pos.depth > 0) {
-                blockStart = $pos.start($pos.depth)
-                blockEnd = $pos.end($pos.depth)
-              } else {
-                blockStart = 0
-                blockEnd = tr.doc.content.size
-              }
-
-              // Remove decorations only in the touched block (now using new-doc positions)
-              return mapped.remove(mapped.find(blockStart, blockEnd))
+              // Map old decorations to new doc positions; the debounced
+              // re-lint will replace them with fresh results shortly.
+              return oldSet.map(tr.mapping, tr.doc)
             }
 
             return oldSet
@@ -217,6 +209,22 @@ export const LanguageToolExtension = Extension.create({
         },
       }),
     ]
+  },
+
+  async onCreate({ editor }) {
+    // Re-run linting when the editor initializes with pre-existing content
+    // (e.g. essay text restored from Zustand persist on page reload).
+    // onUpdate does not fire for the initial content set via the `content`
+    // option, so we trigger a lint pass here if there is text to check.
+    const text = editor.getText({ blockSeparator: '\n\n' })
+    if (!text.trim()) return
+
+    const linter = await getLinter()
+    if (editor.isDestroyed) return
+    const lints = await linter.lint(text)
+    if (editor.isDestroyed) return
+    const decorations = buildDecorations(editor.state.doc, text, lints)
+    editor.view.dispatch(editor.state.tr.setMeta(ltPluginKey, decorations))
   },
 
   onUpdate({ editor }) {
