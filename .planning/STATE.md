@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Live Essay Feedback
 status: planning
-stopped_at: "Completed quick task 16: Replace LanguageTool with Harper.js WASM"
-last_updated: "2026-03-13T20:44:29.172Z"
-last_activity: "2026-03-13 - Completed quick task 15: Implement Grammarly-like popup for LanguageTool suggestions"
+stopped_at: "Completed 21-01-PLAN.md: LLM-powered suggestion popover"
+last_updated: "2026-03-14T01:01:57.830Z"
+last_activity: "2026-03-13 - Completed quick task 16: Replace LanguageTool with Harper.js WASM"
 progress:
   total_phases: 23
-  completed_phases: 12
-  total_plans: 26
-  completed_plans: 25
+  completed_phases: 13
+  total_plans: 27
+  completed_plans: 26
   percent: 78
 ---
 
@@ -55,6 +55,9 @@ Progress: [██████████░░░░░░░░░░] ~78% ov
 - [Phase 19-tiptap-editor-foundation]: Removed essayText and onUploadEssayFile from GradingToolbar — toolbar uses EssayUploadModal internally, props were unused
 - [Phase 19-tiptap-editor-foundation]: loadContent placed after useEditor in EssayInput to avoid TypeScript block-scoped-before-declaration error (TS2448/TS2454)
 - [Phase 20-languagetool-decorations]: Default LanguageTool level (not picky) — avoids noise from over-sensitive rules
+- [Phase 21-llm-powered-suggestion-popover]: Safe fallback on malformed LLM JSON — return 200 with empty suggestions rather than 500
+- [Phase 21-llm-powered-suggestion-popover]: FetchState discriminated union + currentFromRef stale-response guard pattern for async popover
+- [Phase 21-llm-powered-suggestion-popover]: extractSentenceContext uses plain text indexOf (not ProseMirror positions) to avoid offset complexity
 
 ### Pending Todos
 
@@ -71,9 +74,10 @@ None.
 |---|-------------|------|--------|-----------|
 | 15 | Implement Grammarly-like popup for LanguageTool suggestions | 2026-03-13 | 4846ed8 | [15-implement-grammarly-like-popup-for-langu](./quick/15-implement-grammarly-like-popup-for-langu/) |
 | 16 | Replace LanguageTool with Harper.js WASM | 2026-03-13 | 593b599 | [16-replace-languagetool-with-harper-js-wasm](./quick/16-replace-languagetool-with-harper-js-wasm/) |
+| Phase 21-llm-powered-suggestion-popover P01 | 12 | 2 tasks | 6 files |
 
 ## Session Continuity
 
-Last session: 2026-03-13T20:44:29.169Z
-Stopped at: Completed quick task 16: Replace LanguageTool with Harper.js WASM
+Last session: 2026-03-14T01:01:57.827Z
+Stopped at: Completed 21-01-PLAN.md: LLM-powered suggestion popover
 Resume file: None

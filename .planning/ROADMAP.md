@@ -64,7 +64,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 19: Tiptap Editor Foundation** — Install Tiptap, replace textarea with plain-text editor, establish one-way Zustand sync, preserve word count and grading submission flow (completed 2026-03-12)
 - [ ] **Phase 20: LanguageTool Decorations** — ProseMirror plugin for inline spelling/grammar underlines, position-mapped decorations, 3-second debounce with rate-limit backoff
-- [ ] **Phase 21: Suggestion Popover** — Click-to-fix popover on decorated spans, apply/dismiss suggestions, viewport-aware positioning via shadcn/ui Popover
+- [x] **Phase 21: Suggestion Popover** — Click-to-fix popover on decorated spans, apply/dismiss suggestions, viewport-aware positioning via shadcn/ui Popover (completed 2026-03-14)
 - [ ] **Phase 22: Feedback Toggle & Issue Badge** — Toolbar toggle to enable/disable live feedback with visible issue count badge on the toggle button
 - [ ] **Phase 23: Writing Timer & File Upload** — Elapsed session timer in the toolbar replacing the History button, drag-and-drop .txt/.pdf file upload into the editor
 
@@ -314,6 +314,6 @@ v2.2: 19 → 20 → 21 → 22, 23 (22 and 23 can proceed after 20 independently)
 | 18. Profile Settings & History Management | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 19. Tiptap Editor Foundation | 2/2 | Complete    | 2026-03-12 | - |
 | 20. LanguageTool Decorations | 1/2 | In Progress|  | - |
-| 21. Suggestion Popover | v2.2 | 0/1 | Not started | - |
+| 21. Suggestion Popover | 1/1 | Complete   | 2026-03-14 | - |
 | 22. Feedback Toggle & Issue Badge | v2.2 | 0/? | Not started | - |
 | 23. Writing Timer & File Upload | v2.2 | 0/? | Not started | - |
