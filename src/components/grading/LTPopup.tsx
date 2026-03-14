@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { Editor } from '@tiptap/react'
-import { X } from 'lucide-react'
+import { Loader2, X } from 'lucide-react'
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card'
 import { ltPluginKey } from '@/extensions/LanguageTool'
+import { fetchSuggestions } from '@/api/suggestions'
 
 interface PopupData {
   message: string
@@ -13,6 +14,11 @@ interface PopupData {
   category: string
   anchorRect: DOMRect
 }
+
+type FetchState =
+  | { status: 'loading' }
+  | { status: 'loaded'; message: string; suggestions: string[] }
+  | { status: 'error'; message: string }
 
 function getCategoryDotClass(category: string): string {
   if (category === 'spelling') {
@@ -34,13 +40,26 @@ function getCategoryLabel(category: string): string {
   return 'Grammar'
 }
 
+function extractSentenceContext(editorText: string, flaggedText: string, maxLen = 200): string {
+  const idx = editorText.indexOf(flaggedText)
+  if (idx === -1) return flaggedText
+  let start = idx
+  while (start > 0 && !/[.!?\n]/.test(editorText[start - 1])) start--
+  let end = idx + flaggedText.length
+  while (end < editorText.length && !/[.!?\n]/.test(editorText[end])) end++
+  const sentence = editorText.slice(start, end + 1).trim()
+  return sentence.length > maxLen ? sentence.slice(0, maxLen) + '...' : sentence
+}
+
 interface LTPopupProps {
   editor: Editor | null
 }
 
 export function LTPopup({ editor }: LTPopupProps) {
   const [popupData, setPopupData] = useState<PopupData | null>(null)
+  const [fetchState, setFetchState] = useState<FetchState | null>(null)
   const popupRef = useRef<HTMLDivElement>(null)
+  const currentFromRef = useRef<number | null>(null)
 
   // Click handler on editor DOM
   useEffect(() => {
@@ -68,12 +87,33 @@ export function LTPopup({ editor }: LTPopupProps) {
         }
 
         setPopupData({ message, replacements, from, to, category, anchorRect })
+
+        // Initiate async LLM fetch
+        currentFromRef.current = from
+        setFetchState({ status: 'loading' })
+
+        const editorText = editor!.getText({ blockSeparator: '\n\n' })
+        const flaggedText = decoration.textContent ?? ''
+        const sentenceContext = extractSentenceContext(editorText, flaggedText)
+
+        fetchSuggestions({ flaggedText, sentenceContext, category })
+          .then((data) => {
+            if (currentFromRef.current === from) {
+              setFetchState({ status: 'loaded', message: data.message, suggestions: data.suggestions })
+            }
+          })
+          .catch(() => {
+            if (currentFromRef.current === from) {
+              setFetchState({ status: 'error', message: 'Suggestions unavailable' })
+            }
+          })
       } else {
         // Close only if click is not inside the popup
         if (popupRef.current && popupRef.current.contains(target)) {
           return
         }
         setPopupData(null)
+        setFetchState(null)
       }
     }
 
@@ -88,6 +128,8 @@ export function LTPopup({ editor }: LTPopupProps) {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setPopupData(null)
+        setFetchState(null)
+        currentFromRef.current = null
       }
     }
     document.addEventListener('keydown', handleKeyDown)
@@ -106,6 +148,7 @@ export function LTPopup({ editor }: LTPopupProps) {
       // Don't close if clicking on a decoration (editor click handler will handle it)
       if (target.closest('[data-lt-message]')) return
       setPopupData(null)
+      setFetchState(null)
     }
     document.addEventListener('mousedown', handleMouseDown)
     return () => {
@@ -132,6 +175,7 @@ export function LTPopup({ editor }: LTPopupProps) {
           // If element is not visible (off screen), close
           if (rect.bottom < 0 || rect.top > window.innerHeight) {
             setPopupData(null)
+            setFetchState(null)
           } else {
             setPopupData((prev) => (prev ? { ...prev, anchorRect: rect } : null))
           }
@@ -140,6 +184,7 @@ export function LTPopup({ editor }: LTPopupProps) {
       }
       // Element not found — close
       setPopupData(null)
+      setFetchState(null)
     }
 
     scrollContainer?.addEventListener('scroll', handleScroll)
@@ -160,6 +205,8 @@ export function LTPopup({ editor }: LTPopupProps) {
       })
       .run()
     setPopupData(null)
+    setFetchState(null)
+    currentFromRef.current = null
   }
 
   function handleDismiss() {
@@ -172,6 +219,8 @@ export function LTPopup({ editor }: LTPopupProps) {
       editor.view.dispatch(editor.state.tr.setMeta(ltPluginKey, newSet))
     }
     setPopupData(null)
+    setFetchState(null)
+    currentFromRef.current = null
   }
 
   if (!popupData) return null
@@ -179,15 +228,23 @@ export function LTPopup({ editor }: LTPopupProps) {
   const { anchorRect, message, replacements, category } = popupData
   const dotClass = getCategoryDotClass(category)
   const categoryLabel = getCategoryLabel(category)
-  const visibleReplacements = replacements.slice(0, 5)
+
+  // Viewport clamping — position below anchor, flip above if near bottom edge
+  const popupHeight = 200
+  const popupWidth = 288 // w-72 = 18rem
+  const top =
+    anchorRect.bottom + 4 + popupHeight > window.innerHeight
+      ? anchorRect.top - popupHeight - 4
+      : anchorRect.bottom + 4
+  const left = Math.min(anchorRect.left, window.innerWidth - popupWidth - 8)
 
   const popup = (
     <div
       ref={popupRef}
       style={{
         position: 'fixed',
-        top: anchorRect.bottom + 4,
-        left: anchorRect.left,
+        top,
+        left,
         zIndex: 50,
       }}
     >
@@ -201,7 +258,11 @@ export function LTPopup({ editor }: LTPopupProps) {
               </span>
             </div>
             <button
-              onClick={() => setPopupData(null)}
+              onClick={() => {
+                setPopupData(null)
+                setFetchState(null)
+                currentFromRef.current = null
+              }}
               className="text-muted-foreground hover:text-foreground transition-colors rounded p-0.5 hover:bg-muted"
               aria-label="Close"
             >
@@ -210,19 +271,68 @@ export function LTPopup({ editor }: LTPopupProps) {
           </div>
         </CardHeader>
         <CardContent className="px-3 pb-2">
-          <p className="text-sm mb-2">{message}</p>
-          {visibleReplacements.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {visibleReplacements.map((r) => (
-                <button
-                  key={r}
-                  onClick={() => handleReplace(r)}
-                  className="rounded-md border bg-muted/50 px-2 py-0.5 text-sm hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
-                >
-                  {r}
-                </button>
-              ))}
-            </div>
+          {fetchState?.status === 'loading' && (
+            <>
+              <p className="text-sm mb-2">{message}</p>
+              <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span>Getting suggestions...</span>
+              </div>
+            </>
+          )}
+          {fetchState?.status === 'loaded' && (
+            <>
+              <p className="text-sm mb-2">{fetchState.message}</p>
+              {fetchState.suggestions.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {fetchState.suggestions.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => handleReplace(s)}
+                      className="rounded-md border bg-muted/50 px-2 py-0.5 text-sm hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+          {fetchState?.status === 'error' && (
+            <>
+              <p className="text-sm mb-2 text-muted-foreground">{fetchState.message}</p>
+              {replacements.slice(0, 5).length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {replacements.slice(0, 5).map((r) => (
+                    <button
+                      key={r}
+                      onClick={() => handleReplace(r)}
+                      className="rounded-md border bg-muted/50 px-2 py-0.5 text-sm hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+          {fetchState === null && (
+            <>
+              <p className="text-sm mb-2">{message}</p>
+              {replacements.slice(0, 5).length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {replacements.slice(0, 5).map((r) => (
+                    <button
+                      key={r}
+                      onClick={() => handleReplace(r)}
+                      className="rounded-md border bg-muted/50 px-2 py-0.5 text-sm hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </CardContent>
         <CardFooter className="px-3 py-1.5 justify-end">
