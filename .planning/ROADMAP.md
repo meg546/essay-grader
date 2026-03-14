@@ -247,15 +247,16 @@ Plans:
 - [ ] 20-01-PLAN.md — LanguageTool API client with CORS fallback and FastAPI proxy
 - [ ] 20-02-PLAN.md — ProseMirror decoration plugin with wavy underlines
 
-### Phase 21: Suggestion Popover
-**Goal**: Users can act on flagged issues by clicking an underline to see suggestions, apply a fix, or dismiss the issue
+### Phase 21: LLM-Powered Suggestion Popover
+**Goal**: Users can click an underlined issue to see an LLM-generated explanation and smart fix suggestions via a local Ollama model, replacing Harper's low-quality built-in suggestions
 **Depends on**: Phase 20
 **Requirements**: GRAM-02
 **Success Criteria** (what must be TRUE):
-  1. Clicking an underlined word or phrase opens a popover showing the issue message and available replacement suggestions
+  1. Clicking an underlined word or phrase opens a popover showing a loading state, then an LLM-generated explanation and fix suggestions from Ollama
   2. Clicking a suggestion in the popover replaces the flagged text in the editor and closes the popover
   3. User can dismiss an issue from the popover — the underline disappears and the issue does not reappear for that occurrence until the text changes
   4. Popover stays within the visible viewport even when the flagged text is near the top or bottom edge of the editor
+  5. Backend POST /api/suggestions endpoint accepts flagged text + sentence context and returns an explanation and suggestions via Ollama (llama3.2:3b)
 **Plans**: TBD
 
 ### Phase 22: Feedback Toggle & Issue Badge
