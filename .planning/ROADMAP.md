@@ -257,7 +257,9 @@ Plans:
   3. User can dismiss an issue from the popover — the underline disappears and the issue does not reappear for that occurrence until the text changes
   4. Popover stays within the visible viewport even when the flagged text is near the top or bottom edge of the editor
   5. Backend POST /api/suggestions endpoint accepts flagged text + sentence context and returns an explanation and suggestions via Ollama (llama3.2:3b)
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 21-01-PLAN.md — Backend suggestions endpoint + async LTPopup with LLM suggestions
 
 ### Phase 22: Feedback Toggle & Issue Badge
 **Goal**: Users can disable live grammar feedback when they want to write without distraction, and always see how many issues are open at a glance
@@ -312,6 +314,6 @@ v2.2: 19 → 20 → 21 → 22, 23 (22 and 23 can proceed after 20 independently)
 | 18. Profile Settings & History Management | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 19. Tiptap Editor Foundation | 2/2 | Complete    | 2026-03-12 | - |
 | 20. LanguageTool Decorations | 1/2 | In Progress|  | - |
-| 21. Suggestion Popover | v2.2 | 0/? | Not started | - |
+| 21. Suggestion Popover | v2.2 | 0/1 | Not started | - |
 | 22. Feedback Toggle & Issue Badge | v2.2 | 0/? | Not started | - |
 | 23. Writing Timer & File Upload | v2.2 | 0/? | Not started | - |
