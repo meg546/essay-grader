@@ -96,7 +96,7 @@ Requirements for Live Essay Feedback milestone.
 ### Toolbar & Productivity
 
 - [ ] **TOOL-01**: User can toggle live feedback on/off via the toolbar
-- [ ] **TOOL-02**: User can set a writing timer with preset durations from the toolbar
+- [x] **TOOL-02**: User can set a writing timer with preset durations from the toolbar
 - [ ] **TOOL-03**: User sees a badge showing the count of open issues on the feedback toggle
 
 ## Future Requirements
@@ -189,7 +189,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GRAM-02 | Phase 21 | Complete |
 | TOOL-01 | Phase 22 | Pending |
 | TOOL-03 | Phase 22 | Pending |
-| TOOL-02 | Phase 23 | Pending |
+| TOOL-02 | Phase 23 | Complete |
 | EDIT-02 | Phase 23 | Pending |
 
 **Coverage:**

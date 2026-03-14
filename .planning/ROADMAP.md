@@ -281,7 +281,7 @@ Plans:
   2. User can select preset timer durations (e.g., 15 min, 30 min, 45 min) and the timer counts down, showing time remaining
   3. User can drag and drop a .txt or .pdf file onto the editor and the file's text content is loaded into the editor
   4. User can click an upload button in the editor to open a file picker and load a .txt or .pdf file the same way
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 - [ ] 23-01-PLAN.md — Timer state, useTimer hook, and TimerDisplay component
 - [ ] 23-02-PLAN.md — ScrollPicker, TimerPopover, toolbar and page wiring
@@ -319,4 +319,4 @@ v2.2: 19 → 20 → 21 → 22, 23 (22 and 23 can proceed after 20 independently)
 | 20. LanguageTool Decorations | 1/2 | In Progress|  | - |
 | 21. Suggestion Popover | 1/1 | Complete    | 2026-03-14 | - |
 | 22. Feedback Toggle & Issue Badge | v2.2 | 0/? | Not started | - |
-| 23. Writing Timer & File Upload | v2.2 | 0/? | Not started | - |
+| 23. Writing Timer & File Upload | 1/2 | In Progress|  | - |
