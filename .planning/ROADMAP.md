@@ -314,6 +314,6 @@ v2.2: 19 → 20 → 21 → 22, 23 (22 and 23 can proceed after 20 independently)
 | 18. Profile Settings & History Management | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 19. Tiptap Editor Foundation | 2/2 | Complete    | 2026-03-12 | - |
 | 20. LanguageTool Decorations | 1/2 | In Progress|  | - |
-| 21. Suggestion Popover | 1/1 | Complete   | 2026-03-14 | - |
+| 21. Suggestion Popover | 1/1 | Complete    | 2026-03-14 | - |
 | 22. Feedback Toggle & Issue Badge | v2.2 | 0/? | Not started | - |
 | 23. Writing Timer & File Upload | v2.2 | 0/? | Not started | - |
