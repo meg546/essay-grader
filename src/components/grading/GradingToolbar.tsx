@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { Link } from "react-router";
 import {
   BookOpen,
   FileUp,
   BarChart3,
-  Clock,
   Eraser,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -24,6 +22,7 @@ import { EssayUploadModal } from "./EssayUploadModal";
 import { ToneSelector } from "./ToneSelector";
 import { GradingSettings } from "./GradingSettings";
 import { TextSizeSelector } from "./TextSizeSelector";
+import { TimerPopover } from "./TimerPopover";
 
 interface GradingToolbarProps {
   disabled?: boolean;
@@ -131,19 +130,7 @@ export function GradingToolbar({
 
         <TextSizeSelector />
 
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Link
-                to="/history"
-                className="group relative flex items-center justify-center w-10 h-10 rounded-lg transition-colors duration-150 hover:bg-primary/10 hover:scale-110 text-muted-foreground hover:text-primary cursor-pointer"
-              />
-            }
-          >
-            <Clock aria-hidden="true" className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]" />
-          </TooltipTrigger>
-          <TooltipContent>History</TooltipContent>
-        </Tooltip>
+        <TimerPopover />
 
         <Popover open={clearOpen} onOpenChange={setClearOpen}>
           <Tooltip>

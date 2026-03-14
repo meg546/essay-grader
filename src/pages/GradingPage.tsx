@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -11,6 +12,7 @@ import { SignInDialog } from "@/components/auth/SignInDialog";
 import { EssayInput, type EssayInputHandle } from "@/components/grading/EssayInput";
 import { GradingToolbar } from "@/components/grading/GradingToolbar";
 import { WordStats } from "@/components/grading/WordStats";
+import { TimerDisplay } from "@/components/grading/TimerDisplay";
 import { HighlightProvider } from "@/lib/highlight-context";
 import { ColorLegend } from "@/components/results/ColorLegend";
 import { EssayPanel } from "@/components/results/EssayPanel";
@@ -24,6 +26,7 @@ export function GradingPage() {
 
   const setEssayText = useAppStore((s) => s.setEssayText);
   const setRubricFile = useAppStore((s) => s.setRubricFile);
+  const timerActive = useAppStore((s) => s.timerEndTime !== null || s.timerPaused);
   const gradeLevel = useProfileStore((s) => s.gradeLevel);
   const isSignedIn = useProfileStore((s) => s.isSignedIn);
   const [isGrading, setIsGrading] = useState(false);
@@ -40,6 +43,24 @@ export function GradingPage() {
 
   const essayInputRef = useRef<EssayInputHandle>(null);
 
+  // Route-based timer pause/resume
+  const location = useLocation();
+  const prevPathRef = useRef(location.pathname);
+
+  useEffect(() => {
+    const wasOnGrade = prevPathRef.current === "/grade";
+    const isOnGrade = location.pathname === "/grade";
+    const { timerEndTime, timerPaused, pauseTimer, resumeTimer } = useAppStore.getState();
+
+    if (wasOnGrade && !isOnGrade && timerEndTime && !timerPaused) {
+      pauseTimer();
+    } else if (!wasOnGrade && isOnGrade && timerPaused) {
+      resumeTimer();
+    }
+
+    prevPathRef.current = location.pathname;
+  }, [location.pathname]);
+
   const isSubmitDisabled = essayText.trim() === "" || isGrading;
 
   async function handleSubmit() {
@@ -47,6 +68,7 @@ export function GradingPage() {
       setShowSignIn(true);
       return;
     }
+    useAppStore.getState().cancelTimer();
     setIsGrading(true);
     try {
       const rubricFile = useAppStore.getState().rubricFile;
@@ -78,12 +100,14 @@ export function GradingPage() {
   }
 
   function handleReset() {
+    useAppStore.getState().cancelTimer();
     clearCurrentResult();
     setEssayText("");
     setRubricFile(null);
   }
 
   function handleClear() {
+    essayInputRef.current?.clearContent();
     setEssayText("");
     setRubricFile(null);
   }
@@ -148,11 +172,16 @@ export function GradingPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1400px] flex flex-col min-h-[calc(100vh-7rem)] md:h-[calc(100vh-7rem)]">
+    <div className="mx-auto max-w-[850px] flex flex-col min-h-[calc(100vh-7rem)] md:h-[calc(100vh-7rem)]">
       <div className="flex flex-col md:flex-row flex-1 min-h-0 border rounded-lg overflow-hidden">
         <div className="flex-1 flex flex-col min-h-0">
           <EssayInput ref={essayInputRef} disabled={isGrading} />
-          <WordStats essayText={essayText} visible={showStats} />
+          {(showStats || timerActive) && (
+            <div className="flex items-stretch border-t bg-muted/50 rounded-b-lg shrink-0 overflow-hidden">
+              <WordStats essayText={essayText} visible={showStats} />
+              <TimerDisplay />
+            </div>
+          )}
         </div>
         <GradingToolbar
           disabled={isGrading}
