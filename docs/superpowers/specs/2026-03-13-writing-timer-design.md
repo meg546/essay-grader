@@ -33,8 +33,8 @@ Replace the `Clock` icon + History link in `GradingToolbar` with a `Timer` lucid
 - 4 preset buttons in a horizontal row: **15m**, **30m**, **45m**, **1h**
 - Below: an iOS-style scroll wheel picker for custom minutes (1–120 range)
 - A **Start** button at the bottom
-- Selecting a preset pre-scrolls the picker to that value
-- Clicking **Start** (or a preset directly) begins the countdown and closes the popover
+- Clicking a preset scrolls the picker to that value (does NOT auto-start — user must click **Start**)
+- Clicking **Start** begins the countdown with the picker's current value and closes the popover
 
 ### Popover — Timer Running
 
@@ -59,6 +59,10 @@ When a timer is active, a countdown display appears in the bottom panel below th
 - Timer display format: `23:41` (mm:ss), or `1:23:41` (h:mm:ss) for durations over 60 minutes
 - Styled to match WordStats aesthetics (same text size, muted color, subtle)
 
+### Timer Visibility
+
+`TimerDisplay` renders independently from `WordStats`. It has its own container/wrapper and is visible whenever a timer is active (`timerEndTime !== null && !timerPaused`), regardless of whether WordStats is toggled on. When both are visible, they share a horizontal row. When only one is visible, it renders alone.
+
 ### Timer Expiry
 
 When the timer reaches zero:
@@ -66,6 +70,14 @@ When the timer reaches zero:
 2. Timer disappears from the bottom panel
 3. Toolbar icon loses its active indicator dot
 4. Timer state is cleared from the store
+
+### Timer & Grading Submission
+
+When the user clicks "Submit for Grading," the timer is **cancelled** automatically. The results view replaces the editor, so the timer has no visible home. Starting a new essay ("Grade Another") starts fresh with no timer.
+
+### Timer & Clear
+
+Clicking "Clear" does **not** cancel the timer. Clearing resets the essay text and rubric, but the student may want to keep their timer running for a fresh writing attempt.
 
 ---
 
@@ -93,7 +105,7 @@ updateTimerDuration: (durationMs: number) => void; // Updates endTime while runn
 
 ### Store Migration
 
-Bump store version from 3 to 4. Migration adds `timerEndTime: null`, `timerPaused: false`, `timerRemainingMs: null`.
+Bump store version from 3 to 4. Add a `version < 4` case to the existing cascading migration (do not replace existing `version < 2` and `version < 3` cases). Migration adds `timerEndTime: null`, `timerPaused: false`, `timerRemainingMs: null`.
 
 ### Partialize
 
@@ -105,6 +117,10 @@ Add `timerEndTime`, `timerPaused`, and `timerRemainingMs` to the `partialize` re
 - **On return to `/grade`:** Call `resumeTimer()` — computes new `endTime = Date.now() + remainingMs`, sets `paused: false`
 - **On page reload while on `/grade`:** If `timerPaused` is true in persisted state, call `resumeTimer()` on mount. If `timerPaused` is false, check if `timerEndTime` is still in the future — if so, resume; if expired, clear and show "Time's up!" toast.
 - `document.visibilitychange` is NOT used — only route navigation triggers pause/resume
+
+### Display Accuracy
+
+The countdown display computes remaining time as `timerEndTime - Date.now()` on each render tick (via `setInterval` at ~1s). Do NOT decrement a counter — always derive from the absolute timestamp to avoid drift over long sessions.
 
 ---
 
@@ -148,6 +164,7 @@ interface ScrollPickerProps {
 - `src/components/grading/WritingTimer.tsx` — Timer popover with presets, scroll picker, and controls
 - `src/components/grading/ScrollPicker.tsx` — Reusable iOS-style scroll wheel picker
 - `src/components/grading/TimerDisplay.tsx` — Bottom panel countdown display
+- `src/hooks/use-timer.ts` — Custom hook encapsulating `setInterval`, expiry detection, pause/resume lifecycle, and toast. Keeps `GradingPage` clean and makes timer logic testable in isolation
 
 ### Modified Files
 
