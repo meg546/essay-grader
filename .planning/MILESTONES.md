@@ -25,9 +25,19 @@
 **Phases:** 11-15 (5 phases, 12 plans)
 **Delivered:** Full Python/FastAPI backend with JWT auth, LLM grading pipeline, PostgreSQL persistence, and frontend integration replacing all mock data.
 
-## v2.1 Onboarding & Layout Redesign (In Progress)
+## v2.1 Onboarding & Layout Redesign (Shipped: 2026-03-10)
 
 **Phases:** 16-18 (3 phases)
-**Goal:** Grammarly-inspired landing page, multi-step registration wizard, and profile settings for user preferences.
+**Delivered:** Grammarly-inspired landing page, multi-step registration wizard, and profile settings for user preferences.
+
+## v2.2 Live Essay Feedback (In Progress)
+
+**Phases:** 19-23 (5 phases)
+**Goal:** Tiptap editor with real-time spelling/grammar feedback, suggestion popovers, writing timer, and file upload.
+
+## v3.0 Local Model Fine-Tuning (Not Started)
+
+**Phases:** 24-28 (5 phases)
+**Goal:** Fine-tune a purpose-built essay grading model via distillation from Claude Sonnet using the ASAP 2.0 dataset, replacing the generic llama3.2:3b.
 
 ---
