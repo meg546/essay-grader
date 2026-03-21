@@ -99,6 +99,42 @@ Requirements for Live Essay Feedback milestone.
 - [x] **TOOL-02**: User can set a writing timer with preset durations from the toolbar
 - [ ] **TOOL-03**: User sees a badge showing the count of open issues on the feedback toggle
 
+## v3.0 Requirements
+
+Requirements for Local Model Fine-Tuning milestone.
+
+### Dataset Generation
+
+- [ ] **DATA-01**: Script downloads and parses ASAP 2.0 dataset from Kaggle into a standardized format (essay text, human score, prompt ID, rubric)
+- [ ] **DATA-02**: Script sends essays + rubric to Claude Sonnet API and collects structured JSON grading output matching the app's GradingResult schema
+- [ ] **DATA-03**: Human holistic score (1-6) is passed to Sonnet as calibration context so generated scores align with human assessments
+- [ ] **DATA-04**: Training examples are generated across multiple rubric formats (ASAP holistic rubric, app default 4-category rubric, varied custom rubrics) so the model generalizes to arbitrary rubrics
+- [ ] **DATA-05**: Every training example is validated — generated quotes must exactly match substrings in the essay text; failed examples are rejected and re-generated
+
+### Fine-Tuning Pipeline
+
+- [ ] **TRAIN-01**: QLoRA training script using Unsloth supporting both Qwen 2.5 3B and 7B base models
+- [ ] **TRAIN-02**: LoRA rank is configurable, with higher rank on attention layers (q/k/v_proj) for better quote fidelity
+- [ ] **TRAIN-03**: Training data is loaded from the validated dataset in chat-template format (system + user + assistant turns)
+
+### Export & Deployment
+
+- [ ] **DEPLOY-01**: Trained model is exported to GGUF format with Q4_K_M quantization via Unsloth
+- [ ] **DEPLOY-02**: Ollama Modelfile is generated for one-command model import (`ollama create essay-grader -f Modelfile`)
+- [ ] **DEPLOY-03**: Existing backend works with fine-tuned model by changing MODEL_NAME env var only — no code changes needed
+
+### Highlight Accuracy
+
+- [ ] **HIGHLIGHT-01**: compute_highlights() uses fuzzy matching fallback (similarity threshold) when exact quote substring match fails
+- [ ] **HIGHLIGHT-02**: Fuzzy matching correctly identifies near-exact quotes (minor word omissions, punctuation differences) and produces accurate highlight offsets
+
+### Evaluation
+
+- [ ] **EVAL-01**: Holdout test set (~10% of ASAP 2.0 essays) is excluded from training data
+- [ ] **EVAL-02**: Evaluation script scores test essays with the fine-tuned model and compares against human scores using quadratic weighted kappa (QWK)
+- [ ] **EVAL-03**: Evaluation reports quote accuracy — percentage of generated quotes that exactly match essay substrings
+- [ ] **EVAL-04**: Evaluation compares fine-tuned model output against Sonnet baseline on the same test set
+
 ## Future Requirements
 
 ### Structural Heuristics (deferred from v2.2)
@@ -128,10 +164,8 @@ Requirements for Live Essay Feedback milestone.
 
 | Feature | Reason |
 |---------|--------|
-| Fine-tuning pipeline | Separate research project; base model with prompt engineering for v2.0 |
 | OAuth / social login | Email+password with JWT sufficient for academic project |
 | GPU inference inside Docker | Fragile GPU passthrough; inference runs outside Docker |
-| Model evaluation framework | No labeled datasets; manual spot-checking sufficient |
 | Rate limiting | Single-user demo; can add slowapi later |
 | Plagiarism / AI detection | Different product domain entirely |
 | Multi-language support | English only per original scope |
