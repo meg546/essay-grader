@@ -7,6 +7,7 @@
 - ✅ **v2.0 Backend Implementation** — Phases 11-15 (shipped 2026-03-10)
 - ✅ **v2.1 Onboarding & Layout Redesign** — Phases 16-18 (shipped 2026-03-10)
 - 🚧 **v2.2 Live Essay Feedback** — Phases 19-23 (in progress)
+- 🔜 **v3.0 Local Model Fine-Tuning** — Phases 24-28 (upcoming)
 
 ## Phases
 
@@ -67,6 +68,16 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 21: Suggestion Popover** — Click-to-fix popover on decorated spans, apply/dismiss suggestions, viewport-aware positioning via shadcn/ui Popover (completed 2026-03-14)
 - [ ] **Phase 22: Feedback Toggle & Issue Badge** — Toolbar toggle to enable/disable live feedback with visible issue count badge on the toggle button
 - [ ] **Phase 23: Writing Timer & File Upload** — Elapsed session timer in the toolbar replacing the History button, drag-and-drop .txt/.pdf file upload into the editor
+
+### 🔜 v3.0 Local Model Fine-Tuning (Upcoming)
+
+**Milestone Goal:** Fine-tune a purpose-built essay grading model via distillation from Claude Sonnet using the ASAP 2.0 dataset, replacing the generic llama3.2:3b with a fast, accurate, locally-hosted model.
+
+- [ ] **Phase 24: Dataset Preparation** — Download and parse ASAP 2.0, build Claude Sonnet distillation script, validate quotes, augment across multiple rubric formats
+- [ ] **Phase 25: Fine-Tuning Pipeline** — QLoRA training script with Unsloth for Qwen 2.5 3B and 7B, configurable LoRA rank, chat-template data loading
+- [ ] **Phase 26: Export & Deployment** — GGUF quantization export, Ollama Modelfile generation, env var model swap with no code changes
+- [ ] **Phase 27: Highlight Accuracy** — Fuzzy quote matching fallback in compute_highlights() for near-exact quote identification
+- [ ] **Phase 28: Evaluation Pipeline** — Holdout test set, QWK scoring against human scores, quote accuracy reporting, Sonnet baseline comparison
 
 ## Phase Details
 
@@ -286,6 +297,62 @@ Plans:
 - [ ] 23-01-PLAN.md — Timer state, useTimer hook, and TimerDisplay component
 - [ ] 23-02-PLAN.md — ScrollPicker, TimerPopover, toolbar and page wiring
 
+### Phase 24: Dataset Preparation
+**Goal**: A validated training dataset exists — ASAP 2.0 essays graded by Claude Sonnet in the app's JSON schema, with exact quote verification and multi-rubric augmentation
+**Depends on**: Nothing (independent of v2.2; requires Kaggle dataset and Anthropic API key)
+**Requirements**: DATA-01, DATA-02, DATA-03, DATA-04, DATA-05
+**Success Criteria** (what must be TRUE):
+  1. Running the download script produces a parsed, standardized ASAP 2.0 dataset file containing essay text, human score (1-6), prompt ID, and associated rubric for each essay
+  2. Running the distillation script against the dataset produces structured JSON grading output in the app's GradingResult schema for each essay, with human score passed as calibration context to Sonnet
+  3. Generated training examples span at least three rubric formats (ASAP holistic, app default 4-category, varied custom) — the dataset is not monolithic to a single rubric shape
+  4. Every training example in the output file has been validated: all quoted passages exactly match substrings in the corresponding essay text, and failed examples are excluded from the output
+  5. The final validated dataset file contains a meaningful volume of examples (target: 1,000+ accepted examples after rejection) and a held-out test split is separated before training
+**Plans**: TBD
+
+### Phase 25: Fine-Tuning Pipeline
+**Goal**: A trained QLoRA adapter exists for both Qwen 2.5 3B and 7B, produced from the validated dataset using Unsloth
+**Depends on**: Phase 24
+**Requirements**: TRAIN-01, TRAIN-02, TRAIN-03
+**Success Criteria** (what must be TRUE):
+  1. Running the training script with `--model 3b` or `--model 7b` launches a QLoRA training run on the corresponding Qwen 2.5 base model using Unsloth on the RTX 4090
+  2. LoRA rank is configurable via command-line argument, and attention projection layers (q_proj, k_proj, v_proj) receive higher rank by default than non-attention layers
+  3. Training data is loaded from the validated dataset in chat-template format with system, user, and assistant turns — the model learns to produce valid GradingResult JSON from an essay + rubric input
+  4. Training completes without OOM errors on the 24GB RTX 4090 for both the 3B and 7B model sizes
+**Plans**: TBD
+
+### Phase 26: Export & Deployment
+**Goal**: The fine-tuned model runs in the existing app via Ollama with no backend code changes — only an env var update
+**Depends on**: Phase 25
+**Requirements**: DEPLOY-01, DEPLOY-02, DEPLOY-03
+**Success Criteria** (what must be TRUE):
+  1. Running the export script produces a GGUF file quantized to Q4_K_M for the trained model
+  2. Running `ollama create essay-grader -f Modelfile` successfully imports the GGUF model and it appears in `ollama list`
+  3. Setting `MODEL_NAME=essay-grader` in the backend .env and restarting the server routes grading requests to the fine-tuned model — no backend code is modified
+  4. The fine-tuned model returns grading responses in valid GradingResult JSON format that the frontend renders without errors
+**Plans**: TBD
+
+### Phase 27: Highlight Accuracy
+**Goal**: Essay passage highlighting works correctly even when the LLM generates quotes with minor variations from the original essay text
+**Depends on**: Nothing (independent improvement to existing backend; can run in parallel with Phases 24-26)
+**Requirements**: HIGHLIGHT-01, HIGHLIGHT-02
+**Success Criteria** (what must be TRUE):
+  1. compute_highlights() first attempts exact substring matching; when no exact match is found, it falls back to fuzzy matching using a configurable similarity threshold
+  2. Fuzzy matching correctly maps near-exact quotes (minor word omissions, punctuation differences, trailing ellipses) to the right passage in the essay text and returns accurate character offsets
+  3. A quote that differs from the essay by a small margin (e.g., one word dropped or punctuation changed) produces a highlight at the correct location rather than silently failing
+  4. A quote that is substantially different from any passage in the essay is still rejected — the fuzzy threshold prevents false positive matches on unrelated text
+**Plans**: TBD
+
+### Phase 28: Evaluation Pipeline
+**Goal**: The fine-tuned model's grading quality is measurable and comparable to both Sonnet and human scores on a held-out test set
+**Depends on**: Phase 25, Phase 26
+**Requirements**: EVAL-01, EVAL-02, EVAL-03, EVAL-04
+**Success Criteria** (what must be TRUE):
+  1. The holdout test set (excluded from training in Phase 24) contains essays the fine-tuned model has never seen during training
+  2. Running the evaluation script grades all test essays with the fine-tuned model and reports a quadratic weighted kappa (QWK) score against human holistic scores
+  3. The evaluation report includes a quote accuracy metric — the percentage of generated quotes that exactly match substrings in the corresponding essay text
+  4. The same test set is also evaluated using Sonnet, and the report compares fine-tuned model QWK and quote accuracy side-by-side with the Sonnet baseline
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
@@ -294,6 +361,7 @@ v1.1: 7 → 8 → 9 → 10 (complete)
 v2.0: 11 → 12 → 13 → 14 → 15 (complete)
 v2.1: 16 → 17 → 18 (complete)
 v2.2: 19 → 20 → 21 → 22, 23 (22 and 23 can proceed after 20 independently)
+v3.0: 24 → 25 → 26 → 28 (sequential); 27 can run in parallel with any of 24-26
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -315,8 +383,13 @@ v2.2: 19 → 20 → 21 → 22, 23 (22 and 23 can proceed after 20 independently)
 | 16. Landing Page & Auth Entry | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 17. Registration Wizard | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 18. Profile Settings & History Management | v2.1 | 2/2 | Complete | 2026-03-10 |
-| 19. Tiptap Editor Foundation | 2/2 | Complete    | 2026-03-12 | - |
-| 20. LanguageTool Decorations | 1/2 | In Progress|  | - |
-| 21. Suggestion Popover | 1/1 | Complete    | 2026-03-14 | - |
+| 19. Tiptap Editor Foundation | v2.2 | 2/2 | Complete | 2026-03-12 |
+| 20. LanguageTool Decorations | v2.2 | 1/2 | In Progress | - |
+| 21. Suggestion Popover | v2.2 | 1/1 | Complete | 2026-03-14 |
 | 22. Feedback Toggle & Issue Badge | v2.2 | 0/? | Not started | - |
-| 23. Writing Timer & File Upload | 1/2 | In Progress|  | - |
+| 23. Writing Timer & File Upload | v2.2 | 1/2 | In Progress | - |
+| 24. Dataset Preparation | v3.0 | 0/? | Not started | - |
+| 25. Fine-Tuning Pipeline | v3.0 | 0/? | Not started | - |
+| 26. Export & Deployment | v3.0 | 0/? | Not started | - |
+| 27. Highlight Accuracy | v3.0 | 0/? | Not started | - |
+| 28. Evaluation Pipeline | v3.0 | 0/? | Not started | - |

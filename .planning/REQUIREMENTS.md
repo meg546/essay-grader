@@ -225,14 +225,33 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TOOL-03 | Phase 22 | Pending |
 | TOOL-02 | Phase 23 | Complete |
 | EDIT-02 | Phase 23 | Pending |
+| DATA-01 | Phase 24 | Pending |
+| DATA-02 | Phase 24 | Pending |
+| DATA-03 | Phase 24 | Pending |
+| DATA-04 | Phase 24 | Pending |
+| DATA-05 | Phase 24 | Pending |
+| TRAIN-01 | Phase 25 | Pending |
+| TRAIN-02 | Phase 25 | Pending |
+| TRAIN-03 | Phase 25 | Pending |
+| DEPLOY-01 | Phase 26 | Pending |
+| DEPLOY-02 | Phase 26 | Pending |
+| DEPLOY-03 | Phase 26 | Pending |
+| HIGHLIGHT-01 | Phase 27 | Pending |
+| HIGHLIGHT-02 | Phase 27 | Pending |
+| EVAL-01 | Phase 28 | Pending |
+| EVAL-02 | Phase 28 | Pending |
+| EVAL-03 | Phase 28 | Pending |
+| EVAL-04 | Phase 28 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 22 total (all complete)
 - v2.1 requirements: 12 total (all complete)
 - v2.2 requirements: 8 total
 - Mapped to phases: 8/8 ✓
+- v3.0 requirements: 15 total
+- Mapped to phases: 15/15 ✓
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-12 after v2.2 roadmap created (Phases 19-23)*
+*Last updated: 2026-03-21 after v3.0 roadmap created (Phases 24-28)*
