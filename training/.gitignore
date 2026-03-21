@@ -1,0 +1,7 @@
+# Generated data
+data/
+checkpoints/
+export/
+
+# Keep evaluation reports
+!evaluation/

@@ -105,35 +105,35 @@ Requirements for Local Model Fine-Tuning milestone.
 
 ### Dataset Generation
 
-- [ ] **DATA-01**: Script downloads and parses ASAP 2.0 dataset from Kaggle into a standardized format (essay text, human score, prompt ID, rubric)
-- [ ] **DATA-02**: Script sends essays + rubric to Claude Sonnet API and collects structured JSON grading output matching the app's GradingResult schema
-- [ ] **DATA-03**: Human holistic score (1-6) is passed to Sonnet as calibration context so generated scores align with human assessments
-- [ ] **DATA-04**: Training examples are generated across multiple rubric formats (ASAP holistic rubric, app default 4-category rubric, varied custom rubrics) so the model generalizes to arbitrary rubrics
-- [ ] **DATA-05**: Every training example is validated — generated quotes must exactly match substrings in the essay text; failed examples are rejected and re-generated
+- [x] **DATA-01**: Script downloads and parses ASAP 2.0 dataset from Kaggle into a standardized format (essay text, human score, prompt ID, rubric)
+- [x] **DATA-02**: Script sends essays + rubric to Claude Sonnet API and collects structured JSON grading output matching the app's GradingResult schema
+- [x] **DATA-03**: Human holistic score (1-6) is passed to Sonnet as calibration context so generated scores align with human assessments
+- [x] **DATA-04**: Training examples are generated across multiple rubric formats (ASAP holistic rubric, app default 4-category rubric, varied custom rubrics) so the model generalizes to arbitrary rubrics
+- [x] **DATA-05**: Every training example is validated — generated quotes must exactly match substrings in the essay text; failed examples are rejected and re-generated
 
 ### Fine-Tuning Pipeline
 
-- [ ] **TRAIN-01**: QLoRA training script using Unsloth supporting both Qwen 2.5 3B and 7B base models
-- [ ] **TRAIN-02**: LoRA rank is configurable, with higher rank on attention layers (q/k/v_proj) for better quote fidelity
-- [ ] **TRAIN-03**: Training data is loaded from the validated dataset in chat-template format (system + user + assistant turns)
+- [x] **TRAIN-01**: QLoRA training script using Unsloth supporting both Qwen 2.5 3B and 7B base models
+- [x] **TRAIN-02**: LoRA rank is configurable, with higher rank on attention layers (q/k/v_proj) for better quote fidelity
+- [x] **TRAIN-03**: Training data is loaded from the validated dataset in chat-template format (system + user + assistant turns)
 
 ### Export & Deployment
 
-- [ ] **DEPLOY-01**: Trained model is exported to GGUF format with Q4_K_M quantization via Unsloth
-- [ ] **DEPLOY-02**: Ollama Modelfile is generated for one-command model import (`ollama create essay-grader -f Modelfile`)
-- [ ] **DEPLOY-03**: Existing backend works with fine-tuned model by changing MODEL_NAME env var only — no code changes needed
+- [x] **DEPLOY-01**: Trained model is exported to GGUF format with Q4_K_M quantization via Unsloth
+- [x] **DEPLOY-02**: Ollama Modelfile is generated for one-command model import (`ollama create essay-grader -f Modelfile`)
+- [x] **DEPLOY-03**: Existing backend works with fine-tuned model by changing MODEL_NAME env var only — no code changes needed
 
 ### Highlight Accuracy
 
-- [ ] **HIGHLIGHT-01**: compute_highlights() uses fuzzy matching fallback (similarity threshold) when exact quote substring match fails
-- [ ] **HIGHLIGHT-02**: Fuzzy matching correctly identifies near-exact quotes (minor word omissions, punctuation differences) and produces accurate highlight offsets
+- [x] **HIGHLIGHT-01**: compute_highlights() uses fuzzy matching fallback (similarity threshold) when exact quote substring match fails
+- [x] **HIGHLIGHT-02**: Fuzzy matching correctly identifies near-exact quotes (minor word omissions, punctuation differences) and produces accurate highlight offsets
 
 ### Evaluation
 
-- [ ] **EVAL-01**: Holdout test set (~10% of ASAP 2.0 essays) is excluded from training data
-- [ ] **EVAL-02**: Evaluation script scores test essays with the fine-tuned model and compares against human scores using quadratic weighted kappa (QWK)
-- [ ] **EVAL-03**: Evaluation reports quote accuracy — percentage of generated quotes that exactly match essay substrings
-- [ ] **EVAL-04**: Evaluation compares fine-tuned model output against Sonnet baseline on the same test set
+- [x] **EVAL-01**: Holdout test set (~10% of ASAP 2.0 essays) is excluded from training data
+- [x] **EVAL-02**: Evaluation script scores test essays with the fine-tuned model and compares against human scores using quadratic weighted kappa (QWK)
+- [x] **EVAL-03**: Evaluation reports quote accuracy — percentage of generated quotes that exactly match essay substrings
+- [x] **EVAL-04**: Evaluation compares fine-tuned model output against Sonnet baseline on the same test set
 
 ## Future Requirements
 
@@ -225,23 +225,23 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TOOL-03 | Phase 22 | Pending |
 | TOOL-02 | Phase 23 | Complete |
 | EDIT-02 | Phase 23 | Pending |
-| DATA-01 | Phase 24 | Pending |
-| DATA-02 | Phase 24 | Pending |
-| DATA-03 | Phase 24 | Pending |
-| DATA-04 | Phase 24 | Pending |
-| DATA-05 | Phase 24 | Pending |
-| TRAIN-01 | Phase 25 | Pending |
-| TRAIN-02 | Phase 25 | Pending |
-| TRAIN-03 | Phase 25 | Pending |
-| DEPLOY-01 | Phase 26 | Pending |
-| DEPLOY-02 | Phase 26 | Pending |
-| DEPLOY-03 | Phase 26 | Pending |
-| HIGHLIGHT-01 | Phase 27 | Pending |
-| HIGHLIGHT-02 | Phase 27 | Pending |
-| EVAL-01 | Phase 28 | Pending |
-| EVAL-02 | Phase 28 | Pending |
-| EVAL-03 | Phase 28 | Pending |
-| EVAL-04 | Phase 28 | Pending |
+| DATA-01 | Phase 24 | Complete |
+| DATA-02 | Phase 24 | Complete |
+| DATA-03 | Phase 24 | Complete |
+| DATA-04 | Phase 24 | Complete |
+| DATA-05 | Phase 24 | Complete |
+| TRAIN-01 | Phase 25 | Complete |
+| TRAIN-02 | Phase 25 | Complete |
+| TRAIN-03 | Phase 25 | Complete |
+| DEPLOY-01 | Phase 26 | Complete |
+| DEPLOY-02 | Phase 26 | Complete |
+| DEPLOY-03 | Phase 26 | Complete |
+| HIGHLIGHT-01 | Phase 27 | Complete |
+| HIGHLIGHT-02 | Phase 27 | Complete |
+| EVAL-01 | Phase 28 | Complete |
+| EVAL-02 | Phase 28 | Complete |
+| EVAL-03 | Phase 28 | Complete |
+| EVAL-04 | Phase 28 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 22 total (all complete)

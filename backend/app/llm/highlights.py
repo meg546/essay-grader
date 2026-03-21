@@ -9,14 +9,18 @@ from difflib import SequenceMatcher
 
 logger = logging.getLogger(__name__)
 
+# Fuzzy matching threshold: 0.85 catches minor word omissions and
+# punctuation differences while rejecting substantially different text.
+_DEFAULT_THRESHOLD = 0.85
+
 
 def find_passage_offset(
-    essay_text: str, quoted_text: str, threshold: float = 0.6
+    essay_text: str, quoted_text: str, threshold: float = _DEFAULT_THRESHOLD
 ) -> tuple[int, int] | None:
     """Find the character offset of a quoted passage in the essay.
 
     Pass 1: Case-insensitive exact substring match.
-    Pass 2: Fuzzy sliding window using difflib.SequenceMatcher.
+    Pass 2: Fuzzy sliding window with two-stage refinement.
 
     Args:
         essay_text: The full essay text to search in.
@@ -36,24 +40,49 @@ def find_passage_offset(
     if idx != -1:
         return (idx, idx + len(quoted_text))
 
-    # Pass 2: Fuzzy sliding window
+    # Pass 2: Fuzzy sliding window with coarse-then-fine search
     quote_len = len(quoted_text)
     if quote_len > len(essay_text):
         return None
 
-    step = max(1, quote_len // 4)
     best_ratio = 0.0
     best_start = 0
 
-    for start in range(0, len(essay_text) - quote_len + 1, step):
+    # Coarse pass: step by 1/4 quote length to find approximate region
+    coarse_step = max(1, quote_len // 4)
+    for start in range(0, len(essay_text) - quote_len + 1, coarse_step):
         window = essay_text[start : start + quote_len]
         ratio = SequenceMatcher(None, window.lower(), lower_quote).ratio()
         if ratio > best_ratio:
             best_ratio = ratio
             best_start = start
 
+    # Fine pass: search char-by-char around the best coarse position
+    if best_ratio > 0:
+        fine_start = max(0, best_start - coarse_step)
+        fine_end = min(len(essay_text) - quote_len + 1, best_start + coarse_step + 1)
+        for start in range(fine_start, fine_end):
+            window = essay_text[start : start + quote_len]
+            ratio = SequenceMatcher(None, window.lower(), lower_quote).ratio()
+            if ratio > best_ratio:
+                best_ratio = ratio
+                best_start = start
+
     if best_ratio >= threshold:
-        return (best_start, best_start + quote_len)
+        # Try varying the window size slightly to get a better end boundary
+        # (handles cases where the LLM truncated or extended the quote)
+        best_end = best_start + quote_len
+        for delta in range(-5, 6):
+            end = best_start + quote_len + delta
+            if end <= best_start or end > len(essay_text):
+                continue
+            window = essay_text[best_start:end]
+            ratio = SequenceMatcher(None, window.lower(), lower_quote).ratio()
+            if ratio > best_ratio:
+                best_ratio = ratio
+                best_end = end
+
+        return (best_start, best_end)
 
     return None
 
@@ -98,7 +127,11 @@ def compute_highlights(
 
             offsets = find_passage_offset(essay_text, text)
             if offsets is None:
-                # Drop unmatched quotes gracefully
+                logger.debug(
+                    "Quote not matched (category=%s): %.60s...",
+                    category_id,
+                    text,
+                )
                 continue
 
             start, end = offsets

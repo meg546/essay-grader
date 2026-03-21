@@ -281,7 +281,7 @@ Plans:
   2. Clicking the toggle again immediately triggers a new LanguageTool check and underlines reappear
   3. A badge on the toggle button shows the current count of open issues and updates as issues are resolved or new ones are found
   4. The toggle state is preserved if the user navigates away and returns to the grading page
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 ### Phase 23: Writing Timer & File Upload
 **Goal**: Users have a session timer in the toolbar to track their writing time, and can load essay content by dropping or uploading a file instead of typing
@@ -307,7 +307,7 @@ Plans:
   3. Generated training examples span at least three rubric formats (ASAP holistic, app default 4-category, varied custom) — the dataset is not monolithic to a single rubric shape
   4. Every training example in the output file has been validated: all quoted passages exactly match substrings in the corresponding essay text, and failed examples are excluded from the output
   5. The final validated dataset file contains a meaningful volume of examples (target: 1,000+ accepted examples after rejection) and a held-out test split is separated before training
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 ### Phase 25: Fine-Tuning Pipeline
 **Goal**: A trained QLoRA adapter exists for both Qwen 2.5 3B and 7B, produced from the validated dataset using Unsloth
@@ -318,7 +318,7 @@ Plans:
   2. LoRA rank is configurable via command-line argument, and attention projection layers (q_proj, k_proj, v_proj) receive higher rank by default than non-attention layers
   3. Training data is loaded from the validated dataset in chat-template format with system, user, and assistant turns — the model learns to produce valid GradingResult JSON from an essay + rubric input
   4. Training completes without OOM errors on the 24GB RTX 4090 for both the 3B and 7B model sizes
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 ### Phase 26: Export & Deployment
 **Goal**: The fine-tuned model runs in the existing app via Ollama with no backend code changes — only an env var update
@@ -329,7 +329,7 @@ Plans:
   2. Running `ollama create essay-grader -f Modelfile` successfully imports the GGUF model and it appears in `ollama list`
   3. Setting `MODEL_NAME=essay-grader` in the backend .env and restarting the server routes grading requests to the fine-tuned model — no backend code is modified
   4. The fine-tuned model returns grading responses in valid GradingResult JSON format that the frontend renders without errors
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 ### Phase 27: Highlight Accuracy
 **Goal**: Essay passage highlighting works correctly even when the LLM generates quotes with minor variations from the original essay text
@@ -340,7 +340,7 @@ Plans:
   2. Fuzzy matching correctly maps near-exact quotes (minor word omissions, punctuation differences, trailing ellipses) to the right passage in the essay text and returns accurate character offsets
   3. A quote that differs from the essay by a small margin (e.g., one word dropped or punctuation changed) produces a highlight at the correct location rather than silently failing
   4. A quote that is substantially different from any passage in the essay is still rejected — the fuzzy threshold prevents false positive matches on unrelated text
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 ### Phase 28: Evaluation Pipeline
 **Goal**: The fine-tuned model's grading quality is measurable and comparable to both Sonnet and human scores on a held-out test set
@@ -351,7 +351,7 @@ Plans:
   2. Running the evaluation script grades all test essays with the fine-tuned model and reports a quadratic weighted kappa (QWK) score against human holistic scores
   3. The evaluation report includes a quote accuracy metric — the percentage of generated quotes that exactly match substrings in the corresponding essay text
   4. The same test set is also evaluated using Sonnet, and the report compares fine-tuned model QWK and quote accuracy side-by-side with the Sonnet baseline
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 ## Progress
 
@@ -388,8 +388,8 @@ v3.0: 24 → 25 → 26 → 28 (sequential); 27 can run in parallel with any of 2
 | 21. Suggestion Popover | v2.2 | 1/1 | Complete | 2026-03-14 |
 | 22. Feedback Toggle & Issue Badge | v2.2 | 0/? | Not started | - |
 | 23. Writing Timer & File Upload | v2.2 | 1/2 | In Progress | - |
-| 24. Dataset Preparation | v3.0 | 0/? | Not started | - |
-| 25. Fine-Tuning Pipeline | v3.0 | 0/? | Not started | - |
-| 26. Export & Deployment | v3.0 | 0/? | Not started | - |
-| 27. Highlight Accuracy | v3.0 | 0/? | Not started | - |
-| 28. Evaluation Pipeline | v3.0 | 0/? | Not started | - |
+| 24. Dataset Preparation | v3.0 | 1/1 | Complete | 2026-03-21 |
+| 25. Fine-Tuning Pipeline | v3.0 | 1/1 | Complete | 2026-03-21 |
+| 26. Export & Deployment | v3.0 | 1/1 | Complete | 2026-03-21 |
+| 27. Highlight Accuracy | v3.0 | 1/1 | Complete | 2026-03-21 |
+| 28. Evaluation Pipeline | v3.0 | 1/1 | Complete | 2026-03-21 |
