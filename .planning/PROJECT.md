@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A frontend web application for AI-powered essay grading and feedback. Users submit essays with a rubric (PDF upload), receive rubric-aligned scores with structured feedback, and see color-coded essay passage highlighting linked to each feedback category — all in a side-by-side single-page interface. This is the React frontend — the backend (Python/FastAPI + fine-tuned Llama 3.2 3B) will be developed separately and integrated later.
+A full-stack web application for AI-powered essay grading and feedback. Users submit essays with a rubric (PDF upload), receive rubric-aligned scores with structured feedback, and see color-coded essay passage highlighting linked to each feedback category — all in a side-by-side single-page interface. The backend runs Python/FastAPI with a locally-hosted LLM via Ollama. The frontend is React + Vite + Tailwind with a Tiptap editor providing real-time writing feedback.
 
 ## Core Value
 
@@ -37,22 +37,22 @@ Users can submit an essay with a rubric and immediately see clear, rubric-aligne
 
 ### Active
 
-#### Current Milestone: v2.2 Live Essay Feedback
+#### Current Milestone: v3.0 Local Model Fine-Tuning
 
-**Goal:** Replace the plain textarea essay input with a Tiptap-based editor providing real-time spelling, grammar, and structural feedback as students write.
+**Goal:** Fine-tune a purpose-built essay grading model via distillation from Claude Sonnet using the ASAP 2.0 dataset, replacing the generic llama3.2:3b with a fast, accurate, locally-hosted model.
 
 **Target features:**
-- Tiptap editor replacing plain textarea (no rich text formatting — plain text only)
-- LanguageTool API integration for live spelling/grammar/style checking with inline underlines
-- Click-to-fix suggestion popovers
-- Client-side essay structure heuristics (thesis detection, paragraph length, evidence signals, conclusion check)
-- Toggleable live feedback via toolbar
-- Writing timer replacing the History toolbar button
+- Dataset generation pipeline using Claude Sonnet to produce training data matching the grading JSON schema
+- Training data validation with exact quote verification against essay text
+- QLoRA fine-tuning pipeline with Unsloth targeting Qwen 2.5 (3B and 7B)
+- GGUF quantization export and Ollama model integration
+- Fuzzy quote matching in compute_highlights() for improved inline feedback accuracy
+- Evaluation pipeline comparing fine-tuned model against Sonnet and human scores
 
 ### Out of Scope
 
 - Real authentication / OAuth — mock auth sufficient for demo
-- Actual AI model integration — backend developed separately
+- Cloud-hosted model inference — local-only via Ollama
 - PDF export functionality — placeholder only
 - Database / persistent storage — mock data only
 - Plagiarism detection — not part of grading scope
@@ -67,8 +67,10 @@ Users can submit an essay with a rubric and immediately see clear, rubric-aligne
 
 ## Context
 
-- Academic/course project: the frontend is the deliverable, backend comes later
-- Backend will be Python/FastAPI serving a fine-tuned Llama 3.2 3B model
+- Academic/course project with full-stack implementation
+- Backend is Python/FastAPI serving a locally-hosted LLM via Ollama (currently llama3.2:3b, targeting fine-tuned Qwen 2.5)
+- ASAP 2.0 dataset (~24,000 argumentative essays) from Kaggle used for training data: https://www.kaggle.com/datasets/lburleigh/asap-2-0
+- Fine-tuning hardware: NVIDIA RTX 4090 (24GB VRAM) — supports both 3B and 7B QLoRA training
 - UX redesign inspired by QuillBot AI Detector layout (side-by-side input + results)
 - Rubric uploaded as PDF (replaced editable rubric editor in v1.0 redesign)
 - All API interactions mocked with realistic placeholder data and simulated delays
@@ -109,4 +111,4 @@ Users can submit an essay with a rubric and immediately see clear, rubric-aligne
 | Heuristics as info banners, not inline | Separates structural feedback from LanguageTool underlines visually | — Pending |
 
 ---
-*Last updated: 2026-03-12 after v2.2 milestone started*
+*Last updated: 2026-03-21 after v3.0 milestone started*
