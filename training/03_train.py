@@ -29,8 +29,8 @@ TRAIN_FILE = DATA_DIR / "train.jsonl"
 OUTPUT_DIR = Path(__file__).parent / "checkpoints"
 
 MODEL_MAP = {
-    "3b": "unsloth/Qwen2.5-3B-Instruct",
-    "7b": "unsloth/Qwen2.5-7B-Instruct",
+    "3b": "unsloth/Qwen2.5-3B-Instruct-bnb-4bit",
+    "7b": "unsloth/Qwen2.5-7B-Instruct-bnb-4bit",
 }
 
 # Default LoRA ranks — higher for attention layers (better quote fidelity)
@@ -164,9 +164,9 @@ def main() -> None:
             "gate_proj", "up_proj", "down_proj",       # FFN
         ],
         lora_alpha=attn_rank * 2,  # Standard: alpha = 2 * rank
-        lora_dropout=0,
-        bias="none",
-        use_gradient_checkpointing="unsloth",  # 30% less VRAM
+        lora_dropout=0,  # Must be 0 for Unsloth optimized kernels
+        bias="none",     # Must be "none" for Unsloth optimized kernels
+        use_gradient_checkpointing="unsloth",  # The string "unsloth" (not True) — 30% less VRAM
         random_state=42,
         max_seq_length=args.max_seq_length,
     )
@@ -195,7 +195,8 @@ def main() -> None:
         max_seq_length=args.max_seq_length,
         optim="adamw_8bit",
         seed=42,
-        bf16=True,
+        bf16=True,   # RTX 4090 (Ampere) has native BF16 support
+        fp16=False,  # Never mix with bf16
     )
 
     trainer = SFTTrainer(

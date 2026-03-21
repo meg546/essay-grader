@@ -88,7 +88,7 @@ def parse_dataset(csv_path: Path) -> pd.DataFrame:
         lower = col.lower().strip()
         if lower in ("full_text", "essay_text", "essay", "text"):
             col_map[col] = "essay_text"
-        elif lower in ("score", "holistic_essay_score", "overall_score", "grade"):
+        elif lower in ("holistic_essay_score", "score", "overall_score", "grade"):
             col_map[col] = "human_score"
         elif lower in ("essay_id", "essay_id_comp", "id"):
             col_map[col] = "essay_id"

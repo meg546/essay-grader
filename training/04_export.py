@@ -21,8 +21,8 @@ CHECKPOINT_DIR = Path(__file__).parent / "checkpoints"
 EXPORT_DIR = Path(__file__).parent / "export"
 
 MODEL_MAP = {
-    "3b": "unsloth/Qwen2.5-3B-Instruct",
-    "7b": "unsloth/Qwen2.5-7B-Instruct",
+    "3b": "unsloth/Qwen2.5-3B-Instruct-bnb-4bit",
+    "7b": "unsloth/Qwen2.5-7B-Instruct-bnb-4bit",
 }
 
 MODELFILE_TEMPLATE = """FROM {gguf_path}
