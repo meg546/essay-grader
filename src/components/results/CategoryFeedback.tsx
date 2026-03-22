@@ -37,8 +37,16 @@ export function CategoryFeedback({
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <Card
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e: React.KeyboardEvent) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleClick();
+          }
+        }}
         className={cn(
-          "transition-[colors,shadow] duration-200 cursor-pointer",
+          "transition-[color,box-shadow] duration-200 cursor-pointer",
           isActive && "ring-2 ring-offset-1 scale-[1.01]",
         )}
         style={{
@@ -56,6 +64,7 @@ export function CategoryFeedback({
               {category.score}/{category.maxScore}
             </span>
             <ChevronDown
+              aria-hidden="true"
               className={cn(
                 "h-4 w-4 text-muted-foreground transition-transform duration-200",
                 open && "rotate-180",

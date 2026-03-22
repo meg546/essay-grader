@@ -115,7 +115,7 @@ export function EssayUploadModal({ open, onOpenChange, onTextLoaded }: EssayUplo
 
   return (
     <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) setSelectedFile(null); }}>
-      <DialogContent>
+      <DialogContent className="overscroll-contain">
         <DialogHeader>
           <DialogTitle>Upload Essay</DialogTitle>
           <DialogDescription>

@@ -1,13 +1,13 @@
 import { motion } from "motion/react"
+import { Link } from "react-router"
 import { PenTool } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 
 interface HeroSectionProps {
   onSignIn: () => void
-  onRegister: () => void
 }
 
-export function HeroSection({ onSignIn, onRegister }: HeroSectionProps) {
+export function HeroSection({ onSignIn }: HeroSectionProps) {
   return (
     <section className="py-24 md:py-32">
       <motion.div
@@ -31,9 +31,9 @@ export function HeroSection({ onSignIn, onRegister }: HeroSectionProps) {
           <Button size="lg" onClick={onSignIn}>
             Sign In
           </Button>
-          <Button size="lg" variant="outline" onClick={onRegister}>
+          <Link to="/register" className={buttonVariants({ size: "lg", variant: "outline" })}>
             Register
-          </Button>
+          </Link>
         </div>
       </motion.div>
     </section>

@@ -144,6 +144,9 @@ export function HighlightedEssay({ result }: HighlightedEssayProps) {
             key={i}
             id={`hl-${seg.id}`}
             data-category-id={seg.categoryId}
+            role="button"
+            tabIndex={0}
+            aria-describedby={tooltip?.segmentId === seg.id ? `tooltip-${seg.id}` : undefined}
             className={cn(
               "rounded-sm px-0.5 transition-[background-color,opacity] duration-200 cursor-pointer",
               isActive ? color.bgActive : color.bg,
@@ -152,6 +155,8 @@ export function HighlightedEssay({ result }: HighlightedEssayProps) {
             )}
             onMouseEnter={(e) => handleMouseEnter(seg, e.currentTarget)}
             onMouseLeave={handleMouseLeave}
+            onFocus={(e) => handleMouseEnter(seg, e.currentTarget)}
+            onBlur={handleMouseLeave}
           >
             {seg.text}
           </mark>
@@ -160,6 +165,8 @@ export function HighlightedEssay({ result }: HighlightedEssayProps) {
 
       {tooltip && (
         <div
+          role="tooltip"
+          id={`tooltip-${tooltip.segmentId}`}
           className={cn(
             "pointer-events-none absolute z-50 max-w-xs -translate-x-1/2 rounded-md border bg-popover px-3 py-2 text-popover-foreground shadow-md",
             !tooltip.placeBelow && "-translate-y-full",

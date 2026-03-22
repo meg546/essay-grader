@@ -75,9 +75,11 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
         </DialogHeader>
 
         <div className="mt-4 space-y-4">
-          <div className="flex gap-4 border-b">
+          <div className="flex gap-4 border-b" role="tablist">
             <button
               type="button"
+              role="tab"
+              aria-selected={mode === "login"}
               className={`pb-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                 mode === "login"
                   ? "border-b-2 border-primary text-primary"
@@ -89,6 +91,8 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
             </button>
             <button
               type="button"
+              role="tab"
+              aria-selected={mode === "register"}
               className={`pb-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                 mode === "register"
                   ? "border-b-2 border-primary text-primary"
@@ -107,6 +111,7 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
                 name="email"
                 autoComplete="email"
                 spellCheck={false}
+                aria-label="Email"
                 placeholder="you@example.com"
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
@@ -116,7 +121,8 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
                 type="password"
                 name="password"
                 autoComplete="current-password"
-                placeholder="Password"
+                aria-label="Password"
+                placeholder="Password\u2026"
                 minLength={8}
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
@@ -143,6 +149,7 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
                 name="email"
                 autoComplete="email"
                 spellCheck={false}
+                aria-label="Email"
                 placeholder="you@example.com"
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
@@ -152,7 +159,8 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
                 type="password"
                 name="password"
                 autoComplete="new-password"
-                placeholder="Password"
+                aria-label="Password"
+                placeholder="Password\u2026"
                 minLength={8}
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
@@ -162,7 +170,8 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
                 type="password"
                 name="confirmPassword"
                 autoComplete="new-password"
-                placeholder="Confirm password"
+                aria-label="Confirm password"
+                placeholder="Confirm password\u2026"
                 minLength={8}
                 value={confirmPasswordInput}
                 onChange={(e) => setConfirmPasswordInput(e.target.value)}

@@ -82,11 +82,11 @@ export function WalkthroughDemo() {
         <Card className="overflow-hidden">
           <div className="relative min-h-[280px] p-6">
             {/* Step indicator */}
-            <div className="mb-4 flex gap-2">
+            <div className="mb-4 flex gap-2" role="group" aria-label={`Step ${frame} of 4`}>
               {[1, 2, 3, 4].map((step) => (
                 <div
                   key={step}
-                  className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
+                  className={`h-1 flex-1 rounded-full transition-opacity duration-300 ${
                     step <= frame ? "bg-primary" : "bg-border"
                   }`}
                 />
@@ -197,7 +197,7 @@ function FrameGrading() {
       className="flex flex-col items-center justify-center py-6"
     >
       <p className="mb-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-        Analyzing essay...
+        Analyzing essay{"\u2026"}
       </p>
       <div className="h-2 w-48 overflow-hidden rounded-full bg-border">
         <motion.div

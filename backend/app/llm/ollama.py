@@ -8,10 +8,19 @@ from app.config import Settings
 class OllamaClient:
     """LLM client for Ollama using its OpenAI-compatible API."""
 
-    def __init__(self, settings: Settings) -> None:
-        self.model = settings.model_name
+    def __init__(self, settings: Settings, *, suggestions: bool = False) -> None:
+        if suggestions and settings.suggestions_model_name:
+            self.model = settings.suggestions_model_name
+        else:
+            self.model = settings.model_name
+
+        endpoint = (
+            settings.suggestions_model_endpoint
+            if suggestions and settings.suggestions_model_endpoint
+            else settings.model_endpoint
+        )
         self._client = httpx.AsyncClient(
-            base_url=f"{settings.model_endpoint}/v1",
+            base_url=f"{endpoint}/v1",
             timeout=httpx.Timeout(120.0, connect=10.0),
         )
 

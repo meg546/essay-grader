@@ -2,7 +2,7 @@ import axios from "axios";
 import { useProfileStore } from "@/stores/profile-store";
 
 export const apiClient = axios.create({
-  baseURL: "http://localhost:8000/api",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000/api",
   timeout: 120_000,
 });
 
@@ -19,7 +19,7 @@ apiClient.interceptors.response.use(
   (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       useProfileStore.getState().signOut();
-      window.location.href = "/profile";
+      window.location.href = "/";
     }
     return Promise.reject(error);
   }

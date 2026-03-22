@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { useLocation } from "react-router";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -43,25 +42,24 @@ export function GradingPage() {
 
   const essayInputRef = useRef<EssayInputHandle>(null);
 
-  // Route-based timer pause/resume
-  const location = useLocation();
-  const prevPathRef = useRef(location.pathname);
-
-  useEffect(() => {
-    const wasOnGrade = prevPathRef.current === "/grade";
-    const isOnGrade = location.pathname === "/grade";
-    const { timerEndTime, timerPaused, pauseTimer, resumeTimer } = useAppStore.getState();
-
-    if (wasOnGrade && !isOnGrade && timerEndTime && !timerPaused) {
-      pauseTimer();
-    } else if (!wasOnGrade && isOnGrade && timerPaused) {
-      resumeTimer();
-    }
-
-    prevPathRef.current = location.pathname;
-  }, [location.pathname]);
 
   const isSubmitDisabled = essayText.trim() === "" || isGrading;
+
+  async function performGrading(setLoading: (v: boolean) => void) {
+    setLoading(true);
+    try {
+      const rubricFile = useAppStore.getState().rubricFile;
+      const effectiveGradeLevel = gradeLevelOverride || gradeLevel || "college";
+      const result = await gradeEssay(essayText, effectiveGradeLevel, rubricFile, undefined, tone);
+      setCurrentResult(result);
+      return true;
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleSubmit() {
     if (!isSignedIn) {
@@ -69,34 +67,16 @@ export function GradingPage() {
       return;
     }
     useAppStore.getState().cancelTimer();
-    setIsGrading(true);
-    try {
-      const rubricFile = useAppStore.getState().rubricFile;
-      const effectiveGradeLevel = gradeLevelOverride || gradeLevel || "college";
-      const result = await gradeEssay(essayText, effectiveGradeLevel, rubricFile, undefined, tone);
-      setCurrentResult(result);
+    const success = await performGrading(setIsGrading);
+    if (success) {
       // Reset per-submission state
       setTone("academic");
       setGradeLevelOverride(null);
-    } catch (error) {
-      toast.error(getErrorMessage(error));
-    } finally {
-      setIsGrading(false);
     }
   }
 
   async function handleRegrade() {
-    setIsRegrading(true);
-    try {
-      const rubricFile = useAppStore.getState().rubricFile;
-      const effectiveGradeLevel = gradeLevelOverride || gradeLevel || "college";
-      const result = await gradeEssay(essayText, effectiveGradeLevel, rubricFile, undefined, tone);
-      setCurrentResult(result);
-    } catch (error) {
-      toast.error(getErrorMessage(error));
-    } finally {
-      setIsRegrading(false);
-    }
+    await performGrading(setIsRegrading);
   }
 
   function handleReset() {
@@ -131,8 +111,10 @@ export function GradingPage() {
             <ColorLegend categories={currentResult.categories} />
 
             {/* Mobile tab bar */}
-            <div className="flex md:hidden border-b">
+            <div role="tablist" className="flex md:hidden border-b">
               <button
+                role="tab"
+                aria-selected={resultTab === "essay"}
                 onClick={() => setResultTab("essay")}
                 className={cn(
                   "flex-1 py-2.5 text-sm text-center transition-colors min-h-[44px]",
@@ -144,6 +126,8 @@ export function GradingPage() {
                 Essay
               </button>
               <button
+                role="tab"
+                aria-selected={resultTab === "feedback"}
                 onClick={() => setResultTab("feedback")}
                 className={cn(
                   "flex-1 py-2.5 text-sm text-center transition-colors min-h-[44px]",
@@ -156,7 +140,7 @@ export function GradingPage() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div aria-live="polite" className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <div className={cn("md:block", resultTab !== "essay" && "hidden")}>
                 <EssayPanel result={currentResult} onRegrade={handleRegrade} isRegrading={isRegrading} />
               </div>
@@ -172,7 +156,7 @@ export function GradingPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[850px] flex flex-col min-h-[calc(100vh-7rem)] md:h-[calc(100vh-7rem)]">
+    <div className="mx-auto max-w-[1100px] flex flex-col min-h-[calc(100vh-7rem)] md:h-[calc(100vh-7rem)]">
       <div className="flex flex-col md:flex-row flex-1 min-h-0 border rounded-lg overflow-hidden">
         <div className="flex-1 flex flex-col min-h-0">
           <EssayInput ref={essayInputRef} disabled={isGrading} />
@@ -201,7 +185,7 @@ export function GradingPage() {
           {isGrading ? (
             <>
               <Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" />
-              Reviewing your work...
+              Reviewing your work{"\u2026"}
             </>
           ) : (
             "Submit for Grading"

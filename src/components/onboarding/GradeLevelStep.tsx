@@ -46,7 +46,7 @@ export function GradeLevelStep({ onNext, onBack }: GradeLevelStepProps) {
       <div className="space-y-2">
         <h2 className="text-2xl font-bold">What grade level do you teach or study?</h2>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div role="radiogroup" aria-label="Grade level" className="grid grid-cols-2 gap-4">
         {OPTIONS.map((opt) => (
           <SelectableCard
             key={opt.value}

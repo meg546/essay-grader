@@ -58,7 +58,7 @@ export function EssayPanel({ result, onRegrade, isRegrading, readOnly }: EssayPa
               {isRegrading ? (
                 <Button variant="default" size="sm" disabled>
                   <Loader2 aria-hidden="true" className="mr-1 h-3 w-3 animate-spin" />
-                  Re-grading...
+                  Re-grading{"\u2026"}
                 </Button>
               ) : (
                 hasChanges && (
@@ -77,6 +77,7 @@ export function EssayPanel({ result, onRegrade, isRegrading, readOnly }: EssayPa
         </div>
         {isEditing ? (
           <textarea
+            aria-label="Essay text"
             className={cn("w-full min-h-[400px] resize-none rounded-md border border-input bg-background p-3 leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring", TEXT_SIZE_CLASS[textSize])}
             value={essayText}
             onChange={(e) => setEssayText(e.target.value)}

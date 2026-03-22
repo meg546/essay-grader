@@ -76,7 +76,7 @@ export function TimerPopover() {
           render={
             <TooltipTrigger
               className={cn(
-                "group relative flex items-center justify-center w-10 h-10 rounded-lg transition-colors duration-150 hover:bg-primary/10 hover:scale-110 cursor-pointer",
+                "group relative flex items-center justify-center w-10 h-10 rounded-lg transition-[colors,transform] duration-150 hover:bg-primary/10 hover:scale-110 focus-visible:ring-2 focus-visible:ring-ring cursor-pointer",
                 isActive
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:text-primary"
@@ -89,7 +89,7 @@ export function TimerPopover() {
             className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]"
           />
           {isActive && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-green-500" />
+            <span aria-hidden="true" className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${isPaused ? "bg-orange-500" : "bg-green-500"}`} />
           )}
         </PopoverTrigger>
         <TooltipContent>Timer</TooltipContent>
@@ -108,7 +108,7 @@ export function TimerPopover() {
                   key={label}
                   onClick={() => setSelectedMinutes(minutes)}
                   className={cn(
-                    "rounded-md px-1 py-1 text-xs font-medium transition-colors",
+                    "rounded-md px-1 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring",
                     selectedMinutes === minutes
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -130,7 +130,7 @@ export function TimerPopover() {
             {/* Start button */}
             <button
               onClick={handleStart}
-              className="w-full rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="w-full rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors focus-visible:ring-2 focus-visible:ring-ring"
             >
               Start
             </button>
@@ -147,7 +147,6 @@ export function TimerPopover() {
               <ScrollPicker
                 value={displayRunningMinutes}
                 onChange={setRunningMinutes}
-                disabled={isRunning}
               />
             </div>
 
@@ -156,7 +155,7 @@ export function TimerPopover() {
               {isPaused && (
                 <button
                   onClick={handleResume}
-                  className="w-full rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                  className="w-full rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   Resume
                 </button>
@@ -164,14 +163,14 @@ export function TimerPopover() {
               {runningMinutes !== null && (
                 <button
                   onClick={handleSet}
-                  className="w-full rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                  className="w-full rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   Set
                 </button>
               )}
               <button
                 onClick={handleCancel}
-                className="w-full rounded-md border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                className="w-full rounded-md border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring"
               >
                 Cancel
               </button>

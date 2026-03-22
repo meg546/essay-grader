@@ -77,12 +77,12 @@ export function ProfilePage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium">Grade Level</label>
+            <label htmlFor="grade-level" className="mb-1 block text-sm font-medium">Grade Level</label>
             <Select
               value={gradeLevel ?? ""}
               onValueChange={(v) => setGradeLevel(v as GradeLevel)}
             >
-              <SelectTrigger className="w-48">
+              <SelectTrigger id="grade-level" aria-label="Grade level" className="w-48">
                 <SelectValue placeholder="Select grade level">
                   {gradeLevel ? GRADE_LEVEL_LABELS[gradeLevel] : "Select grade level"}
                 </SelectValue>
@@ -101,12 +101,12 @@ export function ProfilePage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium">Writing Purpose</label>
+            <label htmlFor="writing-purpose" className="mb-1 block text-sm font-medium">Writing Purpose</label>
             <Select
               value={writingPurpose ?? ""}
               onValueChange={(v) => setWritingPurpose(v as WritingPurpose)}
             >
-              <SelectTrigger className="w-48">
+              <SelectTrigger id="writing-purpose" aria-label="Writing purpose" className="w-48">
                 <SelectValue placeholder="Select purpose">
                   {writingPurpose ? WRITING_PURPOSE_LABELS[writingPurpose] : "Select purpose"}
                 </SelectValue>

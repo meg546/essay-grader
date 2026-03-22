@@ -29,6 +29,7 @@ export function ColorLegend({ categories }: ColorLegendProps) {
           <button
             key={cat.id}
             type="button"
+            aria-pressed={!isDisabled}
             onClick={() => toggleCategory(cat.id)}
             className={cn(
               "rounded-full px-3 py-1 text-xs font-medium transition-opacity inline-flex items-center gap-1.5",

@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     openai_api_key: str = ""
 
+    # Separate LLM settings for inline suggestions (falls back to main settings)
+    suggestions_model_provider: Literal["ollama", "anthropic", "openai"] | None = None
+    suggestions_model_name: str | None = None
+    suggestions_model_endpoint: str | None = None
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useParams, Link } from "react-router";
 import { Loader2 } from "lucide-react";
 
 import { getHistoryItem } from "@/api/history";
@@ -12,8 +12,6 @@ import { FeedbackPanel } from "@/components/results/FeedbackPanel";
 
 export function EssayDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-
   const [result, setResult] = useState<GradingResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -29,8 +27,9 @@ export function EssayDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="flex items-center justify-center py-20" aria-live="polite">
         <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-muted-foreground" />
+        <span className="sr-only">Loading</span>
       </div>
     );
   }
@@ -41,8 +40,8 @@ export function EssayDetailPage() {
         <p className="text-muted-foreground">
           Could not load essay results.
         </p>
-        <Button variant="outline" onClick={() => navigate("/history")}>
-          Back to Essays
+        <Button variant="outline" asChild>
+          <Link to="/history">Back to Essays</Link>
         </Button>
       </div>
     );
@@ -53,8 +52,8 @@ export function EssayDetailPage() {
       <div className="mx-auto max-w-[1400px] space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-balance">Essay Results</h1>
-          <Button variant="outline" onClick={() => navigate("/history")}>
-            Back to Essays
+          <Button variant="outline" asChild>
+            <Link to="/history">Back to Essays</Link>
           </Button>
         </div>
         <ColorLegend categories={result.categories} />

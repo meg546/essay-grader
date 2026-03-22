@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Navigate } from "react-router"
+import { Navigate, Link } from "react-router"
 import { Loader2 } from "lucide-react"
 import { useProfileStore } from "@/stores/profile-store"
 import { Button } from "@/components/ui/button"
@@ -52,7 +52,7 @@ function RegistrationForm() {
 
     const result = await register(email.trim(), password)
     if (!result.success) {
-      setError(result.error ?? "Registration failed")
+      setError(result.error ?? "Registration failed \u2014 please try again or use a different email.")
     }
     // On success, store sets isSignedIn=true, gradeLevel=null
     // Component re-renders and shows wizard (Phase B)
@@ -71,6 +71,7 @@ function RegistrationForm() {
             name="email"
             autoComplete="email"
             spellCheck={false}
+            aria-label="Email"
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -80,7 +81,8 @@ function RegistrationForm() {
             type="password"
             name="password"
             autoComplete="new-password"
-            placeholder="Password"
+            aria-label="Password"
+            placeholder="Password\u2026"
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -90,7 +92,8 @@ function RegistrationForm() {
             type="password"
             name="confirmPassword"
             autoComplete="new-password"
-            placeholder="Confirm password"
+            aria-label="Confirm password"
+            placeholder="Confirm password\u2026"
             minLength={8}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
@@ -101,7 +104,7 @@ function RegistrationForm() {
             {isSigningIn ? (
               <>
                 <Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" />
-                Creating account...
+                Creating account\u2026
               </>
             ) : (
               "Create Account"
@@ -111,9 +114,9 @@ function RegistrationForm() {
 
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
-          <a href="/" className="text-primary hover:underline">
+          <Link to="/" className="text-primary hover:underline">
             Sign in
-          </a>
+          </Link>
         </p>
       </div>
     </div>

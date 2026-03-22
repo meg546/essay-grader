@@ -46,8 +46,12 @@ async def get_history_item(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    try:
+        parsed_id = uuid.UUID(submission_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Submission not found")
     stmt = select(Submission).where(
-        Submission.id == uuid.UUID(submission_id),
+        Submission.id == parsed_id,
         Submission.user_id == user.id,
     )
     result = await db.execute(stmt)
@@ -63,8 +67,12 @@ async def delete_history_item(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    try:
+        parsed_id = uuid.UUID(submission_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Submission not found")
     stmt = select(Submission).where(
-        Submission.id == uuid.UUID(submission_id),
+        Submission.id == parsed_id,
         Submission.user_id == user.id,
     )
     result = await db.execute(stmt)

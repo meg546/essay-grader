@@ -1,7 +1,7 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
-const ITEM_HEIGHT = 36;
+const ITEM_HEIGHT = 28;
 
 interface ScrollPickerProps {
   value: number;
@@ -9,6 +9,7 @@ interface ScrollPickerProps {
   min?: number;
   max?: number;
   disabled?: boolean;
+  "aria-label"?: string;
 }
 
 export function ScrollPicker({
@@ -17,6 +18,7 @@ export function ScrollPicker({
   min = 1,
   max = 120,
   disabled = false,
+  "aria-label": ariaLabel = "Select minutes",
 }: ScrollPickerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const userScrollingRef = useRef(false);
@@ -60,12 +62,35 @@ export function ScrollPicker({
     onChange(clamped);
   }
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (disabled) return;
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        const next = Math.min(max, value + 1);
+        onChange(next);
+        scrollToValue(next);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        const prev = Math.max(min, value - 1);
+        onChange(prev);
+        scrollToValue(prev);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [disabled, value, min, max, onChange],
+  );
+
   const items = Array.from({ length: max - min + 1 }, (_, i) => min + i);
 
   return (
     <div
       ref={containerRef}
+      role="listbox"
+      aria-label={ariaLabel}
+      tabIndex={0}
       onScroll={handleScroll}
+      onKeyDown={handleKeyDown}
       style={{
         height: ITEM_HEIGHT * 3,
         overflowY: "scroll",
@@ -85,6 +110,8 @@ export function ScrollPicker({
         return (
           <div
             key={v}
+            role="option"
+            aria-selected={isCenter}
             onClick={() => {
               if (!disabled) {
                 onChange(v);

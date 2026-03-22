@@ -32,7 +32,7 @@ export function TextSizeSelector() {
           render={
             <TooltipTrigger
               className={cn(
-                "group relative flex items-center justify-center w-10 h-10 rounded-lg transition-colors duration-150 hover:bg-primary/10 hover:scale-110 cursor-pointer",
+                "group relative flex items-center justify-center w-10 h-10 rounded-lg transition-[colors,transform] duration-150 hover:bg-primary/10 hover:scale-110 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
                 "text-muted-foreground hover:text-primary"
               )}
             />
@@ -50,6 +50,7 @@ export function TextSizeSelector() {
           {TEXT_SIZE_OPTIONS.map(({ value, label }) => (
             <button
               key={value}
+              aria-pressed={textSize === value}
               onClick={() => {
                 setTextSize(value);
                 setOpen(false);

@@ -15,10 +15,10 @@ export function FeedbackPanel({ result, isLoading }: FeedbackPanelProps) {
     <Card className="lg:h-[calc(100vh-14rem)] lg:overflow-y-auto">
       <CardContent className="relative space-y-6 pt-6">
         {isLoading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/80">
+          <div aria-live="polite" className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/80">
             <div className="flex flex-col items-center gap-2">
               <Loader2 aria-hidden="true" className="h-8 w-8 animate-spin text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Re-grading...</p>
+              <p className="text-sm text-muted-foreground">Re-grading{"\u2026"}</p>
             </div>
           </div>
         )}

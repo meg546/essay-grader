@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { NavLink, useLocation } from "react-router"
 import { cn } from "@/lib/utils"
 import { PenToolIcon, Sun, Moon, Menu } from "lucide-react"
@@ -52,6 +53,7 @@ function NavLinkItem({
 export function Header() {
   const essayText = useAppStore((s) => s.essayText)
   const { resolvedTheme, toggleTheme } = useTheme()
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur-sm">
@@ -71,7 +73,7 @@ export function Header() {
           <button
             onClick={toggleTheme}
             aria-label="Toggle dark mode"
-            className="p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring"
           >
             {resolvedTheme === "light" ? (
               <Sun aria-hidden="true" className="size-5" />
@@ -92,9 +94,9 @@ export function Header() {
 
           {/* Mobile hamburger */}
           <div className="flex md:hidden">
-            <Sheet>
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
               <SheetTrigger
-                className="p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                className="p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Open menu"
               >
                 <Menu aria-hidden="true" className="size-5" />
@@ -110,6 +112,7 @@ export function Header() {
                         key={item.to}
                         to={item.to}
                         label={label}
+                        onClick={() => setSheetOpen(false)}
                         className="w-full text-left"
                       />
                     )

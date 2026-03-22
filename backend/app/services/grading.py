@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import uuid
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
@@ -133,14 +134,14 @@ class GradingService:
         schema: dict,
     ) -> dict:
         """Call the LLM and parse JSON, retrying once on failure."""
+        logger = logging.getLogger(__name__)
         for attempt in range(2):
             raw = await self._llm.complete(system_prompt, user_prompt, schema)
-            import logging
-            logging.getLogger(__name__).warning("LLM raw response (attempt %d): %s", attempt, raw[:500] if raw else "EMPTY")
+            logger.debug("LLM raw response (attempt %d): %s", attempt, raw[:500] if raw else "EMPTY")
             try:
                 return json.loads(raw)
             except (json.JSONDecodeError, TypeError) as e:
-                logging.getLogger(__name__).warning("JSON parse error (attempt %d): %s", attempt, e)
+                logger.debug("JSON parse error (attempt %d): %s", attempt, e)
                 if attempt == 1:
                     raise ValueError(f"LLM returned invalid JSON after retry: {raw[:200] if raw else 'EMPTY'}")
         # Unreachable, but satisfies type checker

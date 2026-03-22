@@ -39,7 +39,7 @@ export function LandingLayout() {
             <button
               onClick={toggleTheme}
               aria-label="Toggle dark mode"
-              className="p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring"
             >
               {resolvedTheme === "light" ? (
                 <Sun aria-hidden="true" className="size-5" />
@@ -57,7 +57,7 @@ export function LandingLayout() {
             <div className="flex md:hidden">
               <Sheet>
                 <SheetTrigger
-                  className="p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  className="p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="Open menu"
                 >
                   <Menu aria-hidden="true" className="size-5" />

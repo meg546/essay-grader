@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { useNavigate } from "react-router"
 import { useProfileStore } from "@/stores/profile-store"
-import { useFoxStore } from "@/stores/fox-store"
 import { SignInDialog } from "@/components/auth/SignInDialog"
 import { HeroSection } from "@/components/landing/HeroSection"
 import { FeatureHighlights } from "@/components/landing/FeatureHighlights"
@@ -13,12 +12,6 @@ export function LandingPage() {
   const isSignedIn = useProfileStore((s) => s.isSignedIn)
   const navigate = useNavigate()
   const [showSignIn, setShowSignIn] = useState(false)
-  const setFoxState = useFoxStore((s) => s.setFoxState)
-
-  useEffect(() => {
-    setFoxState("waving")
-    return () => setFoxState("idle")
-  }, [setFoxState])
 
   // Redirect authenticated users to /grade instantly
   useEffect(() => {
@@ -50,7 +43,6 @@ export function LandingPage() {
     <>
       <HeroSection
         onSignIn={() => setShowSignIn(true)}
-        onRegister={() => navigate("/register")}
       />
       <FeatureHighlights />
       <HowItWorks />

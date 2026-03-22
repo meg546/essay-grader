@@ -40,7 +40,7 @@ export function WritingPurposeStep({ onNext, onSkip }: WritingPurposeStepProps) 
       <div className="space-y-2">
         <h2 className="text-2xl font-bold">What's your primary writing purpose?</h2>
       </div>
-      <div className="flex gap-4">
+      <div role="radiogroup" aria-label="Writing purpose" className="flex gap-4">
         {OPTIONS.map((opt) => (
           <SelectableCard
             key={opt.value}

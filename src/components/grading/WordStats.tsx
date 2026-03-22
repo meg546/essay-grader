@@ -15,10 +15,10 @@ export function WordStats({ essayText, visible }: WordStatsProps) {
 
   return (
     <div className="flex items-center gap-6 h-8 px-4 text-xs text-muted-foreground transition-colors duration-200">
-      <span>{words.toLocaleString()} words</span>
-      <span>{characters.toLocaleString()} characters</span>
-      <span>{paragraphs} {paragraphs === 1 ? "paragraph" : "paragraphs"}</span>
-      <span>{readingTime} min read</span>
+      <span className="tabular-nums">{words.toLocaleString()} words</span>
+      <span className="tabular-nums">{characters.toLocaleString()} characters</span>
+      <span className="tabular-nums">{paragraphs.toLocaleString()} {paragraphs === 1 ? "paragraph" : "paragraphs"}</span>
+      <span className="tabular-nums">{readingTime} min read</span>
     </div>
   );
 }

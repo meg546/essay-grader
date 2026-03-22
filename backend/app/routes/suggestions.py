@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.auth.dependencies import get_current_user
 from app.config import get_settings
-from app.llm.client import get_llm_client
+from app.llm.client import get_suggestions_llm_client
 from app.models.user import User
 from app.schemas.suggestions import SuggestionRequest, SuggestionResponse
 
@@ -40,7 +40,7 @@ async def get_suggestions(
 ) -> SuggestionResponse:
     """Return LLM-generated explanation and fix suggestions for a flagged grammar/spelling issue."""
     settings = get_settings()
-    llm = get_llm_client(settings)
+    llm = get_suggestions_llm_client(settings)
 
     user_prompt = (
         f'Flagged text: "{body.flagged_text}"\n'

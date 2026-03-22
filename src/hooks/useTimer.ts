@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAppStore } from "@/stores/app-store";
 
@@ -26,6 +26,7 @@ export function useTimer() {
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const firedRef = useRef(false);
+  const [, setTick] = useState(0);
 
   // On mount: detect timer that expired while the tab was closed — cancel silently
   useEffect(() => {
@@ -67,6 +68,8 @@ export function useTimer() {
           intervalRef.current = null;
         }
       }
+      // Force re-render so remainingMs updates each second
+      setTick((t) => t + 1);
     }, 1000);
 
     return () => {

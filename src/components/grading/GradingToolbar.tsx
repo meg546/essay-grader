@@ -54,7 +54,7 @@ function ToolbarButton({
       <TooltipTrigger
         onClick={onClick}
         className={cn(
-          "group relative flex items-center justify-center w-10 h-10 rounded-lg transition-colors duration-150 hover:bg-primary/10 hover:scale-110 cursor-pointer",
+          "group relative flex items-center justify-center w-10 h-10 rounded-lg transition-[colors,transform] duration-150 hover:bg-primary/10 hover:scale-110 focus-visible:ring-2 focus-visible:ring-ring cursor-pointer",
           active
             ? "bg-primary/10 text-primary"
             : destructive
@@ -108,7 +108,7 @@ export function GradingToolbar({
         >
           <BookOpen aria-hidden="true" className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]" />
           {rubricFile && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-green-500" />
+            <span aria-hidden="true" className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-green-500" />
           )}
         </ToolbarButton>
 
@@ -136,7 +136,7 @@ export function GradingToolbar({
           <Tooltip>
             <PopoverTrigger
               render={
-                <TooltipTrigger className="group relative flex items-center justify-center w-10 h-10 rounded-lg transition-colors duration-150 hover:bg-primary/10 hover:scale-110 text-muted-foreground hover:text-primary cursor-pointer" />
+                <TooltipTrigger className="group relative flex items-center justify-center w-10 h-10 rounded-lg transition-[colors,transform] duration-150 hover:bg-primary/10 hover:scale-110 focus-visible:ring-2 focus-visible:ring-ring text-muted-foreground hover:text-primary cursor-pointer" />
               }
             >
               <Eraser aria-hidden="true" className="h-5 w-5 transition-[width,height] group-hover:h-[22px] group-hover:w-[22px]" />
@@ -152,7 +152,7 @@ export function GradingToolbar({
                 onClear();
                 setClearOpen(false);
               }}
-              className="w-full rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="w-full rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors focus-visible:ring-2 focus-visible:ring-ring"
             >
               Confirm
             </button>

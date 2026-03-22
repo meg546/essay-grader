@@ -12,9 +12,10 @@ export function SelectableCard({ icon: Icon, label, selected, onClick }: Selecta
   return (
     <button
       type="button"
+      aria-pressed={selected}
       onClick={onClick}
       className={cn(
-        "flex cursor-pointer flex-col items-center gap-3 rounded-xl p-6 transition-[colors,shadow]",
+        "flex cursor-pointer flex-col items-center gap-3 rounded-xl p-6 transition-[color,box-shadow] focus-visible:ring-2 focus-visible:ring-ring",
         selected
           ? "border-2 border-primary bg-primary/5"
           : "border border-border hover:border-primary/50"

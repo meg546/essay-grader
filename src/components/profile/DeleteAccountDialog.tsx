@@ -68,7 +68,8 @@ export function DeleteAccountDialog({ open, onOpenChange }: DeleteAccountDialogP
             type="password"
             name="password"
             autoComplete="current-password"
-            placeholder="Enter your password to confirm"
+            aria-label="Password"
+            placeholder="Enter your password to confirm\u2026"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -94,7 +95,7 @@ export function DeleteAccountDialog({ open, onOpenChange }: DeleteAccountDialogP
               {isSubmitting ? (
                 <>
                   <Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
+                  Deleting\u2026
                 </>
               ) : (
                 "Delete Account"

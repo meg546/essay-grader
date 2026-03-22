@@ -50,6 +50,18 @@ async def grade_essay(
     if rubric_file:
         rubric_text = await extract_pdf_text(rubric_file)
 
+    # Validate input lengths
+    if essay_text and len(essay_text) > 50_000:
+        raise HTTPException(
+            status_code=422,
+            detail="Essay text exceeds maximum length of 50,000 characters.",
+        )
+    if rubric_text and len(rubric_text) > 20_000:
+        raise HTTPException(
+            status_code=422,
+            detail="Rubric text exceeds maximum length of 20,000 characters.",
+        )
+
     # Create LLM client and grading service
     settings = get_settings()
     llm_client = get_llm_client(settings)

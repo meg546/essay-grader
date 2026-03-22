@@ -1,28 +1,16 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router";
+import { Link } from "react-router";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { getHistory, deleteHistoryItem } from "@/api/history";
-import { useFoxStore } from "@/stores/fox-store";
-import { useFoxCoach } from "@/components/mascot/use-fox-coach";
 import type { HistoryItem } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 export function EssaysPage() {
-  const navigate = useNavigate();
-
   const [items, setItems] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const setFoxState = useFoxStore((s) => s.setFoxState);
-  const { requestTip } = useFoxCoach();
-
-  useEffect(() => {
-    setFoxState("browsing");
-    requestTip("history_visit");
-    return () => setFoxState("idle");
-  }, [setFoxState, requestTip]);
 
   useEffect(() => {
     getHistory()
@@ -42,6 +30,7 @@ export function EssaysPage() {
   async function handleDelete(e: React.MouseEvent, item: HistoryItem) {
     e.preventDefault();
     e.stopPropagation();
+    if (!window.confirm("Are you sure you want to delete this essay?")) return;
     // Optimistically remove the item
     setItems((prev) => prev.filter((i) => i.id !== item.id));
     try {
@@ -62,8 +51,9 @@ export function EssaysPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="flex items-center justify-center py-20" aria-live="polite">
         <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-muted-foreground" />
+        <span className="sr-only">Loading</span>
       </div>
     );
   }
@@ -74,7 +64,9 @@ export function EssaysPage() {
         <p className="text-muted-foreground">
           No essays graded yet. Submit your first essay to get started.
         </p>
-        <Button onClick={() => navigate("/grade")}>Go to Grading</Button>
+        <Button asChild>
+          <Link to="/grade">Go to Grading</Link>
+        </Button>
       </div>
     );
   }
@@ -88,13 +80,13 @@ export function EssaysPage() {
           <div key={item.id} className="group relative">
             <Link to={`/history/${item.id}`} className="block cursor-pointer">
               <Card className="transition-colors hover:bg-muted/50">
-                <CardContent className="p-4">
+                <CardContent className="p-4 h-24">
                   <div className="flex items-center justify-between pr-6">
                     <span className="text-lg font-semibold tabular-nums">
                       {item.overallScore}/{item.maxScore}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {new Date(item.gradedAt).toLocaleDateString()}
+                      {new Date(item.gradedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                     </span>
                   </div>
                   <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
@@ -109,7 +101,7 @@ export function EssaysPage() {
               onClick={(e) => handleDelete(e, item)}
               className="absolute top-2 right-2 h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity focus-visible:opacity-100 z-10"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 aria-hidden="true" className="h-4 w-4" />
             </button>
           </div>
         ))}

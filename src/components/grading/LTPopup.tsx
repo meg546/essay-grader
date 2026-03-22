@@ -229,18 +229,36 @@ export function LTPopup({ editor }: LTPopupProps) {
   const dotClass = getCategoryDotClass(category)
   const categoryLabel = getCategoryLabel(category)
 
+  // Get editor container bounds to avoid popup merging with container border
+  const editorContainer = editor?.view.dom.closest('.border.rounded-lg') as HTMLElement | null
+  const containerRect = editorContainer?.getBoundingClientRect()
+  const insetPadding = 8 // px gap from editor container border
+
   // Viewport clamping — position below anchor, flip above if near bottom edge
   const popupHeight = 200
   const popupWidth = 288 // w-72 = 18rem
+
+  // Clamp bottom edge: don't exceed editor container bottom or viewport
+  const maxBottom = containerRect
+    ? Math.min(containerRect.bottom - insetPadding, window.innerHeight)
+    : window.innerHeight
   const top =
-    anchorRect.bottom + 4 + popupHeight > window.innerHeight
+    anchorRect.bottom + 4 + popupHeight > maxBottom
       ? anchorRect.top - popupHeight - 4
       : anchorRect.bottom + 4
-  const left = Math.min(anchorRect.left, window.innerWidth - popupWidth - 8)
+
+  // Clamp left edge: keep popup inside editor container and viewport
+  const minLeft = containerRect ? containerRect.left + insetPadding : 0
+  const maxLeft = containerRect
+    ? Math.min(containerRect.right - popupWidth - insetPadding, window.innerWidth - popupWidth - 8)
+    : window.innerWidth - popupWidth - 8
+  const left = Math.max(minLeft, Math.min(anchorRect.left, maxLeft))
 
   const popup = (
     <div
       ref={popupRef}
+      role="dialog"
+      aria-label="Grammar suggestions"
       style={{
         position: 'fixed',
         top,
@@ -252,7 +270,7 @@ export function LTPopup({ editor }: LTPopupProps) {
         <CardHeader className="pb-1 pt-2 px-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className={dotClass} />
+              <span aria-hidden="true" className={dotClass} />
               <span className="text-xs font-medium text-muted-foreground capitalize">
                 {categoryLabel}
               </span>
@@ -263,20 +281,20 @@ export function LTPopup({ editor }: LTPopupProps) {
                 setFetchState(null)
                 currentFromRef.current = null
               }}
-              className="text-muted-foreground hover:text-foreground transition-colors rounded p-0.5 hover:bg-muted"
+              className="text-muted-foreground hover:text-foreground transition-colors rounded p-0.5 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Close"
             >
-              <X className="h-3.5 w-3.5" />
+              <X aria-hidden="true" className="h-3.5 w-3.5" />
             </button>
           </div>
         </CardHeader>
-        <CardContent className="px-3 pb-2">
+        <CardContent aria-live="polite" className="px-3 pb-2">
           {fetchState?.status === 'loading' && (
             <>
               <p className="text-sm mb-2">{message}</p>
               <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                <span>Getting suggestions...</span>
+                <Loader2 aria-hidden="true" className="h-3.5 w-3.5 animate-spin" />
+                <span>Getting suggestions{"\u2026"}</span>
               </div>
             </>
           )}
@@ -289,7 +307,7 @@ export function LTPopup({ editor }: LTPopupProps) {
                     <button
                       key={s}
                       onClick={() => handleReplace(s)}
-                      className="rounded-md border bg-muted/50 px-2 py-0.5 text-sm hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
+                      className="rounded-md border bg-muted/50 px-2 py-0.5 text-sm hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {s}
                     </button>
@@ -307,7 +325,7 @@ export function LTPopup({ editor }: LTPopupProps) {
                     <button
                       key={r}
                       onClick={() => handleReplace(r)}
-                      className="rounded-md border bg-muted/50 px-2 py-0.5 text-sm hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
+                      className="rounded-md border bg-muted/50 px-2 py-0.5 text-sm hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {r}
                     </button>
@@ -325,7 +343,7 @@ export function LTPopup({ editor }: LTPopupProps) {
                     <button
                       key={r}
                       onClick={() => handleReplace(r)}
-                      className="rounded-md border bg-muted/50 px-2 py-0.5 text-sm hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
+                      className="rounded-md border bg-muted/50 px-2 py-0.5 text-sm hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {r}
                     </button>
@@ -338,7 +356,7 @@ export function LTPopup({ editor }: LTPopupProps) {
         <CardFooter className="px-3 py-1.5 justify-end">
           <button
             onClick={handleDismiss}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring"
           >
             Dismiss
           </button>

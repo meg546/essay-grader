@@ -119,7 +119,7 @@ export function RubricUpload({ disabled }: RubricUploadProps) {
                 Upload your assignment rubric
               </p>
               <p className="text-xs text-muted-foreground">
-                PDF only — or skip and we'll grade based on your grade level
+                PDF only — or skip and we'll grade based on your grade level{"\u2026"}
               </p>
             </div>
             <Button

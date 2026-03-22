@@ -72,7 +72,8 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
             type="password"
             name="currentPassword"
             autoComplete="current-password"
-            placeholder="Current password"
+            aria-label="Current password"
+            placeholder="Current password\u2026"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             required
@@ -81,7 +82,8 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
             type="password"
             name="newPassword"
             autoComplete="new-password"
-            placeholder="New password"
+            aria-label="New password"
+            placeholder="New password\u2026"
             minLength={8}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
@@ -91,7 +93,8 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
             type="password"
             name="confirmPassword"
             autoComplete="new-password"
-            placeholder="Confirm new password"
+            aria-label="Confirm new password"
+            placeholder="Confirm new password\u2026"
             minLength={8}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
@@ -104,7 +107,7 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
             {isSubmitting ? (
               <>
                 <Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" />
-                Changing password...
+                Changing password\u2026
               </>
             ) : (
               "Change Password"
