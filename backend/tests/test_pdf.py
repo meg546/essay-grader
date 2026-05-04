@@ -4,22 +4,11 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from fastapi import HTTPException
-from pypdf import PdfWriter
-
-import io
 
 
 @pytest.fixture
 def valid_pdf_bytes() -> bytes:
     """Generate a small valid PDF with known text content."""
-    writer = PdfWriter()
-    writer.add_blank_page(width=72, height=72)
-    # Add text annotation as a simple way to embed text
-    page = writer.pages[0]
-    # Use a more reliable method: create PDF with text via reportlab-free approach
-    # pypdf can't easily add text to pages, so we'll build a minimal PDF with text
-    buf = io.BytesIO()
-    # Build a minimal PDF with actual text content
     pdf_content = (
         b"%PDF-1.4\n"
         b"1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n"

@@ -1,6 +1,6 @@
 import { Eye, EyeOff } from "lucide-react";
 import type { CategoryScore } from "@/api/types";
-import { useHighlightContext } from "@/lib/highlight-context";
+import { useHighlightContext } from "@/lib/HighlightContext";
 import { buildCategoryColorMap, getCategoryColor } from "@/lib/highlight-utils";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";

@@ -1,5 +1,6 @@
 import { Timer, Pause, Play } from "lucide-react";
-import { useTimer, formatRemainingTime } from "@/hooks/useTimer";
+import { useTimer } from "@/hooks/useTimer";
+import { formatRemainingTime } from "@/lib/time-utils";
 import { useAppStore } from "@/stores/app-store";
 import { cn } from "@/lib/utils";
 

@@ -7,9 +7,7 @@ import json
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from httpx import ASGITransport, AsyncClient
-
-from app.main import app
+from httpx import AsyncClient
 
 # Known valid LLM response JSON that GradingService will parse
 _MOCK_LLM_RESPONSE = json.dumps(

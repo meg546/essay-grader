@@ -267,7 +267,6 @@ def main() -> None:
         print(f"Error: {PARSED_FILE} not found. Run 01_download_dataset.py first.", file=sys.stderr)
         sys.exit(1)
 
-    api_key = anthropic.api_key if hasattr(anthropic, "api_key") else None
     client = anthropic.Anthropic()
 
     rng = random.Random(args.seed)
@@ -307,8 +306,6 @@ def main() -> None:
 
     accepted = 0
     rejected = 0
-    total_cost_input = 0
-    total_cost_output = 0
 
     with open(OUTPUT_FILE, "a") as out_f, open(REJECTED_FILE, "a") as rej_f:
         for i, essay in enumerate(sampled):

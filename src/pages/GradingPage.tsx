@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -12,7 +12,7 @@ import { EssayInput, type EssayInputHandle } from "@/components/grading/EssayInp
 import { GradingToolbar } from "@/components/grading/GradingToolbar";
 import { WordStats } from "@/components/grading/WordStats";
 import { TimerDisplay } from "@/components/grading/TimerDisplay";
-import { HighlightProvider } from "@/lib/highlight-context";
+import { HighlightProvider } from "@/lib/HighlightContext";
 import { ColorLegend } from "@/components/results/ColorLegend";
 import { EssayPanel } from "@/components/results/EssayPanel";
 import { FeedbackPanel } from "@/components/results/FeedbackPanel";

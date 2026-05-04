@@ -7,9 +7,7 @@ from unittest.mock import AsyncMock, patch
 
 import httpx
 import pytest
-from httpx import ASGITransport, AsyncClient
-
-from app.main import app
+from httpx import AsyncClient
 
 
 _MOCK_SUGGESTION_RESPONSE = json.dumps(
@@ -46,7 +44,9 @@ async def test_suggestions_returns_message_and_suggestions(client: AsyncClient):
     mock_llm = AsyncMock()
     mock_llm.complete = AsyncMock(return_value=_MOCK_SUGGESTION_RESPONSE)
 
-    with patch("app.routes.suggestions.get_llm_client", return_value=mock_llm):
+    with patch(
+        "app.routes.suggestions.get_suggestions_llm_client", return_value=mock_llm
+    ):
         resp = await client.post(
             "/api/suggestions",
             json=SAMPLE_REQUEST,
@@ -79,7 +79,9 @@ async def test_suggestions_handles_malformed_llm_json(client: AsyncClient):
     mock_llm = AsyncMock()
     mock_llm.complete = AsyncMock(return_value="this is not valid json at all {{{{")
 
-    with patch("app.routes.suggestions.get_llm_client", return_value=mock_llm):
+    with patch(
+        "app.routes.suggestions.get_suggestions_llm_client", return_value=mock_llm
+    ):
         resp = await client.post(
             "/api/suggestions",
             json=SAMPLE_REQUEST,
@@ -99,7 +101,9 @@ async def test_suggestions_handles_ollama_connect_error(client: AsyncClient):
     mock_llm = AsyncMock()
     mock_llm.complete = AsyncMock(side_effect=httpx.ConnectError("Connection refused"))
 
-    with patch("app.routes.suggestions.get_llm_client", return_value=mock_llm):
+    with patch(
+        "app.routes.suggestions.get_suggestions_llm_client", return_value=mock_llm
+    ):
         resp = await client.post(
             "/api/suggestions",
             json=SAMPLE_REQUEST,

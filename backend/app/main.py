@@ -3,8 +3,8 @@ import warnings
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .config import get_settings
-from .routes import auth, grading, health, history, suggestions
+from app.config import get_settings
+from app.routes import auth, grading, health, history, suggestions
 
 settings = get_settings()
 

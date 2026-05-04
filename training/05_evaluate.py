@@ -1,4 +1,4 @@
-"""Phase 28 — Evaluate fine-tuned model against human scores and Sonnet baseline.
+"""Phase 27 — Evaluate fine-tuned model against human scores and Sonnet baseline.
 
 Grades the holdout test set with both the fine-tuned model (via Ollama) and
 Claude Sonnet, then compares:

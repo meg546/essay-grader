@@ -2,7 +2,7 @@ import { Extension } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
-import type { Linter } from 'harper.js'
+import type { Lint, Linter } from 'harper.js'
 
 export const ltPluginKey = new PluginKey<DecorationSet>('languageTool')
 
@@ -100,7 +100,6 @@ function getCssClass(lintKind: string): string {
   if (lintKind === 'Readability' || lintKind === 'Formatting') {
     return 'lt-style'
   }
-  // Default
   return 'lt-grammar'
 }
 
@@ -118,13 +117,12 @@ function getCategoryFromLintKind(lintKind: string): string {
   return 'grammar'
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function buildDecorations(doc: ProseMirrorNode, _text: string, lints: any[]): DecorationSet {
+function buildDecorations(doc: ProseMirrorNode, _text: string, lints: Lint[]): DecorationSet {
   const map = buildOffsetMap(doc)
   const decorations: Decoration[] = []
 
   for (const lint of lints) {
-    const span = lint.span() as { start: number; end: number }
+    const span = lint.span()
     const snapped = snapToWordBounds(_text, span.start, span.end - span.start)
     const from = ltOffsetToPmPos(snapped.offset, map)
     const to = ltOffsetToPmPos(snapped.offset + snapped.length, map)
@@ -144,10 +142,7 @@ function buildDecorations(doc: ProseMirrorNode, _text: string, lints: any[]): De
     const cssClass = getCssClass(lintKind)
     const category = getCategoryFromLintKind(lintKind)
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const suggestions = (lint.suggestions() as any[]).map((s: any) =>
-      s.get_replacement_text()
-    )
+    const suggestions = lint.suggestions().map((s) => s.get_replacement_text())
 
     decorations.push(
       Decoration.inline(from, to, {

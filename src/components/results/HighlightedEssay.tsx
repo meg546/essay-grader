@@ -1,6 +1,6 @@
 import { useMemo, useEffect, useState, useRef, useCallback } from "react";
 import type { GradingResult, CategoryScore } from "@/api/types";
-import { useHighlightContext } from "@/lib/highlight-context";
+import { useHighlightContext } from "@/lib/HighlightContext";
 import {
   buildSegments,
   getAllHighlights,

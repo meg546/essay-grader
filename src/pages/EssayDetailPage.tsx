@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { useParams, Link } from "react-router";
 import { Loader2 } from "lucide-react";
 
 import { getHistoryItem } from "@/api/history";
 import type { GradingResult } from "@/api/types";
-import { Button } from "@/components/ui/button";
-import { HighlightProvider } from "@/lib/highlight-context";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { HighlightProvider } from "@/lib/HighlightContext";
 import { ColorLegend } from "@/components/results/ColorLegend";
 import { EssayPanel } from "@/components/results/EssayPanel";
 import { FeedbackPanel } from "@/components/results/FeedbackPanel";
@@ -18,11 +19,27 @@ export function EssayDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    setLoading(true);
-    getHistoryItem(id)
-      .then((data) => setResult(data))
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+    let cancelled = false;
+    startTransition(() => {
+      if (!cancelled) {
+        setLoading(true);
+        setError(false);
+        setResult(null);
+      }
+    });
+    void getHistoryItem(id)
+      .then((data) => {
+        if (!cancelled) setResult(data);
+      })
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   if (loading) {
@@ -40,9 +57,12 @@ export function EssayDetailPage() {
         <p className="text-muted-foreground">
           Could not load essay results.
         </p>
-        <Button variant="outline" asChild>
-          <Link to="/history">Back to Essays</Link>
-        </Button>
+        <Link
+          to="/history"
+          className={cn(buttonVariants({ variant: "outline" }))}
+        >
+          Back to Essays
+        </Link>
       </div>
     );
   }
@@ -52,9 +72,12 @@ export function EssayDetailPage() {
       <div className="mx-auto max-w-[1400px] space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-balance">Essay Results</h1>
-          <Button variant="outline" asChild>
-            <Link to="/history">Back to Essays</Link>
-          </Button>
+          <Link
+            to="/history"
+            className={cn(buttonVariants({ variant: "outline" }))}
+          >
+            Back to Essays
+          </Link>
         </div>
         <ColorLegend categories={result.categories} />
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

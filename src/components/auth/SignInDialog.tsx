@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
 import { useProfileStore } from "@/stores/profile-store";
@@ -27,16 +27,16 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
   const [confirmPasswordInput, setConfirmPasswordInput] = useState("");
   const [error, setError] = useState("");
 
-  // Reset form state when dialog closes
-  useEffect(() => {
-    if (!open) {
+  function handleOpenChange(next: boolean) {
+    if (!next) {
       setEmailInput("");
       setPasswordInput("");
       setConfirmPasswordInput("");
       setError("");
       setMode("login");
     }
-  }, [open]);
+    onOpenChange(next);
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -65,7 +65,7 @@ export function SignInDialog({ open, onOpenChange, onAuthenticated }: SignInDial
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Sign in to continue</DialogTitle>

@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useHighlightContext } from "@/lib/highlight-context";
+import { useHighlightContext } from "@/lib/HighlightContext";
 import { CATEGORY_HEX } from "@/lib/highlight-utils";
 import type { CategoryScore } from "@/api/types";
 

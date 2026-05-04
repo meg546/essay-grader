@@ -28,7 +28,7 @@ export function TimerPopover() {
 
   const timerEndTime = useAppStore((s) => s.timerEndTime);
   const timerPaused = useAppStore((s) => s.timerPaused);
-  const { remainingMs, isRunning, isPaused } = useTimer();
+  const { remainingMs, isPaused } = useTimer();
 
   const isActive = timerEndTime !== null || timerPaused;
 

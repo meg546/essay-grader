@@ -1,0 +1,6 @@
+node_modules
+.planning
+.claude
+.git
+.superpowers
+.playwright-cli

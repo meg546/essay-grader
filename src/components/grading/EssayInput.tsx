@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback, useImperativeHandle, forwardRef, useEffect } from "react";
-import { LTPopup } from "@/components/grading/LTPopup";
+import { LanguageToolPopup } from "@/components/grading/LanguageToolPopup";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { CharacterCount } from "@tiptap/extension-character-count";
@@ -232,7 +232,7 @@ export const EssayInput = forwardRef<EssayInputHandle, EssayInputProps>(
           editor={editor}
           className="flex-1 min-h-0 overflow-y-auto flex flex-col [&_.tiptap]:flex-1 [&_.tiptap]:flex [&_.tiptap]:flex-col [&_.tiptap.is-empty]:before:content-['Paste_your_essay_here_or_drag_and_drop_a_file\u2026'] [&_.tiptap.is-empty]:before:text-muted-foreground [&_.tiptap.is-empty]:before:pointer-events-none [&_.tiptap.is-empty]:before:float-left [&_.tiptap.is-empty]:before:h-0 [&_.tiptap.is-empty]:before:w-full"
         />
-        <LTPopup editor={editor} />
+        <LanguageToolPopup editor={editor} />
         <input
           ref={fileInputRef}
           type="file"

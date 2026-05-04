@@ -9,8 +9,6 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from httpx import AsyncClient
 
-from app.main import app
-
 # Duplicated from test_grading.py to avoid import coupling
 _MOCK_LLM_RESPONSE = json.dumps(
     {

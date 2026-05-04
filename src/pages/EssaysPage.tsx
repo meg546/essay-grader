@@ -5,8 +5,9 @@ import { toast } from "sonner";
 
 import { getHistory, deleteHistoryItem } from "@/api/history";
 import type { HistoryItem } from "@/api/types";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 export function EssaysPage() {
   const [items, setItems] = useState<HistoryItem[]>([]);
@@ -64,9 +65,12 @@ export function EssaysPage() {
         <p className="text-muted-foreground">
           No essays graded yet. Submit your first essay to get started.
         </p>
-        <Button asChild>
-          <Link to="/grade">Go to Grading</Link>
-        </Button>
+        <Link
+          to="/grade"
+          className={cn(buttonVariants({ variant: "default" }))}
+        >
+          Go to Grading
+        </Link>
       </div>
     );
   }

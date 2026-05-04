@@ -23,26 +23,26 @@ export function ScrollPicker({
   const containerRef = useRef<HTMLDivElement>(null);
   const userScrollingRef = useRef(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasSyncedExternallyRef = useRef(false);
 
-  function scrollToValue(v: number, behavior: ScrollBehavior = "smooth") {
-    const el = containerRef.current;
-    if (!el) return;
-    el.scrollTo({ top: (v - min) * ITEM_HEIGHT, behavior });
-  }
+  const scrollToValue = useCallback(
+    (v: number, behavior: ScrollBehavior = "smooth") => {
+      const el = containerRef.current;
+      if (!el) return;
+      el.scrollTo({ top: (v - min) * ITEM_HEIGHT, behavior });
+    },
+    [min],
+  );
 
-  // Sync scroll when value changes from outside (only if user is not scrolling)
+  // Keep scroll position aligned with value when it changes from outside
   useEffect(() => {
-    if (!userScrollingRef.current) {
-      scrollToValue(value);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
-
-  // Initial scroll without animation
-  useEffect(() => {
-    scrollToValue(value, "instant" as ScrollBehavior);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (userScrollingRef.current) return;
+    const behavior: ScrollBehavior = hasSyncedExternallyRef.current
+      ? "smooth"
+      : ("instant" as ScrollBehavior);
+    hasSyncedExternallyRef.current = true;
+    scrollToValue(value, behavior);
+  }, [value, scrollToValue]);
 
   function handleScroll() {
     const el = containerRef.current;
@@ -77,8 +77,7 @@ export function ScrollPicker({
         scrollToValue(prev);
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [disabled, value, min, max, onChange],
+    [disabled, value, min, max, onChange, scrollToValue],
   );
 
   const items = Array.from({ length: max - min + 1 }, (_, i) => min + i);
@@ -99,10 +98,9 @@ export function ScrollPicker({
       }}
       className={cn(
         "relative w-full",
-        disabled && "pointer-events-none opacity-60"
+        disabled && "pointer-events-none opacity-60",
       )}
     >
-      {/* Top spacer */}
       <div style={{ height: ITEM_HEIGHT }} />
 
       {items.map((v) => {
@@ -132,7 +130,7 @@ export function ScrollPicker({
               "text-sm select-none",
               isCenter
                 ? "font-semibold text-foreground"
-                : "text-muted-foreground/50"
+                : "text-muted-foreground/50",
             )}
           >
             {isCenter ? `${v} min` : v}
@@ -140,7 +138,6 @@ export function ScrollPicker({
         );
       })}
 
-      {/* Bottom spacer */}
       <div style={{ height: ITEM_HEIGHT }} />
     </div>
   );

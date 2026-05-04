@@ -31,3 +31,9 @@ backend/.venv/
 backend/__pycache__/
 __pycache__/
 *.pyc
+
+# Local tooling / drafts (not app source)
+.planning/
+.playwright-cli/
+backend/.playwright-cli/
+.superpowers/

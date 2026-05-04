@@ -32,7 +32,6 @@ const FRAME_3_END = 11000
 type DemoFrame = 1 | 2 | 3 | 4
 
 function useFrameLoop(isInView: boolean) {
-  const [frame, setFrame] = useState<DemoFrame>(1)
   const [elapsed, setElapsed] = useState(0)
 
   useEffect(() => {
@@ -51,12 +50,10 @@ function useFrameLoop(isInView: boolean) {
     return () => clearInterval(interval)
   }, [isInView])
 
-  useEffect(() => {
-    if (elapsed < FRAME_1_END) setFrame(1)
-    else if (elapsed < FRAME_2_END) setFrame(2)
-    else if (elapsed < FRAME_3_END) setFrame(3)
-    else setFrame(4)
-  }, [elapsed])
+  const frame: DemoFrame =
+    elapsed < FRAME_1_END ? 1 :
+    elapsed < FRAME_2_END ? 2 :
+    elapsed < FRAME_3_END ? 3 : 4
 
   return { frame, elapsed }
 }
